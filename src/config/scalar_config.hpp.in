@@ -1,0 +1,14 @@
+#ifndef HPP_FCL_DATA_SCALAR_CONFIG_H
+#define HPP_FCL_DATA_SCALAR_CONFIG_H
+
+namespace hpp {
+namespace fcl {
+
+// clang-format off
+using FCL_REAL = @HPP_FCL_SCALAR_TYPE@;
+// clang-format on
+
+} // namespace fcl
+} // namespace hpp
+
+#endif // HPP_FCL_DATA_SCALAR_CONFIG_H

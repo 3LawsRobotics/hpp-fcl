@@ -42,6 +42,7 @@
 #include <Eigen/Geometry>
 
 #include <cstdint>
+#include <fcl/scalar_config.hpp>
 
 #include <hpp/fcl/config.hh>
 
@@ -64,7 +65,6 @@ namespace hpp {
 
 namespace hpp {
 namespace fcl {
-typedef float FCL_REAL;
 typedef Eigen::Matrix<FCL_REAL, 3, 1> Vec3f;
 typedef Eigen::Matrix<FCL_REAL, Eigen::Dynamic, 1> VecXf;
 typedef Eigen::Matrix<FCL_REAL, 3, 3> Matrix3f;
