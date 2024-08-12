@@ -132,8 +132,9 @@ else()
 endif()
 
 # Optional dependencies
-ADD_PROJECT_DEPENDENCY(octomap PKG_CONFIG_REQUIRES "octomap >= 1.6")
-if(octomap_FOUND)
+option(USE_OCTOMAP "use octomap." FALSE)
+if(USE_OCTOMAP)
+  ADD_PROJECT_DEPENDENCY(octomap PKG_CONFIG_REQUIRES "octomap >= 1.6")
   SET(HPP_FCL_HAS_OCTOMAP TRUE)
   string(REPLACE "." ";" VERSION_LIST ${octomap_VERSION})
   list(GET VERSION_LIST 0 OCTOMAP_MAJOR_VERSION)
