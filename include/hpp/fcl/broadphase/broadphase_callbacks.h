@@ -37,8 +37,8 @@
 #ifndef HPP_FCL_BROADPHASE_BROAD_PHASE_CALLBACKS_H
 #define HPP_FCL_BROADPHASE_BROAD_PHASE_CALLBACKS_H
 
-#include "hpp/fcl/fwd.hh"
 #include "hpp/fcl/data_types.h"
+#include "hpp/fcl/fwd.hh"
 
 namespace hpp {
 namespace fcl {
@@ -50,18 +50,18 @@ namespace fcl {
 struct HPP_FCL_DLLAPI CollisionCallBackBase {
   /// @brief Initialization of the callback before running the collision
   /// broadphase manager.
-  virtual void init(){};
+  virtual void init() {};
 
   /// @brief Collision evaluation between two objects in collision.
   ///        This callback will cause the broadphase evaluation to stop if it
   ///        returns true.
   ///
   /// @param[in] o1 Collision object #1.
-  /// @param[in] o2 Collision object #2.
-  virtual bool collide(CollisionObject* o1, CollisionObject* o2) = 0;
+  /// @param[in] o2 Collision object #FCL_REAL(2.)
+  virtual bool collide(CollisionObject *o1, CollisionObject *o2) = 0;
 
   /// @brief Functor call associated to the collide operation.
-  virtual bool operator()(CollisionObject* o1, CollisionObject* o2) {
+  virtual bool operator()(CollisionObject *o1, CollisionObject *o2) {
     return collide(o1, o2);
   }
 };
@@ -73,26 +73,26 @@ struct HPP_FCL_DLLAPI CollisionCallBackBase {
 struct HPP_FCL_DLLAPI DistanceCallBackBase {
   /// @brief Initialization of the callback before running the collision
   /// broadphase manager.
-  virtual void init(){};
+  virtual void init() {};
 
   /// @brief Distance evaluation between two objects in collision.
   ///        This callback will cause the broadphase evaluation to stop if it
   ///        returns true.
   ///
   /// @param[in] o1 Collision object #1.
-  /// @param[in] o2 Collision object #2.
+  /// @param[in] o2 Collision object #FCL_REAL(2.)
   /// @param[out] dist Distance between the two collision geometries.
-  virtual bool distance(CollisionObject* o1, CollisionObject* o2,
-                        FCL_REAL& dist) = 0;
+  virtual bool distance(CollisionObject *o1, CollisionObject *o2,
+                        FCL_REAL &dist) = 0;
 
   /// @brief Functor call associated to the distance operation.
-  virtual bool operator()(CollisionObject* o1, CollisionObject* o2,
-                          FCL_REAL& dist) {
+  virtual bool operator()(CollisionObject *o1, CollisionObject *o2,
+                          FCL_REAL &dist) {
     return distance(o1, o2, dist);
   }
 };
 
-}  // namespace fcl
-}  // namespace hpp
+} // namespace fcl
+} // namespace hpp
 
-#endif  // HPP_FCL_BROADPHASE_BROAD_PHASE_CALLBACKS_H
+#endif // HPP_FCL_BROADPHASE_BROAD_PHASE_CALLBACKS_H

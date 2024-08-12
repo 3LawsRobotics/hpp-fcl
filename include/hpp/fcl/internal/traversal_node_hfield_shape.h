@@ -40,13 +40,13 @@
 /// @cond INTERNAL
 
 #include <hpp/fcl/collision_data.h>
-#include <hpp/fcl/shape/geometric_shapes.h>
-#include <hpp/fcl/narrowphase/narrowphase.h>
-#include <hpp/fcl/shape/geometric_shapes_utility.h>
-#include <hpp/fcl/internal/traversal_node_base.h>
-#include <hpp/fcl/internal/traversal.h>
 #include <hpp/fcl/hfield.h>
+#include <hpp/fcl/internal/traversal.h>
+#include <hpp/fcl/internal/traversal_node_base.h>
+#include <hpp/fcl/narrowphase/narrowphase.h>
 #include <hpp/fcl/shape/convex.h>
+#include <hpp/fcl/shape/geometric_shapes.h>
+#include <hpp/fcl/shape/geometric_shapes_utility.h>
 
 namespace hpp {
 namespace fcl {
@@ -56,11 +56,11 @@ namespace fcl {
 
 namespace details {
 template <typename BV>
-Convex<Quadrilateral> buildConvexQuadrilateral(const HFNode<BV>& node,
-                                               const HeightField<BV>& model) {
-  const MatrixXf& heights = model.getHeights();
-  const VecXf& x_grid = model.getXGrid();
-  const VecXf& y_grid = model.getYGrid();
+Convex<Quadrilateral> buildConvexQuadrilateral(const HFNode<BV> &node,
+                                               const HeightField<BV> &model) {
+  const MatrixXf &heights = model.getHeights();
+  const VecXf &x_grid = model.getXGrid();
+  const VecXf &y_grid = model.getYGrid();
 
   const FCL_REAL min_height = model.getMinHeight();
 
@@ -70,10 +70,10 @@ Convex<Quadrilateral> buildConvexQuadrilateral(const HFNode<BV>& node,
       heights.block<2, 2>(node.y_id, node.x_id);
 
   assert(cell.maxCoeff() > min_height &&
-         "max_height is lower than min_height");  // Check whether the geometry
-                                                  // is degenerated
+         "max_height is lower than min_height"); // Check whether the geometry
+                                                 // is degenerated
 
-  Vec3f* pts = new Vec3f[8];
+  Vec3f *pts = new Vec3f[8];
   pts[0] = Vec3f(x0, y0, min_height);
   pts[1] = Vec3f(x0, y1, min_height);
   pts[2] = Vec3f(x1, y1, min_height);
@@ -83,29 +83,29 @@ Convex<Quadrilateral> buildConvexQuadrilateral(const HFNode<BV>& node,
   pts[6] = Vec3f(x1, y1, cell(1, 1));
   pts[7] = Vec3f(x1, y0, cell(0, 1));
 
-  Quadrilateral* polygons = new Quadrilateral[6];
-  polygons[0].set(0, 3, 2, 1);  // x+ side
-  polygons[1].set(0, 1, 5, 4);  // y- side
-  polygons[2].set(1, 2, 6, 5);  // x- side
-  polygons[3].set(2, 3, 7, 6);  // y+ side
-  polygons[4].set(3, 0, 4, 7);  // z- side
-  polygons[5].set(4, 5, 6, 7);  // z+ side
+  Quadrilateral *polygons = new Quadrilateral[6];
+  polygons[0].set(0, 3, 2, 1); // x+ side
+  polygons[1].set(0, 1, 5, 4); // y- side
+  polygons[2].set(1, 2, 6, 5); // x- side
+  polygons[3].set(2, 3, 7, 6); // y+ side
+  polygons[4].set(3, 0, 4, 7); // z- side
+  polygons[5].set(4, 5, 6, 7); // z+ side
 
   return Convex<Quadrilateral>(true,
-                               pts,  // points
-                               8,    // num points
+                               pts, // points
+                               8,   // num points
                                polygons,
-                               6  // number of polygons
+                               6 // number of polygons
   );
 }
 
 template <typename BV>
-void buildConvexTriangles(const HFNode<BV>& node, const HeightField<BV>& model,
-                          Convex<Triangle>& convex1,
-                          Convex<Triangle>& convex2) {
-  const MatrixXf& heights = model.getHeights();
-  const VecXf& x_grid = model.getXGrid();
-  const VecXf& y_grid = model.getYGrid();
+void buildConvexTriangles(const HFNode<BV> &node, const HeightField<BV> &model,
+                          Convex<Triangle> &convex1,
+                          Convex<Triangle> &convex2) {
+  const MatrixXf &heights = model.getHeights();
+  const VecXf &x_grid = model.getXGrid();
+  const VecXf &y_grid = model.getYGrid();
 
   const FCL_REAL min_height = model.getMinHeight();
 
@@ -116,12 +116,12 @@ void buildConvexTriangles(const HFNode<BV>& node, const HeightField<BV>& model,
       heights.block<2, 2>(node.y_id, node.x_id);
 
   assert(max_height > min_height &&
-         "max_height is lower than min_height");  // Check whether the geometry
-                                                  // is degenerated
+         "max_height is lower than min_height"); // Check whether the geometry
+                                                 // is degenerated
   HPP_FCL_UNUSED_VARIABLE(max_height);
 
   {
-    Vec3f* pts = new Vec3f[8];
+    Vec3f *pts = new Vec3f[8];
     pts[0] = Vec3f(x0, y0, min_height);
     pts[1] = Vec3f(x0, y1, min_height);
     pts[2] = Vec3f(x1, y1, min_height);
@@ -131,9 +131,9 @@ void buildConvexTriangles(const HFNode<BV>& node, const HeightField<BV>& model,
     pts[6] = Vec3f(x1, y1, cell(1, 1));
     pts[7] = Vec3f(x1, y0, cell(0, 1));
 
-    Triangle* triangles = new Triangle[8];
-    triangles[0].set(0, 1, 3);  // bottom
-    triangles[1].set(4, 5, 7);  // top
+    Triangle *triangles = new Triangle[8];
+    triangles[0].set(0, 1, 3); // bottom
+    triangles[1].set(4, 5, 7); // top
     triangles[2].set(0, 1, 4);
     triangles[3].set(4, 1, 5);
     triangles[4].set(1, 7, 3);
@@ -142,20 +142,20 @@ void buildConvexTriangles(const HFNode<BV>& node, const HeightField<BV>& model,
     triangles[7].set(7, 4, 0);
 
     convex1.set(true,
-                pts,  // points
-                8,    // num points
+                pts, // points
+                8,   // num points
                 triangles,
-                8  // number of polygons
+                8 // number of polygons
     );
   }
 
   {
-    Vec3f* pts = new Vec3f[8];
+    Vec3f *pts = new Vec3f[8];
     memcpy(pts, convex1.points, 8 * sizeof(Vec3f));
 
-    Triangle* triangles = new Triangle[8];
-    triangles[0].set(3, 2, 1);  // top
-    triangles[1].set(5, 6, 7);  // bottom
+    Triangle *triangles = new Triangle[8];
+    triangles[0].set(3, 2, 1); // top
+    triangles[1].set(5, 6, 7); // bottom
     triangles[2].set(1, 2, 5);
     triangles[3].set(5, 2, 6);
     triangles[4].set(1, 3, 7);
@@ -164,21 +164,21 @@ void buildConvexTriangles(const HFNode<BV>& node, const HeightField<BV>& model,
     triangles[7].set(6, 2, 3);
 
     convex2.set(true,
-                pts,  // points
-                8,    // num points
+                pts, // points
+                8,   // num points
                 triangles,
-                8  // number of polygons
+                8 // number of polygons
     );
   }
 }
-}  // namespace details
+} // namespace details
 
 /// @brief Traversal node for collision between height field and shape
 template <typename BV, typename S,
           int _Options = RelativeTransformationIsIdentity>
 class HeightFieldShapeCollisionTraversalNode
     : public CollisionTraversalNodeBase {
- public:
+public:
   typedef CollisionTraversalNodeBase Base;
   typedef Eigen::Array<FCL_REAL, 1, 2> Array2d;
 
@@ -187,14 +187,14 @@ class HeightFieldShapeCollisionTraversalNode
     RTIsIdentity = _Options & RelativeTransformationIsIdentity
   };
 
-  HeightFieldShapeCollisionTraversalNode(const CollisionRequest& request)
+  HeightFieldShapeCollisionTraversalNode(const CollisionRequest &request)
       : CollisionTraversalNodeBase(request) {
     model1 = NULL;
     model2 = NULL;
 
     num_bv_tests = 0;
     num_leaf_tests = 0;
-    query_time_seconds = 0.0;
+    query_time_seconds = FCL_REAL(0.);
 
     nsolver = NULL;
     shape_inflation.setZero();
@@ -221,8 +221,9 @@ class HeightFieldShapeCollisionTraversalNode
   ///         distance between bounding volumes.
   /// @brief BV culling test in one BVTT node
   bool BVDisjoints(unsigned int b1, unsigned int /*b2*/,
-                   FCL_REAL& sqrDistLowerBound) const {
-    if (this->enable_statistics) this->num_bv_tests++;
+                   FCL_REAL &sqrDistLowerBound) const {
+    if (this->enable_statistics)
+      this->num_bv_tests++;
 
     bool disjoint;
     if (RTIsIdentity) {
@@ -244,10 +245,10 @@ class HeightFieldShapeCollisionTraversalNode
   }
 
   template <typename Polygone>
-  bool shapeDistance(const Convex<Polygone>& convex1,
-                     const Convex<Polygone>& convex2, const Transform3f& tf1,
-                     const S& shape, const Transform3f& tf2, FCL_REAL& distance,
-                     Vec3f& c1, Vec3f& c2, Vec3f& normal) const {
+  bool shapeDistance(const Convex<Polygone> &convex1,
+                     const Convex<Polygone> &convex2, const Transform3f &tf1,
+                     const S &shape, const Transform3f &tf2, FCL_REAL &distance,
+                     Vec3f &c1, Vec3f &c2, Vec3f &normal) const {
     const Transform3f Id;
     Vec3f contact2_1, contact2_2, normal2;
     FCL_REAL distance2;
@@ -267,7 +268,7 @@ class HeightFieldShapeCollisionTraversalNode
                                            contact2_1, contact2_2, normal2);
 
     if (collision1 && collision2) {
-      if (distance > distance2)  // switch values
+      if (distance > distance2) // switch values
       {
         distance = distance2;
         c1 = contact2_1;
@@ -289,11 +290,11 @@ class HeightFieldShapeCollisionTraversalNode
   }
 
   template <typename Polygone>
-  bool shapeCollision(const Convex<Polygone>& convex1,
-                      const Convex<Polygone>& convex2, const Transform3f& tf1,
-                      const S& shape, const Transform3f& tf2,
-                      FCL_REAL& distance_lower_bound, Vec3f& contact_point,
-                      Vec3f& normal) const {
+  bool shapeCollision(const Convex<Polygone> &convex1,
+                      const Convex<Polygone> &convex2, const Transform3f &tf1,
+                      const S &shape, const Transform3f &tf2,
+                      FCL_REAL &distance_lower_bound, Vec3f &contact_point,
+                      Vec3f &normal) const {
     const Transform3f Id;
     Vec3f contact_point2, normal2;
     FCL_REAL distance_lower_bound2;
@@ -321,7 +322,7 @@ class HeightFieldShapeCollisionTraversalNode
       // -(std::numeric_limits<FCL_REAL>::max)().
       if (distance_lower_bound != -(std::numeric_limits<FCL_REAL>::max)() &&
           distance_lower_bound2 != -(std::numeric_limits<FCL_REAL>::max)()) {
-        if (distance_lower_bound > distance_lower_bound2)  // switch values
+        if (distance_lower_bound > distance_lower_bound2) // switch values
         {
           distance_lower_bound = distance_lower_bound2;
           contact_point = contact_point2;
@@ -348,9 +349,10 @@ class HeightFieldShapeCollisionTraversalNode
 
   /// @brief Intersection testing between leaves (one Convex and one shape)
   void leafCollides(unsigned int b1, unsigned int /*b2*/,
-                    FCL_REAL& sqrDistLowerBound) const {
-    if (this->enable_statistics) this->num_leaf_tests++;
-    const HFNode<BV>& node = this->model1->getBV(b1);
+                    FCL_REAL &sqrDistLowerBound) const {
+    if (this->enable_statistics)
+      this->num_leaf_tests++;
+    const HFNode<BV> &node = this->model1->getBV(b1);
 
     // Split quadrilateral primitives into two convex shapes corresponding to
     // polyhedron with triangular bases. This is essential to keep the convexity
@@ -379,9 +381,9 @@ class HeightFieldShapeCollisionTraversalNode
     if (distToCollision <= this->request.collision_distance_threshold) {
       sqrDistLowerBound = 0;
       if (this->request.num_max_contacts > this->result->numContacts()) {
-        this->result->addContact(Contact(this->model1, this->model2, (int)b1,
-                                         (int)Contact::NONE, .5 * (c1 + c2),
-                                         (c2 - c1).normalized(), -distance));
+        this->result->addContact(Contact(
+            this->model1, this->model2, (int)b1, (int)Contact::NONE,
+            FCL_REAL(.5) * (c1 + c2), (c2 - c1).normalized(), -distance));
       }
     } else if (collision && this->request.security_margin >= 0) {
       sqrDistLowerBound = 0;
@@ -394,18 +396,19 @@ class HeightFieldShapeCollisionTraversalNode
     } else
       sqrDistLowerBound = distToCollision * distToCollision;
 
-    //    const Vec3f c1 = contact_point - distance * 0.5 * normal;
-    //    const Vec3f c2 = contact_point + distance * 0.5 * normal;
+    //    const Vec3f c1 = contact_point - distance * FCL_REAL(FCL_REAL(0.)5) *
+    //    normal; const Vec3f c2 = contact_point + distance *
+    //    FCL_REAL(FCL_REAL(0.)5) * normal;
     internal::updateDistanceLowerBoundFromLeaf(this->request, *this->result,
                                                distToCollision, c1, c2);
 
     assert(this->result->isCollision() || sqrDistLowerBound > 0);
   }
 
-  const GJKSolver* nsolver;
+  const GJKSolver *nsolver;
 
-  const HeightField<BV>* model1;
-  const S* model2;
+  const HeightField<BV> *model1;
+  const S *model2;
   BV model2_bv;
 
   Array2d shape_inflation;
@@ -424,7 +427,7 @@ class HeightFieldShapeCollisionTraversalNode
 template <typename BV, typename S,
           int _Options = RelativeTransformationIsIdentity>
 class HeightFieldShapeDistanceTraversalNode : public DistanceTraversalNodeBase {
- public:
+public:
   typedef DistanceTraversalNodeBase Base;
 
   enum {
@@ -437,7 +440,7 @@ class HeightFieldShapeDistanceTraversalNode : public DistanceTraversalNodeBase {
     model2 = NULL;
 
     num_leaf_tests = 0;
-    query_time_seconds = 0.0;
+    query_time_seconds = FCL_REAL(0.);
 
     rel_err = 0;
     abs_err = 0;
@@ -462,14 +465,15 @@ class HeightFieldShapeDistanceTraversalNode : public DistanceTraversalNodeBase {
   /// @brief BV culling test in one BVTT node
   FCL_REAL BVDistanceLowerBound(unsigned int b1, unsigned int /*b2*/) const {
     return model1->getBV(b1).bv.distance(
-        model2_bv);  // TODO(jcarpent): tf1 is not taken into account here.
+        model2_bv); // TODO(jcarpent): tf1 is not taken into account here.
   }
 
   /// @brief Distance testing between leaves (one triangle and one shape)
   void leafComputeDistance(unsigned int b1, unsigned int /*b2*/) const {
-    if (this->enable_statistics) this->num_leaf_tests++;
+    if (this->enable_statistics)
+      this->num_leaf_tests++;
 
-    const BVNode<BV>& node = this->model1->getBV(b1);
+    const BVNode<BV> &node = this->model1->getBV(b1);
 
     typedef Convex<Quadrilateral> ConvexQuadrilateral;
     const ConvexQuadrilateral convex =
@@ -496,10 +500,10 @@ class HeightFieldShapeDistanceTraversalNode : public DistanceTraversalNodeBase {
   FCL_REAL rel_err;
   FCL_REAL abs_err;
 
-  const GJKSolver* nsolver;
+  const GJKSolver *nsolver;
 
-  const HeightField<BV>* model1;
-  const S* model2;
+  const HeightField<BV> *model1;
+  const S *model2;
   BV model2_bv;
 
   mutable int num_bv_tests;
@@ -509,8 +513,8 @@ class HeightFieldShapeDistanceTraversalNode : public DistanceTraversalNodeBase {
 
 /// @}
 
-}  // namespace fcl
-}  // namespace hpp
+} // namespace fcl
+} // namespace hpp
 
 /// @endcond
 

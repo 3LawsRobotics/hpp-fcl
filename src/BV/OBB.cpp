@@ -37,9 +37,9 @@
 
 #include <hpp/fcl/BV/OBB.h>
 #include <hpp/fcl/BVH/BVH_utility.h>
-#include <hpp/fcl/math/transform.h>
 #include <hpp/fcl/collision_data.h>
 #include <hpp/fcl/internal/tools.h>
+#include <hpp/fcl/math/transform.h>
 
 #include <iostream>
 #include <limits>
@@ -48,20 +48,21 @@ namespace hpp {
 namespace fcl {
 
 /// @brief Compute the 8 vertices of a OBB
-inline void computeVertices(const OBB& b, Vec3f vertices[8]) {
+inline void computeVertices(const OBB &b, Vec3f vertices[8]) {
   Matrix3f extAxes(b.axes * b.extent.asDiagonal());
-  vertices[0].noalias() = b.To + extAxes * Vec3f(-1, -1, -1);
-  vertices[1].noalias() = b.To + extAxes * Vec3f(1, -1, -1);
-  vertices[2].noalias() = b.To + extAxes * Vec3f(1, 1, -1);
-  vertices[3].noalias() = b.To + extAxes * Vec3f(-1, 1, -1);
-  vertices[4].noalias() = b.To + extAxes * Vec3f(-1, -1, 1);
-  vertices[5].noalias() = b.To + extAxes * Vec3f(1, -1, 1);
+  vertices[0].noalias() =
+      b.To + extAxes * Vec3f(FCL_REAL(-1), FCL_REAL(-1), FCL_REAL(-1));
+  vertices[1].noalias() = b.To + extAxes * Vec3f(1, FCL_REAL(-1), FCL_REAL(-1));
+  vertices[2].noalias() = b.To + extAxes * Vec3f(1, 1, FCL_REAL(-1));
+  vertices[3].noalias() = b.To + extAxes * Vec3f(FCL_REAL(-1), 1, FCL_REAL(-1));
+  vertices[4].noalias() = b.To + extAxes * Vec3f(FCL_REAL(-1), FCL_REAL(-1), 1);
+  vertices[5].noalias() = b.To + extAxes * Vec3f(1, FCL_REAL(-1), 1);
   vertices[6].noalias() = b.To + extAxes * Vec3f(1, 1, 1);
-  vertices[7].noalias() = b.To + extAxes * Vec3f(-1, 1, 1);
+  vertices[7].noalias() = b.To + extAxes * Vec3f(FCL_REAL(-1), 1, 1);
 }
 
 /// @brief OBB merge method when the centers of two smaller OBB are far away
-inline OBB merge_largedist(const OBB& b1, const OBB& b2) {
+inline OBB merge_largedist(const OBB &b1, const OBB &b2) {
   OBB b;
   Vec3f vertex[16];
   computeVertices(b1, vertex);
@@ -113,11 +114,12 @@ inline OBB merge_largedist(const OBB& b1, const OBB& b2) {
 }
 
 /// @brief OBB merge method when the centers of two smaller OBB are close
-inline OBB merge_smalldist(const OBB& b1, const OBB& b2) {
+inline OBB merge_smalldist(const OBB &b1, const OBB &b2) {
   OBB b;
-  b.To = (b1.To + b2.To) * 0.5;
+  b.To = (b1.To + b2.To) * FCL_REAL(0.5);
   Quaternion3f q0(b1.axes), q1(b2.axes);
-  if (q0.dot(q1) < 0) q1.coeffs() *= -1;
+  if (q0.dot(q1) < 0)
+    q1.coeffs() *= FCL_REAL(-1);
 
   Quaternion3f q((q0.coeffs() + q1.coeffs()).normalized());
   b.axes = q.toRotationMatrix();
@@ -152,17 +154,17 @@ inline OBB merge_smalldist(const OBB& b1, const OBB& b2) {
   }
 
   for (int j = 0; j < 3; ++j) {
-    b.To.noalias() += (b.axes.col(j) * (0.5 * (pmax[j] + pmin[j])));
-    b.extent[j] = 0.5 * (pmax[j] - pmin[j]);
+    b.To.noalias() += (b.axes.col(j) * (FCL_REAL(0.5) * (pmax[j] + pmin[j])));
+    b.extent[j] = FCL_REAL(0.5) * (pmax[j] - pmin[j]);
   }
 
   return b;
 }
 
-bool obbDisjoint(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
-                 const Vec3f& b) {
+bool obbDisjoint(const Matrix3f &B, const Vec3f &T, const Vec3f &a,
+                 const Vec3f &b) {
   FCL_REAL t, s;
-  const FCL_REAL reps = 1e-6;
+  const FCL_REAL reps = 1e-6f;
 
   Matrix3f Bf(B.array().abs() + reps);
   // Bf += reps;
@@ -170,50 +172,56 @@ bool obbDisjoint(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
   // if any of these tests are one-sided, then the polyhedra are disjoint
 
   // A1 x A2 = A0
-  t = ((T[0] < 0.0) ? -T[0] : T[0]);
+  t = ((T[0] < FCL_REAL(0.)) ? -T[0] : T[0]);
 
   // if(t > (a[0] + Bf.dotX(b)))
-  if (t > (a[0] + Bf.row(0).dot(b))) return true;
+  if (t > (a[0] + Bf.row(0).dot(b)))
+    return true;
 
   // B1 x B2 = B0
   // s =  B.transposeDotX(T);
   s = B.col(0).dot(T);
-  t = ((s < 0.0) ? -s : s);
+  t = ((s < FCL_REAL(0.)) ? -s : s);
 
   // if(t > (b[0] + Bf.transposeDotX(a)))
-  if (t > (b[0] + Bf.col(0).dot(a))) return true;
+  if (t > (b[0] + Bf.col(0).dot(a)))
+    return true;
 
   // A2 x A0 = A1
-  t = ((T[1] < 0.0) ? -T[1] : T[1]);
+  t = ((T[1] < FCL_REAL(0.)) ? -T[1] : T[1]);
 
   // if(t > (a[1] + Bf.dotY(b)))
-  if (t > (a[1] + Bf.row(1).dot(b))) return true;
+  if (t > (a[1] + Bf.row(1).dot(b)))
+    return true;
 
   // A0 x A1 = A2
-  t = ((T[2] < 0.0) ? -T[2] : T[2]);
+  t = ((T[2] < FCL_REAL(0.)) ? -T[2] : T[2]);
 
   // if(t > (a[2] + Bf.dotZ(b)))
-  if (t > (a[2] + Bf.row(2).dot(b))) return true;
+  if (t > (a[2] + Bf.row(2).dot(b)))
+    return true;
 
   // B2 x B0 = B1
   // s = B.transposeDotY(T);
   s = B.col(1).dot(T);
-  t = ((s < 0.0) ? -s : s);
+  t = ((s < FCL_REAL(0.)) ? -s : s);
 
   // if(t > (b[1] + Bf.transposeDotY(a)))
-  if (t > (b[1] + Bf.col(1).dot(a))) return true;
+  if (t > (b[1] + Bf.col(1).dot(a)))
+    return true;
 
   // B0 x B1 = B2
   // s = B.transposeDotZ(T);
   s = B.col(2).dot(T);
-  t = ((s < 0.0) ? -s : s);
+  t = ((s < FCL_REAL(0.)) ? -s : s);
 
   // if(t > (b[2] + Bf.transposeDotZ(a)))
-  if (t > (b[2] + Bf.col(2).dot(a))) return true;
+  if (t > (b[2] + Bf.col(2).dot(a)))
+    return true;
 
   // A0 x B0
   s = T[2] * B(1, 0) - T[1] * B(2, 0);
-  t = ((s < 0.0) ? -s : s);
+  t = ((s < FCL_REAL(0.)) ? -s : s);
 
   if (t >
       (a[1] * Bf(2, 0) + a[2] * Bf(1, 0) + b[1] * Bf(0, 2) + b[2] * Bf(0, 1)))
@@ -221,7 +229,7 @@ bool obbDisjoint(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
 
   // A0 x B1
   s = T[2] * B(1, 1) - T[1] * B(2, 1);
-  t = ((s < 0.0) ? -s : s);
+  t = ((s < FCL_REAL(0.)) ? -s : s);
 
   if (t >
       (a[1] * Bf(2, 1) + a[2] * Bf(1, 1) + b[0] * Bf(0, 2) + b[2] * Bf(0, 0)))
@@ -229,7 +237,7 @@ bool obbDisjoint(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
 
   // A0 x B2
   s = T[2] * B(1, 2) - T[1] * B(2, 2);
-  t = ((s < 0.0) ? -s : s);
+  t = ((s < FCL_REAL(0.)) ? -s : s);
 
   if (t >
       (a[1] * Bf(2, 2) + a[2] * Bf(1, 2) + b[0] * Bf(0, 1) + b[1] * Bf(0, 0)))
@@ -237,7 +245,7 @@ bool obbDisjoint(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
 
   // A1 x B0
   s = T[0] * B(2, 0) - T[2] * B(0, 0);
-  t = ((s < 0.0) ? -s : s);
+  t = ((s < FCL_REAL(0.)) ? -s : s);
 
   if (t >
       (a[0] * Bf(2, 0) + a[2] * Bf(0, 0) + b[1] * Bf(1, 2) + b[2] * Bf(1, 1)))
@@ -245,7 +253,7 @@ bool obbDisjoint(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
 
   // A1 x B1
   s = T[0] * B(2, 1) - T[2] * B(0, 1);
-  t = ((s < 0.0) ? -s : s);
+  t = ((s < FCL_REAL(0.)) ? -s : s);
 
   if (t >
       (a[0] * Bf(2, 1) + a[2] * Bf(0, 1) + b[0] * Bf(1, 2) + b[2] * Bf(1, 0)))
@@ -253,7 +261,7 @@ bool obbDisjoint(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
 
   // A1 x B2
   s = T[0] * B(2, 2) - T[2] * B(0, 2);
-  t = ((s < 0.0) ? -s : s);
+  t = ((s < FCL_REAL(0.)) ? -s : s);
 
   if (t >
       (a[0] * Bf(2, 2) + a[2] * Bf(0, 2) + b[0] * Bf(1, 1) + b[1] * Bf(1, 0)))
@@ -261,7 +269,7 @@ bool obbDisjoint(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
 
   // A2 x B0
   s = T[1] * B(0, 0) - T[0] * B(1, 0);
-  t = ((s < 0.0) ? -s : s);
+  t = ((s < FCL_REAL(0.)) ? -s : s);
 
   if (t >
       (a[0] * Bf(1, 0) + a[1] * Bf(0, 0) + b[1] * Bf(2, 2) + b[2] * Bf(2, 1)))
@@ -269,7 +277,7 @@ bool obbDisjoint(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
 
   // A2 x B1
   s = T[1] * B(0, 1) - T[0] * B(1, 1);
-  t = ((s < 0.0) ? -s : s);
+  t = ((s < FCL_REAL(0.)) ? -s : s);
 
   if (t >
       (a[0] * Bf(1, 1) + a[1] * Bf(0, 1) + b[0] * Bf(2, 2) + b[2] * Bf(2, 0)))
@@ -277,7 +285,7 @@ bool obbDisjoint(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
 
   // A2 x B2
   s = T[1] * B(0, 2) - T[0] * B(1, 2);
-  t = ((s < 0.0) ? -s : s);
+  t = ((s < FCL_REAL(0.)) ? -s : s);
 
   if (t >
       (a[0] * Bf(1, 2) + a[1] * Bf(0, 2) + b[0] * Bf(2, 1) + b[1] * Bf(2, 0)))
@@ -287,37 +295,41 @@ bool obbDisjoint(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
 }
 
 namespace internal {
-inline FCL_REAL obbDisjoint_check_A_axis(const Vec3f& T, const Vec3f& a,
-                                         const Vec3f& b, const Matrix3f& Bf) {
+inline FCL_REAL obbDisjoint_check_A_axis(const Vec3f &T, const Vec3f &a,
+                                         const Vec3f &b, const Matrix3f &Bf) {
   // |T| - |B| * b - a
   Vec3f AABB_corner(T.cwiseAbs() - a);
   AABB_corner.noalias() -= Bf * b;
   return AABB_corner.array().max(FCL_REAL(0)).matrix().squaredNorm();
 }
 
-inline FCL_REAL obbDisjoint_check_B_axis(const Matrix3f& B, const Vec3f& T,
-                                         const Vec3f& a, const Vec3f& b,
-                                         const Matrix3f& Bf) {
+inline FCL_REAL obbDisjoint_check_B_axis(const Matrix3f &B, const Vec3f &T,
+                                         const Vec3f &a, const Vec3f &b,
+                                         const Matrix3f &Bf) {
   // Bf = |B|
   // | B^T T| - Bf^T * a - b
   FCL_REAL s, t = 0;
   s = std::abs(B.col(0).dot(T)) - Bf.col(0).dot(a) - b[0];
-  if (s > 0) t += s * s;
+  if (s > 0)
+    t += s * s;
   s = std::abs(B.col(1).dot(T)) - Bf.col(1).dot(a) - b[1];
-  if (s > 0) t += s * s;
+  if (s > 0)
+    t += s * s;
   s = std::abs(B.col(2).dot(T)) - Bf.col(2).dot(a) - b[2];
-  if (s > 0) t += s * s;
+  if (s > 0)
+    t += s * s;
   return t;
 }
 
 template <int ib, int jb = (ib + 1) % 3, int kb = (ib + 2) % 3>
 struct HPP_FCL_LOCAL obbDisjoint_check_Ai_cross_Bi {
-  static inline bool run(int ia, int ja, int ka, const Matrix3f& B,
-                         const Vec3f& T, const Vec3f& a, const Vec3f& b,
-                         const Matrix3f& Bf, const FCL_REAL& breakDistance2,
-                         FCL_REAL& squaredLowerBoundDistance) {
+  static inline bool run(int ia, int ja, int ka, const Matrix3f &B,
+                         const Vec3f &T, const Vec3f &a, const Vec3f &b,
+                         const Matrix3f &Bf, const FCL_REAL &breakDistance2,
+                         FCL_REAL &squaredLowerBoundDistance) {
     FCL_REAL sinus2 = 1 - Bf(ia, ib) * Bf(ia, ib);
-    if (sinus2 < 1e-6) return false;
+    if (sinus2 < 1e-6f)
+      return false;
 
     const FCL_REAL s = T[ka] * B(ja, ib) - T[ja] * B(ka, ib);
 
@@ -334,7 +346,7 @@ struct HPP_FCL_LOCAL obbDisjoint_check_Ai_cross_Bi {
     return false;
   }
 };
-}  // namespace internal
+} // namespace internal
 
 // B, T orientation and position of 2nd OBB in frame of 1st OBB,
 // a extent of 1st OBB,
@@ -342,10 +354,10 @@ struct HPP_FCL_LOCAL obbDisjoint_check_Ai_cross_Bi {
 //
 // This function tests whether bounding boxes should be broken down.
 //
-bool obbDisjointAndLowerBoundDistance(const Matrix3f& B, const Vec3f& T,
-                                      const Vec3f& a_, const Vec3f& b_,
-                                      const CollisionRequest& request,
-                                      FCL_REAL& squaredLowerBoundDistance) {
+bool obbDisjointAndLowerBoundDistance(const Matrix3f &B, const Vec3f &T,
+                                      const Vec3f &a_, const Vec3f &b_,
+                                      const CollisionRequest &request,
+                                      FCL_REAL &squaredLowerBoundDistance) {
   assert(request.security_margin >
              -2 * (std::min)(a_.minCoeff(), b_.minCoeff()) -
                  10 * Eigen::NumTraits<FCL_REAL>::epsilon() &&
@@ -365,11 +377,13 @@ bool obbDisjointAndLowerBoundDistance(const Matrix3f& B, const Vec3f& T,
 
   // Corner of b axis aligned bounding box the closest to the origin
   squaredLowerBoundDistance = internal::obbDisjoint_check_A_axis(T, a, b, Bf);
-  if (squaredLowerBoundDistance > breakDistance2) return true;
+  if (squaredLowerBoundDistance > breakDistance2)
+    return true;
 
   squaredLowerBoundDistance =
       internal::obbDisjoint_check_B_axis(B, T, a, b, Bf);
-  if (squaredLowerBoundDistance > breakDistance2) return true;
+  if (squaredLowerBoundDistance > breakDistance2)
+    return true;
 
   // Ai x Bj
   int ja = 1, ka = 2;
@@ -393,7 +407,7 @@ bool obbDisjointAndLowerBoundDistance(const Matrix3f& B, const Vec3f& T,
   return false;
 }
 
-bool OBB::overlap(const OBB& other) const {
+bool OBB::overlap(const OBB &other) const {
   /// compute what transform [R,T] that takes us from cs1 to cs2.
   /// [R,T] = [R1,T1]'[R2,T2] = [R1',-R1'T][R2,T2] = [R1'R2, R1'(T2-T1)]
   /// First compute the rotation part, then translation part
@@ -403,8 +417,8 @@ bool OBB::overlap(const OBB& other) const {
   return !obbDisjoint(R, T, extent, other.extent);
 }
 
-bool OBB::overlap(const OBB& other, const CollisionRequest& request,
-                  FCL_REAL& sqrDistLowerBound) const {
+bool OBB::overlap(const OBB &other, const CollisionRequest &request,
+                  FCL_REAL &sqrDistLowerBound) const {
   /// compute what transform [R,T] that takes us from cs1 to cs2.
   /// [R,T] = [R1,T1]'[R2,T2] = [R1',-R1'T][R2,T2] = [R1'R2, R1'(T2-T1)]
   /// First compute the rotation part, then translation part
@@ -423,21 +437,24 @@ bool OBB::overlap(const OBB& other, const CollisionRequest& request,
                                            sqrDistLowerBound);
 }
 
-bool OBB::contain(const Vec3f& p) const {
+bool OBB::contain(const Vec3f &p) const {
   Vec3f local_p(p - To);
   FCL_REAL proj = local_p.dot(axes.col(0));
-  if ((proj > extent[0]) || (proj < -extent[0])) return false;
+  if ((proj > extent[0]) || (proj < -extent[0]))
+    return false;
 
   proj = local_p.dot(axes.col(1));
-  if ((proj > extent[1]) || (proj < -extent[1])) return false;
+  if ((proj > extent[1]) || (proj < -extent[1]))
+    return false;
 
   proj = local_p.dot(axes.col(2));
-  if ((proj > extent[2]) || (proj < -extent[2])) return false;
+  if ((proj > extent[2]) || (proj < -extent[2]))
+    return false;
 
   return true;
 }
 
-OBB& OBB::operator+=(const Vec3f& p) {
+OBB &OBB::operator+=(const Vec3f &p) {
   OBB bvp;
   bvp.To = p;
   bvp.axes.noalias() = axes;
@@ -447,7 +464,7 @@ OBB& OBB::operator+=(const Vec3f& p) {
   return *this;
 }
 
-OBB OBB::operator+(const OBB& other) const {
+OBB OBB::operator+(const OBB &other) const {
   Vec3f center_diff = To - other.To;
   FCL_REAL max_extent = std::max(std::max(extent[0], extent[1]), extent[2]);
   FCL_REAL max_extent2 =
@@ -459,13 +476,14 @@ OBB OBB::operator+(const OBB& other) const {
   }
 }
 
-FCL_REAL OBB::distance(const OBB& /*other*/, Vec3f* /*P*/, Vec3f* /*Q*/) const {
+FCL_REAL OBB::distance(const OBB & /*other*/, Vec3f * /*P*/,
+                       Vec3f * /*Q*/) const {
   std::cerr << "OBB distance not implemented!" << std::endl;
-  return 0.0;
+  return FCL_REAL(0.);
 }
 
-bool overlap(const Matrix3f& R0, const Vec3f& T0, const OBB& b1,
-             const OBB& b2) {
+bool overlap(const Matrix3f &R0, const Vec3f &T0, const OBB &b1,
+             const OBB &b2) {
   Vec3f Ttemp(R0.transpose() * (b2.To - T0) - b1.To);
   Vec3f T(b1.axes.transpose() * Ttemp);
   Matrix3f R(b1.axes.transpose() * R0.transpose() * b2.axes);
@@ -473,8 +491,8 @@ bool overlap(const Matrix3f& R0, const Vec3f& T0, const OBB& b1,
   return !obbDisjoint(R, T, b1.extent, b2.extent);
 }
 
-bool overlap(const Matrix3f& R0, const Vec3f& T0, const OBB& b1, const OBB& b2,
-             const CollisionRequest& request, FCL_REAL& sqrDistLowerBound) {
+bool overlap(const Matrix3f &R0, const Vec3f &T0, const OBB &b1, const OBB &b2,
+             const CollisionRequest &request, FCL_REAL &sqrDistLowerBound) {
   Vec3f Ttemp(R0.transpose() * (b2.To - T0) - b1.To);
   Vec3f T(b1.axes.transpose() * Ttemp);
   Matrix3f R(b1.axes.transpose() * R0.transpose() * b2.axes);
@@ -483,12 +501,12 @@ bool overlap(const Matrix3f& R0, const Vec3f& T0, const OBB& b1, const OBB& b2,
                                            sqrDistLowerBound);
 }
 
-OBB translate(const OBB& bv, const Vec3f& t) {
+OBB translate(const OBB &bv, const Vec3f &t) {
   OBB res(bv);
   res.To += t;
   return res;
 }
 
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp

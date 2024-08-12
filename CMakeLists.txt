@@ -50,6 +50,7 @@ SET(DOXYGEN_USE_TEMPLATE_CSS TRUE)
 # Need to be set before including base.cmake
 # ----------------------------------------------------
 OPTION(INSTALL_DOCUMENTATION "Generate and install the documentation" OFF)
+option(BUILD_TESTING "" OFF)
 
 # Check if the submodule cmake have been initialized
 set(JRL_CMAKE_MODULES "${CMAKE_CURRENT_LIST_DIR}/cmake")
@@ -88,7 +89,7 @@ APPLY_DEFAULT_APPLE_CONFIGURATION()
 COMPUTE_PROJECT_ARGS(PROJECT_ARGS LANGUAGES CXX)
 PROJECT(${PROJECT_NAME} ${PROJECT_ARGS})
 
-OPTION(BUILD_PYTHON_INTERFACE "Build the python bindings" ON)
+OPTION(BUILD_PYTHON_INTERFACE "Build the python bindings" OFF)
 CMAKE_DEPENDENT_OPTION(GENERATE_PYTHON_STUBS "Generate the Python stubs associated to the Python library" OFF BUILD_PYTHON_INTERFACE OFF)
 
 #IF(WIN32)

@@ -48,20 +48,18 @@ namespace detail {
 namespace implementation_array {
 
 //==============================================================================
-template <typename BV>
-bool NodeBase<BV>::isLeaf() const {
-  return (children[1] == (size_t)(-1));
+template <typename BV> bool NodeBase<BV>::isLeaf() const {
+  return (children[1] == (size_t)(FCL_REAL(-1)));
 }
 
 //==============================================================================
-template <typename BV>
-bool NodeBase<BV>::isInternal() const {
+template <typename BV> bool NodeBase<BV>::isInternal() const {
   return !isLeaf();
 }
 
-}  // namespace implementation_array
-}  // namespace detail
-}  // namespace fcl
-}  // namespace hpp
+} // namespace implementation_array
+} // namespace detail
+} // namespace fcl
+} // namespace hpp
 
 #endif

@@ -7,10 +7,10 @@
 
 #include "hpp/fcl/BVH/BVH_model.h"
 
-#include "hpp/fcl/serialization/fwd.h"
 #include "hpp/fcl/serialization/BV_node.h"
 #include "hpp/fcl/serialization/BV_splitter.h"
 #include "hpp/fcl/serialization/collision_object.h"
+#include "hpp/fcl/serialization/fwd.h"
 #include "hpp/fcl/serialization/memory.h"
 #include "hpp/fcl/serialization/triangle.h"
 
@@ -23,7 +23,7 @@ struct BVHModelBaseAccessor : hpp::fcl::BVHModelBase {
   using Base::num_tris_allocated;
   using Base::num_vertices_allocated;
 };
-}  // namespace internal
+} // namespace internal
 
 template <class Archive>
 void save(Archive &ar, const hpp::fcl::BVHModelBase &bvh_model,
@@ -46,7 +46,7 @@ void save(Archive &ar, const hpp::fcl::BVHModelBase &bvh_model,
   if (bvh_model.num_vertices > 0) {
     typedef Eigen::Matrix<FCL_REAL, 3, Eigen::Dynamic> AsVertixMatrix;
     const Eigen::Map<const AsVertixMatrix> vertices_map(
-        reinterpret_cast<const double *>(bvh_model.vertices), 3,
+        reinterpret_cast<const FCL_REAL *>(bvh_model.vertices), 3,
         bvh_model.num_vertices);
     ar &make_nvp("vertices", vertices_map);
   }
@@ -67,7 +67,7 @@ void save(Archive &ar, const hpp::fcl::BVHModelBase &bvh_model,
     ar << make_nvp("has_prev_vertices", has_prev_vertices);
     typedef Eigen::Matrix<FCL_REAL, 3, Eigen::Dynamic> AsVertixMatrix;
     const Eigen::Map<const AsVertixMatrix> prev_vertices_map(
-        reinterpret_cast<const double *>(bvh_model.prev_vertices), 3,
+        reinterpret_cast<const FCL_REAL *>(bvh_model.prev_vertices), 3,
         bvh_model.num_vertices);
     ar &make_nvp("prev_vertices", prev_vertices_map);
   } else {
@@ -102,12 +102,13 @@ void load(Archive &ar, hpp::fcl::BVHModelBase &bvh_model,
     delete[] bvh_model.vertices;
     bvh_model.vertices = NULL;
     bvh_model.num_vertices = num_vertices;
-    if (num_vertices > 0) bvh_model.vertices = new Vec3f[num_vertices];
+    if (num_vertices > 0)
+      bvh_model.vertices = new Vec3f[num_vertices];
   }
   if (num_vertices > 0) {
     typedef Eigen::Matrix<FCL_REAL, 3, Eigen::Dynamic> AsVertixMatrix;
     Eigen::Map<AsVertixMatrix> vertices_map(
-        reinterpret_cast<double *>(bvh_model.vertices), 3,
+        reinterpret_cast<FCL_REAL *>(bvh_model.vertices), 3,
         bvh_model.num_vertices);
     ar >> make_nvp("vertices", vertices_map);
   } else
@@ -120,7 +121,8 @@ void load(Archive &ar, hpp::fcl::BVHModelBase &bvh_model,
     delete[] bvh_model.tri_indices;
     bvh_model.tri_indices = NULL;
     bvh_model.num_tris = num_tris;
-    if (num_tris > 0) bvh_model.tri_indices = new Triangle[num_tris];
+    if (num_tris > 0)
+      bvh_model.tri_indices = new Triangle[num_tris];
   }
   if (num_tris > 0) {
     typedef Eigen::Matrix<Triangle::index_type, 3, Eigen::Dynamic>
@@ -144,12 +146,13 @@ void load(Archive &ar, hpp::fcl::BVHModelBase &bvh_model,
     if (num_vertices != bvh_model.num_vertices) {
       delete[] bvh_model.prev_vertices;
       bvh_model.prev_vertices = NULL;
-      if (num_vertices > 0) bvh_model.prev_vertices = new Vec3f[num_vertices];
+      if (num_vertices > 0)
+        bvh_model.prev_vertices = new Vec3f[num_vertices];
     }
     if (num_vertices > 0) {
       typedef Eigen::Matrix<FCL_REAL, 3, Eigen::Dynamic> AsVertixMatrix;
       Eigen::Map<AsVertixMatrix> prev_vertices_map(
-          reinterpret_cast<double *>(bvh_model.prev_vertices), 3,
+          reinterpret_cast<FCL_REAL *>(bvh_model.prev_vertices), 3,
           bvh_model.num_vertices);
       ar &make_nvp("prev_vertices", prev_vertices_map);
     }
@@ -163,15 +166,14 @@ void load(Archive &ar, hpp::fcl::BVHModelBase &bvh_model,
 HPP_FCL_SERIALIZATION_SPLIT(hpp::fcl::BVHModelBase)
 
 namespace internal {
-template <typename BV>
-struct BVHModelAccessor : hpp::fcl::BVHModel<BV> {
+template <typename BV> struct BVHModelAccessor : hpp::fcl::BVHModel<BV> {
   typedef hpp::fcl::BVHModel<BV> Base;
   using Base::bvs;
   using Base::num_bvs;
   using Base::num_bvs_allocated;
   using Base::primitive_indices;
 };
-}  // namespace internal
+} // namespace internal
 
 template <class Archive, typename BV>
 void serialize(Archive &ar, hpp::fcl::BVHModel<BV> &bvh_model,
@@ -237,7 +239,7 @@ void save(Archive &ar, const hpp::fcl::BVHModel<BV> &bvh_model_,
         make_array(
             reinterpret_cast<const char *>(bvh_model.bvs),
             sizeof(Node) *
-                (std::size_t)bvh_model.num_bvs));  // Assuming BVs are POD.
+                (std::size_t)bvh_model.num_bvs)); // Assuming BVs are POD.
   } else {
     const bool with_bvs = false;
     ar &make_nvp("with_bvs", with_bvs);
@@ -284,7 +286,8 @@ void load(Archive &ar, hpp::fcl::BVHModel<BV> &bvh_model_,
       delete[] bvh_model.bvs;
       bvh_model.bvs = NULL;
       bvh_model.num_bvs = num_bvs;
-      if (num_bvs > 0) bvh_model.bvs = new BVNode<BV>[num_bvs];
+      if (num_bvs > 0)
+        bvh_model.bvs = new BVNode<BV>[num_bvs];
     }
     if (num_bvs > 0) {
       ar >> make_nvp("bvs", make_array(reinterpret_cast<char *>(bvh_model.bvs),
@@ -294,22 +297,22 @@ void load(Archive &ar, hpp::fcl::BVHModel<BV> &bvh_model_,
   }
 }
 
-}  // namespace serialization
-}  // namespace boost
+} // namespace serialization
+} // namespace boost
 
 namespace hpp {
 namespace fcl {
 
 namespace internal {
 template <typename BV>
-struct memory_footprint_evaluator< ::hpp::fcl::BVHModel<BV> > {
+struct memory_footprint_evaluator<::hpp::fcl::BVHModel<BV>> {
   static size_t run(const ::hpp::fcl::BVHModel<BV> &bvh_model) {
     return static_cast<size_t>(bvh_model.memUsage(false));
   }
 };
-}  // namespace internal
+} // namespace internal
 
-}  // namespace fcl
-}  // namespace hpp
+} // namespace fcl
+} // namespace hpp
 
-#endif  // ifndef HPP_FCL_SERIALIZATION_BVH_MODEL_H
+#endif // ifndef HPP_FCL_SERIALIZATION_BVH_MODEL_H

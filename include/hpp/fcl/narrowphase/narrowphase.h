@@ -353,7 +353,7 @@ struct HPP_FCL_DLLAPI GJKSolver {
   /// @brief Default constructor for GJK algorithm
   GJKSolver() {
     gjk_max_iterations = 128;
-    gjk_tolerance = 1e-6;
+    gjk_tolerance = 1e-6f;
     epa_max_face_num = 128;
     epa_max_vertex_num = 64;
     epa_max_iterations = 255;
@@ -381,7 +381,7 @@ struct HPP_FCL_DLLAPI GJKSolver {
     epa_max_face_num = 128;
     epa_max_vertex_num = 64;
     epa_max_iterations = 255;
-    epa_tolerance = 1e-6;
+    epa_tolerance = 1e-6f;
 
     set(request);
   }
@@ -419,7 +419,7 @@ struct HPP_FCL_DLLAPI GJKSolver {
     epa_max_face_num = 128;
     epa_max_vertex_num = 64;
     epa_max_iterations = 255;
-    epa_tolerance = 1e-6;
+    epa_tolerance = 1e-6f;
 
     set(request);
   }

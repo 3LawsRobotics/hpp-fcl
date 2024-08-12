@@ -36,8 +36,8 @@
 /** \author Jia Pan */
 
 #include <hpp/fcl/collision.h>
-#include <hpp/fcl/collision_utility.h>
 #include <hpp/fcl/collision_func_matrix.h>
+#include <hpp/fcl/collision_utility.h>
 #include <hpp/fcl/narrowphase/narrowphase.h>
 
 #include <iostream>
@@ -45,7 +45,7 @@
 namespace hpp {
 namespace fcl {
 
-CollisionFunctionMatrix& getCollisionFunctionLookTable() {
+CollisionFunctionMatrix &getCollisionFunctionLookTable() {
   static CollisionFunctionMatrix table;
   return table;
 }
@@ -56,7 +56,7 @@ void CollisionResult::swapObjects() {
        it != contacts.end(); ++it) {
     std::swap(it->o1, it->o2);
     std::swap(it->b1, it->b2);
-    it->normal *= -1;
+    it->normal *= FCL_REAL(-1);
   }
 }
 
@@ -67,9 +67,9 @@ std::size_t collide(const CollisionObject* o1, const CollisionObject* o2,
                  result);
 }
 
-std::size_t collide(const CollisionGeometry* o1, const Transform3f& tf1,
-                    const CollisionGeometry* o2, const Transform3f& tf2,
-                    const CollisionRequest& request, CollisionResult& result) {
+std::size_t collide(const CollisionGeometry *o1, const Transform3f &tf1,
+                    const CollisionGeometry *o2, const Transform3f &tf2,
+                    const CollisionRequest &request, CollisionResult &result) {
   // If securit margin is set to -infinity, return that there is no collision
   if (request.security_margin == -std::numeric_limits<FCL_REAL>::infinity()) {
     result.clear();
@@ -78,7 +78,7 @@ std::size_t collide(const CollisionGeometry* o1, const Transform3f& tf1,
 
   GJKSolver solver(request);
 
-  const CollisionFunctionMatrix& looktable = getCollisionFunctionLookTable();
+  const CollisionFunctionMatrix &looktable = getCollisionFunctionLookTable();
   std::size_t res;
   if (request.num_max_contacts == 0) {
     HPP_FCL_THROW_PRETTY("Invalid number of max contacts (current value is 0).",
@@ -128,10 +128,10 @@ std::size_t collide(const CollisionGeometry* o1, const Transform3f& tf1,
   return res;
 }
 
-ComputeCollision::ComputeCollision(const CollisionGeometry* o1,
-                                   const CollisionGeometry* o2)
+ComputeCollision::ComputeCollision(const CollisionGeometry *o1,
+                                   const CollisionGeometry *o2)
     : o1(o1), o2(o2) {
-  const CollisionFunctionMatrix& looktable = getCollisionFunctionLookTable();
+  const CollisionFunctionMatrix &looktable = getCollisionFunctionLookTable();
 
   OBJECT_TYPE object_type1 = o1->getObjectType();
   NODE_TYPE node_type1 = o1->getNodeType();
@@ -156,10 +156,10 @@ ComputeCollision::ComputeCollision(const CollisionGeometry* o1,
     func = looktable.collision_matrix[node_type1][node_type2];
 }
 
-std::size_t ComputeCollision::run(const Transform3f& tf1,
-                                  const Transform3f& tf2,
-                                  const CollisionRequest& request,
-                                  CollisionResult& result) const {
+std::size_t ComputeCollision::run(const Transform3f &tf1,
+                                  const Transform3f &tf2,
+                                  const CollisionRequest &request,
+                                  CollisionResult &result) const {
   // If security margin is set to -infinity, return that there is no collision
   if (request.security_margin == -std::numeric_limits<FCL_REAL>::infinity()) {
     result.clear();
@@ -175,10 +175,10 @@ std::size_t ComputeCollision::run(const Transform3f& tf1,
   return res;
 }
 
-std::size_t ComputeCollision::operator()(const Transform3f& tf1,
-                                         const Transform3f& tf2,
-                                         const CollisionRequest& request,
-                                         CollisionResult& result) const
+std::size_t ComputeCollision::operator()(const Transform3f &tf1,
+                                         const Transform3f &tf2,
+                                         const CollisionRequest &request,
+                                         CollisionResult &result) const
 
 {
   solver.set(request);
@@ -200,5 +200,5 @@ std::size_t ComputeCollision::operator()(const Transform3f& tf1,
   return res;
 }
 
-}  // namespace fcl
-}  // namespace hpp
+} // namespace fcl
+} // namespace hpp

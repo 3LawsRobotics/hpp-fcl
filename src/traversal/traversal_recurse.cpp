@@ -41,9 +41,9 @@
 
 namespace hpp {
 namespace fcl {
-void collisionRecurse(CollisionTraversalNodeBase* node, unsigned int b1,
-                      unsigned int b2, BVHFrontList* front_list,
-                      FCL_REAL& sqrDistLowerBound) {
+void collisionRecurse(CollisionTraversalNodeBase *node, unsigned int b1,
+                      unsigned int b2, BVHFrontList *front_list,
+                      FCL_REAL &sqrDistLowerBound) {
   FCL_REAL sqrDistLowerBound1 = 0, sqrDistLowerBound2 = 0;
   bool l1 = node->isFirstNodeLeaf(b1);
   bool l2 = node->isSecondNodeLeaf(b2);
@@ -66,7 +66,8 @@ void collisionRecurse(CollisionTraversalNodeBase* node, unsigned int b1,
     collisionRecurse(node, c1, b2, front_list, sqrDistLowerBound1);
 
     // early stop is disabled is front_list is used
-    if (node->canStop() && !front_list) return;
+    if (node->canStop() && !front_list)
+      return;
 
     collisionRecurse(node, c2, b2, front_list, sqrDistLowerBound2);
     sqrDistLowerBound = std::min(sqrDistLowerBound1, sqrDistLowerBound2);
@@ -77,16 +78,17 @@ void collisionRecurse(CollisionTraversalNodeBase* node, unsigned int b1,
     collisionRecurse(node, b1, c1, front_list, sqrDistLowerBound1);
 
     // early stop is disabled is front_list is used
-    if (node->canStop() && !front_list) return;
+    if (node->canStop() && !front_list)
+      return;
 
     collisionRecurse(node, b1, c2, front_list, sqrDistLowerBound2);
     sqrDistLowerBound = std::min(sqrDistLowerBound1, sqrDistLowerBound2);
   }
 }
 
-void collisionNonRecurse(CollisionTraversalNodeBase* node,
-                         BVHFrontList* front_list,
-                         FCL_REAL& sqrDistLowerBound) {
+void collisionNonRecurse(CollisionTraversalNodeBase *node,
+                         BVHFrontList *front_list,
+                         FCL_REAL &sqrDistLowerBound) {
   typedef std::pair<unsigned int, unsigned int> BVPair_t;
   // typedef std::stack<BVPair_t, std::vector<BVPair_t> > Stack_t;
   typedef std::vector<BVPair_t> Stack_t;
@@ -115,8 +117,10 @@ void collisionNonRecurse(CollisionTraversalNodeBase* node,
       // continue;
       //}
       node->leafCollides(a, b, sdlb);
-      if (sdlb < sqrDistLowerBound) sqrDistLowerBound = sdlb;
-      if (node->canStop() && !front_list) return;
+      if (sdlb < sqrDistLowerBound)
+        sqrDistLowerBound = sdlb;
+      if (node->canStop() && !front_list)
+        return;
       continue;
     }
 
@@ -127,7 +131,8 @@ void collisionNonRecurse(CollisionTraversalNodeBase* node,
 
     // Check the BV
     if (node->BVDisjoints(a, b, sdlb)) {
-      if (sdlb < sqrDistLowerBound) sqrDistLowerBound = sdlb;
+      if (sdlb < sqrDistLowerBound)
+        sqrDistLowerBound = sdlb;
       updateFrontList(front_list, a, b);
       continue;
     }
@@ -150,8 +155,8 @@ void collisionNonRecurse(CollisionTraversalNodeBase* node,
  * Make sure node is set correctly so that the first and second tree are the
  * same
  */
-void distanceRecurse(DistanceTraversalNodeBase* node, unsigned int b1,
-                     unsigned int b2, BVHFrontList* front_list) {
+void distanceRecurse(DistanceTraversalNodeBase *node, unsigned int b1,
+                     unsigned int b2, BVHFrontList *front_list) {
   bool l1 = node->isFirstNodeLeaf(b1);
   bool l2 = node->isSecondNodeLeaf(b2);
 
@@ -213,7 +218,7 @@ struct HPP_FCL_LOCAL BVT {
 
 /** @brief Comparer between two BVT */
 struct HPP_FCL_LOCAL BVT_Comparer {
-  bool operator()(const BVT& lhs, const BVT& rhs) const {
+  bool operator()(const BVT &lhs, const BVT &rhs) const {
     return lhs.d > rhs.d;
   }
 };
@@ -225,9 +230,9 @@ struct HPP_FCL_LOCAL BVTQ {
 
   size_t size() const { return pq.size(); }
 
-  const BVT& top() const { return pq.top(); }
+  const BVT &top() const { return pq.top(); }
 
-  void push(const BVT& x) { pq.push(x); }
+  void push(const BVT &x) { pq.push(x); }
 
   void pop() { pq.pop(); }
 
@@ -239,8 +244,8 @@ struct HPP_FCL_LOCAL BVTQ {
   unsigned int qsize;
 };
 
-void distanceQueueRecurse(DistanceTraversalNodeBase* node, unsigned int b1,
-                          unsigned int b2, BVHFrontList* front_list,
+void distanceQueueRecurse(DistanceTraversalNodeBase *node, unsigned int b1,
+                          unsigned int b2, BVHFrontList *front_list,
                           unsigned int qsize) {
   BVTQ bvtq;
   bvtq.qsize = qsize;
@@ -305,11 +310,11 @@ void distanceQueueRecurse(DistanceTraversalNodeBase* node, unsigned int b1,
   }
 }
 
-void propagateBVHFrontListCollisionRecurse(CollisionTraversalNodeBase* node,
-                                           const CollisionRequest& /*request*/,
-                                           CollisionResult& result,
-                                           BVHFrontList* front_list) {
-  FCL_REAL sqrDistLowerBound = -1, sqrDistLowerBound1 = 0,
+void propagateBVHFrontListCollisionRecurse(CollisionTraversalNodeBase *node,
+                                           const CollisionRequest & /*request*/,
+                                           CollisionResult &result,
+                                           BVHFrontList *front_list) {
+  FCL_REAL sqrDistLowerBound = FCL_REAL(-1), sqrDistLowerBound1 = 0,
            sqrDistLowerBound2 = 0;
   BVHFrontList::iterator front_iter;
   BVHFrontList append;
@@ -321,8 +326,8 @@ void propagateBVHFrontListCollisionRecurse(CollisionTraversalNodeBase* node,
     bool l2 = node->isSecondNodeLeaf(b2);
 
     if (l1 & l2) {
-      front_iter->valid = false;  // the front node is no longer valid, in
-                                  // collideRecurse will add again.
+      front_iter->valid = false; // the front node is no longer valid, in
+                                 // collideRecurse will add again.
       collisionRecurse(node, b1, b2, &append, sqrDistLowerBound);
     } else {
       if (!node->BVDisjoints(b1, b2, sqrDistLowerBound)) {
@@ -360,6 +365,6 @@ void propagateBVHFrontListCollisionRecurse(CollisionTraversalNodeBase* node,
   }
 }
 
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp

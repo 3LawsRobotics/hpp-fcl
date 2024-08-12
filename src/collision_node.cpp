@@ -41,8 +41,8 @@
 namespace hpp {
 namespace fcl {
 
-void collide(CollisionTraversalNodeBase* node, const CollisionRequest& request,
-             CollisionResult& result, BVHFrontList* front_list,
+void collide(CollisionTraversalNodeBase *node, const CollisionRequest &request,
+             CollisionResult &result, BVHFrontList *front_list,
              bool recursive) {
   if (front_list && front_list->size() > 0) {
     propagateBVHFrontListCollisionRecurse(node, request, result, front_list);
@@ -59,13 +59,13 @@ void collide(CollisionTraversalNodeBase* node, const CollisionRequest& request,
       } else {
         assert(result.distance_lower_bound * result.distance_lower_bound -
                    sqrDistLowerBound <
-               1e-8);
+               1e-8f);
       }
     }
   }
 }
 
-void distance(DistanceTraversalNodeBase* node, BVHFrontList* front_list,
+void distance(DistanceTraversalNodeBase *node, BVHFrontList *front_list,
               unsigned int qsize) {
   node->preprocess();
 
@@ -77,6 +77,6 @@ void distance(DistanceTraversalNodeBase* node, BVHFrontList* front_list,
   node->postprocess();
 }
 
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp

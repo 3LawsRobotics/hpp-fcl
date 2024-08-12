@@ -15,9 +15,9 @@ namespace hpp {
 namespace fcl {
 
 struct CPUTimes {
-  double wall;
-  double user;
-  double system;
+  FCL_REAL wall;
+  FCL_REAL user;
+  FCL_REAL system;
 
   CPUTimes() : wall(0), user(0), system(0) {}
 
@@ -40,21 +40,23 @@ struct HPP_FCL_DLLAPI Timer {
   /// \param[in] start_on_construction if true, the timer will be run just after
   /// the object is created
   Timer(const bool start_on_construction = true) : m_is_stopped(true) {
-    if (start_on_construction) Timer::start();
+    if (start_on_construction)
+      Timer::start();
   }
 
   CPUTimes elapsed() const {
-    if (m_is_stopped) return m_times;
+    if (m_is_stopped)
+      return m_times;
 
     CPUTimes current(m_times);
 #ifdef HPP_FCL_WITH_CXX11_SUPPORT
     std::chrono::time_point<std::chrono::steady_clock> current_clock =
         std::chrono::steady_clock::now();
-    current.user += static_cast<double>(
+    current.user += static_cast<FCL_REAL>(
                         std::chrono::duration_cast<std::chrono::nanoseconds>(
                             current_clock - m_start)
                             .count()) *
-                    1e-3;
+                    FCL_REAL(1e-3);
 #endif
     return current;
   }
@@ -75,16 +77,17 @@ struct HPP_FCL_DLLAPI Timer {
   }
 
   void stop() {
-    if (m_is_stopped) return;
+    if (m_is_stopped)
+      return;
     m_is_stopped = true;
 
 #ifdef HPP_FCL_WITH_CXX11_SUPPORT
     m_end = std::chrono::steady_clock::now();
-    m_times.user += static_cast<double>(
+    m_times.user += static_cast<FCL_REAL>(
                         std::chrono::duration_cast<std::chrono::nanoseconds>(
                             m_end - m_start)
                             .count()) *
-                    1e-3;
+                    FCL_REAL(1e-3);
 #endif
   }
 
@@ -99,7 +102,7 @@ struct HPP_FCL_DLLAPI Timer {
 
   bool is_stopped() const { return m_is_stopped; }
 
- protected:
+protected:
   CPUTimes m_times;
   bool m_is_stopped;
 
@@ -108,7 +111,7 @@ struct HPP_FCL_DLLAPI Timer {
 #endif
 };
 
-}  // namespace fcl
-}  // namespace hpp
+} // namespace fcl
+} // namespace hpp
 
-#endif  // ifndef HPP_FCL_TIMINGS_FWD_H
+#endif // ifndef HPP_FCL_TIMINGS_FWD_H

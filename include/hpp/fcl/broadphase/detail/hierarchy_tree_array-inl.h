@@ -57,46 +57,44 @@ HierarchyTree<BV>::HierarchyTree(int bu_threshold_, int topdown_level_) {
   n_nodes = 0;
   n_nodes_alloc = 16;
   nodes = new Node[n_nodes_alloc];
-  for (size_t i = 0; i < n_nodes_alloc - 1; ++i) nodes[i].next = i + 1;
+  for (size_t i = 0; i < n_nodes_alloc - 1; ++i)
+    nodes[i].next = i + 1;
   nodes[n_nodes_alloc - 1].next = NULL_NODE;
   n_leaves = 0;
   freelist = 0;
   opath = 0;
-  max_lookahead_level = -1;
+  max_lookahead_level = FCL_REAL(-1);
   bu_threshold = bu_threshold_;
   topdown_level = topdown_level_;
 }
 
 //==============================================================================
-template <typename BV>
-HierarchyTree<BV>::~HierarchyTree() {
-  delete[] nodes;
-}
+template <typename BV> HierarchyTree<BV>::~HierarchyTree() { delete[] nodes; }
 
 //==============================================================================
 template <typename BV>
-void HierarchyTree<BV>::init(Node* leaves, int n_leaves_, int level) {
+void HierarchyTree<BV>::init(Node *leaves, int n_leaves_, int level) {
   switch (level) {
-    case 0:
-      init_0(leaves, n_leaves_);
-      break;
-    case 1:
-      init_1(leaves, n_leaves_);
-      break;
-    case 2:
-      init_2(leaves, n_leaves_);
-      break;
-    case 3:
-      init_3(leaves, n_leaves_);
-      break;
-    default:
-      init_0(leaves, n_leaves_);
+  case 0:
+    init_0(leaves, n_leaves_);
+    break;
+  case 1:
+    init_1(leaves, n_leaves_);
+    break;
+  case 2:
+    init_2(leaves, n_leaves_);
+    break;
+  case 3:
+    init_3(leaves, n_leaves_);
+    break;
+  default:
+    init_0(leaves, n_leaves_);
   }
 }
 
 //==============================================================================
 template <typename BV>
-void HierarchyTree<BV>::init_0(Node* leaves, int n_leaves_) {
+void HierarchyTree<BV>::init_0(Node *leaves, int n_leaves_) {
   clear();
 
   n_leaves = (size_t)n_leaves_;
@@ -106,22 +104,24 @@ void HierarchyTree<BV>::init_0(Node* leaves, int n_leaves_) {
   freelist = n_leaves;
   n_nodes = n_leaves;
   n_nodes_alloc = 2 * n_leaves;
-  for (size_t i = n_leaves; i < n_nodes_alloc; ++i) nodes[i].next = i + 1;
+  for (size_t i = n_leaves; i < n_nodes_alloc; ++i)
+    nodes[i].next = i + 1;
   nodes[n_nodes_alloc - 1].next = NULL_NODE;
 
-  size_t* ids = new size_t[n_leaves];
-  for (size_t i = 0; i < n_leaves; ++i) ids[i] = i;
+  size_t *ids = new size_t[n_leaves];
+  for (size_t i = 0; i < n_leaves; ++i)
+    ids[i] = i;
 
   root_node = topdown(ids, ids + n_leaves);
   delete[] ids;
 
   opath = 0;
-  max_lookahead_level = -1;
+  max_lookahead_level = FCL_REAL(-1);
 }
 
 //==============================================================================
 template <typename BV>
-void HierarchyTree<BV>::init_1(Node* leaves, int n_leaves_) {
+void HierarchyTree<BV>::init_1(Node *leaves, int n_leaves_) {
   clear();
 
   n_leaves = (size_t)n_leaves_;
@@ -131,19 +131,23 @@ void HierarchyTree<BV>::init_1(Node* leaves, int n_leaves_) {
   freelist = n_leaves;
   n_nodes = n_leaves;
   n_nodes_alloc = 2 * n_leaves;
-  for (size_t i = n_leaves; i < n_nodes_alloc; ++i) nodes[i].next = i + 1;
+  for (size_t i = n_leaves; i < n_nodes_alloc; ++i)
+    nodes[i].next = i + 1;
   nodes[n_nodes_alloc - 1].next = NULL_NODE;
 
   BV bound_bv;
-  if (n_leaves > 0) bound_bv = nodes[0].bv;
-  for (size_t i = 1; i < n_leaves; ++i) bound_bv += nodes[i].bv;
+  if (n_leaves > 0)
+    bound_bv = nodes[0].bv;
+  for (size_t i = 1; i < n_leaves; ++i)
+    bound_bv += nodes[i].bv;
 
   morton_functor<FCL_REAL, uint32_t> coder(bound_bv);
   for (size_t i = 0; i < n_leaves; ++i)
     nodes[i].code = coder(nodes[i].bv.center());
 
-  size_t* ids = new size_t[n_leaves];
-  for (size_t i = 0; i < n_leaves; ++i) ids[i] = i;
+  size_t *ids = new size_t[n_leaves];
+  for (size_t i = 0; i < n_leaves; ++i)
+    ids[i] = i;
 
   const SortByMorton comp{nodes};
   std::sort(ids, ids + n_leaves, comp);
@@ -154,12 +158,12 @@ void HierarchyTree<BV>::init_1(Node* leaves, int n_leaves_) {
   refit();
 
   opath = 0;
-  max_lookahead_level = -1;
+  max_lookahead_level = FCL_REAL(-1);
 }
 
 //==============================================================================
 template <typename BV>
-void HierarchyTree<BV>::init_2(Node* leaves, int n_leaves_) {
+void HierarchyTree<BV>::init_2(Node *leaves, int n_leaves_) {
   clear();
 
   n_leaves = (size_t)n_leaves_;
@@ -169,19 +173,23 @@ void HierarchyTree<BV>::init_2(Node* leaves, int n_leaves_) {
   freelist = n_leaves;
   n_nodes = n_leaves;
   n_nodes_alloc = 2 * n_leaves;
-  for (size_t i = n_leaves; i < n_nodes_alloc; ++i) nodes[i].next = i + 1;
+  for (size_t i = n_leaves; i < n_nodes_alloc; ++i)
+    nodes[i].next = i + 1;
   nodes[n_nodes_alloc - 1].next = NULL_NODE;
 
   BV bound_bv;
-  if (n_leaves > 0) bound_bv = nodes[0].bv;
-  for (size_t i = 1; i < n_leaves; ++i) bound_bv += nodes[i].bv;
+  if (n_leaves > 0)
+    bound_bv = nodes[0].bv;
+  for (size_t i = 1; i < n_leaves; ++i)
+    bound_bv += nodes[i].bv;
 
   morton_functor<FCL_REAL, uint32_t> coder(bound_bv);
   for (size_t i = 0; i < n_leaves; ++i)
     nodes[i].code = coder(nodes[i].bv.center());
 
-  size_t* ids = new size_t[n_leaves];
-  for (size_t i = 0; i < n_leaves; ++i) ids[i] = i;
+  size_t *ids = new size_t[n_leaves];
+  for (size_t i = 0; i < n_leaves; ++i)
+    ids[i] = i;
 
   const SortByMorton comp{nodes};
   std::sort(ids, ids + n_leaves, comp);
@@ -192,12 +200,12 @@ void HierarchyTree<BV>::init_2(Node* leaves, int n_leaves_) {
   refit();
 
   opath = 0;
-  max_lookahead_level = -1;
+  max_lookahead_level = FCL_REAL(-1);
 }
 
 //==============================================================================
 template <typename BV>
-void HierarchyTree<BV>::init_3(Node* leaves, int n_leaves_) {
+void HierarchyTree<BV>::init_3(Node *leaves, int n_leaves_) {
   clear();
 
   n_leaves = (size_t)n_leaves_;
@@ -207,19 +215,23 @@ void HierarchyTree<BV>::init_3(Node* leaves, int n_leaves_) {
   freelist = n_leaves;
   n_nodes = n_leaves;
   n_nodes_alloc = 2 * n_leaves;
-  for (size_t i = n_leaves; i < n_nodes_alloc; ++i) nodes[i].next = i + 1;
+  for (size_t i = n_leaves; i < n_nodes_alloc; ++i)
+    nodes[i].next = i + 1;
   nodes[n_nodes_alloc - 1].next = NULL_NODE;
 
   BV bound_bv;
-  if (n_leaves > 0) bound_bv = nodes[0].bv;
-  for (size_t i = 1; i < n_leaves; ++i) bound_bv += nodes[i].bv;
+  if (n_leaves > 0)
+    bound_bv = nodes[0].bv;
+  for (size_t i = 1; i < n_leaves; ++i)
+    bound_bv += nodes[i].bv;
 
   morton_functor<FCL_REAL, uint32_t> coder(bound_bv);
   for (size_t i = 0; i < n_leaves; ++i)
     nodes[i].code = coder(nodes[i].bv.center());
 
-  size_t* ids = new size_t[n_leaves];
-  for (size_t i = 0; i < n_leaves; ++i) ids[i] = i;
+  size_t *ids = new size_t[n_leaves];
+  for (size_t i = 0; i < n_leaves; ++i)
+    ids[i] = i;
 
   const SortByMorton comp{nodes};
   std::sort(ids, ids + n_leaves, comp);
@@ -229,12 +241,12 @@ void HierarchyTree<BV>::init_3(Node* leaves, int n_leaves_) {
   refit();
 
   opath = 0;
-  max_lookahead_level = -1;
+  max_lookahead_level = FCL_REAL(-1);
 }
 
 //==============================================================================
 template <typename BV>
-size_t HierarchyTree<BV>::insert(const BV& bv, void* data) {
+size_t HierarchyTree<BV>::insert(const BV &bv, void *data) {
   size_t node = createNode(NULL_NODE, bv, data);
   insertLeaf(root_node, node);
   ++n_leaves;
@@ -242,32 +254,30 @@ size_t HierarchyTree<BV>::insert(const BV& bv, void* data) {
 }
 
 //==============================================================================
-template <typename BV>
-void HierarchyTree<BV>::remove(size_t leaf) {
+template <typename BV> void HierarchyTree<BV>::remove(size_t leaf) {
   removeLeaf(leaf);
   deleteNode(leaf);
   --n_leaves;
 }
 
 //==============================================================================
-template <typename BV>
-void HierarchyTree<BV>::clear() {
+template <typename BV> void HierarchyTree<BV>::clear() {
   delete[] nodes;
   root_node = NULL_NODE;
   n_nodes = 0;
   n_nodes_alloc = 16;
   nodes = new Node[n_nodes_alloc];
-  for (size_t i = 0; i < n_nodes_alloc; ++i) nodes[i].next = i + 1;
+  for (size_t i = 0; i < n_nodes_alloc; ++i)
+    nodes[i].next = i + 1;
   nodes[n_nodes_alloc - 1].next = NULL_NODE;
   n_leaves = 0;
   freelist = 0;
   opath = 0;
-  max_lookahead_level = -1;
+  max_lookahead_level = FCL_REAL(-1);
 }
 
 //==============================================================================
-template <typename BV>
-bool HierarchyTree<BV>::empty() const {
+template <typename BV> bool HierarchyTree<BV>::empty() const {
   return (n_nodes == 0);
 }
 
@@ -288,47 +298,50 @@ void HierarchyTree<BV>::update(size_t leaf, int lookahead_level) {
 
 //==============================================================================
 template <typename BV>
-bool HierarchyTree<BV>::update(size_t leaf, const BV& bv) {
-  if (nodes[leaf].bv.contain(bv)) return false;
+bool HierarchyTree<BV>::update(size_t leaf, const BV &bv) {
+  if (nodes[leaf].bv.contain(bv))
+    return false;
   update_(leaf, bv);
   return true;
 }
 
 //==============================================================================
 template <typename BV>
-bool HierarchyTree<BV>::update(size_t leaf, const BV& bv, const Vec3f& vel,
+bool HierarchyTree<BV>::update(size_t leaf, const BV &bv, const Vec3f &vel,
                                FCL_REAL margin) {
   HPP_FCL_UNUSED_VARIABLE(bv);
   HPP_FCL_UNUSED_VARIABLE(vel);
   HPP_FCL_UNUSED_VARIABLE(margin);
 
-  if (nodes[leaf].bv.contain(bv)) return false;
+  if (nodes[leaf].bv.contain(bv))
+    return false;
   update_(leaf, bv);
   return true;
 }
 
 //==============================================================================
 template <typename BV>
-bool HierarchyTree<BV>::update(size_t leaf, const BV& bv, const Vec3f& vel) {
+bool HierarchyTree<BV>::update(size_t leaf, const BV &bv, const Vec3f &vel) {
   HPP_FCL_UNUSED_VARIABLE(vel);
 
-  if (nodes[leaf].bv.contain(bv)) return false;
+  if (nodes[leaf].bv.contain(bv))
+    return false;
   update_(leaf, bv);
   return true;
 }
 
 //==============================================================================
-template <typename BV>
-size_t HierarchyTree<BV>::getMaxHeight() const {
-  if (root_node == NULL_NODE) return 0;
+template <typename BV> size_t HierarchyTree<BV>::getMaxHeight() const {
+  if (root_node == NULL_NODE)
+    return 0;
 
   return getMaxHeight(root_node);
 }
 
 //==============================================================================
-template <typename BV>
-size_t HierarchyTree<BV>::getMaxDepth() const {
-  if (root_node == NULL_NODE) return 0;
+template <typename BV> size_t HierarchyTree<BV>::getMaxDepth() const {
+  if (root_node == NULL_NODE)
+    return 0;
 
   size_t max_depth;
   getMaxDepth(root_node, 0, max_depth);
@@ -336,21 +349,22 @@ size_t HierarchyTree<BV>::getMaxDepth() const {
 }
 
 //==============================================================================
-template <typename BV>
-void HierarchyTree<BV>::balanceBottomup() {
+template <typename BV> void HierarchyTree<BV>::balanceBottomup() {
   if (root_node != NULL_NODE) {
-    Node* leaves = new Node[n_leaves];
-    Node* leaves_ = leaves;
+    Node *leaves = new Node[n_leaves];
+    Node *leaves_ = leaves;
     extractLeaves(root_node, leaves_);
     root_node = NULL_NODE;
     std::copy(leaves, leaves + n_leaves, nodes);
     freelist = n_leaves;
     n_nodes = n_leaves;
-    for (size_t i = n_leaves; i < n_nodes_alloc; ++i) nodes[i].next = i + 1;
+    for (size_t i = n_leaves; i < n_nodes_alloc; ++i)
+      nodes[i].next = i + 1;
     nodes[n_nodes_alloc - 1].next = NULL_NODE;
 
-    size_t* ids = new size_t[n_leaves];
-    for (size_t i = 0; i < n_leaves; ++i) ids[i] = i;
+    size_t *ids = new size_t[n_leaves];
+    for (size_t i = 0; i < n_leaves; ++i)
+      ids[i] = i;
 
     bottomup(ids, ids + n_leaves);
     root_node = *ids;
@@ -360,21 +374,22 @@ void HierarchyTree<BV>::balanceBottomup() {
 }
 
 //==============================================================================
-template <typename BV>
-void HierarchyTree<BV>::balanceTopdown() {
+template <typename BV> void HierarchyTree<BV>::balanceTopdown() {
   if (root_node != NULL_NODE) {
-    Node* leaves = new Node[n_leaves];
-    Node* leaves_ = leaves;
+    Node *leaves = new Node[n_leaves];
+    Node *leaves_ = leaves;
     extractLeaves(root_node, leaves_);
     root_node = NULL_NODE;
     std::copy(leaves, leaves + n_leaves, nodes);
     freelist = n_leaves;
     n_nodes = n_leaves;
-    for (size_t i = n_leaves; i < n_nodes_alloc; ++i) nodes[i].next = i + 1;
+    for (size_t i = n_leaves; i < n_nodes_alloc; ++i)
+      nodes[i].next = i + 1;
     nodes[n_nodes_alloc - 1].next = NULL_NODE;
 
-    size_t* ids = new size_t[n_leaves];
-    for (size_t i = 0; i < n_leaves; ++i) ids[i] = i;
+    size_t *ids = new size_t[n_leaves];
+    for (size_t i = 0; i < n_leaves; ++i)
+      ids[i] = i;
 
     root_node = topdown(ids, ids + n_leaves);
     delete[] ids;
@@ -384,7 +399,8 @@ void HierarchyTree<BV>::balanceTopdown() {
 //==============================================================================
 template <typename BV>
 void HierarchyTree<BV>::balanceIncremental(int iterations) {
-  if (iterations < 0) iterations = (int)n_leaves;
+  if (iterations < 0)
+    iterations = (int)n_leaves;
   if ((root_node != NULL_NODE) && (iterations > 0)) {
     for (int i = 0; i < iterations; ++i) {
       size_t node = root_node;
@@ -400,14 +416,14 @@ void HierarchyTree<BV>::balanceIncremental(int iterations) {
 }
 
 //==============================================================================
-template <typename BV>
-void HierarchyTree<BV>::refit() {
-  if (root_node != NULL_NODE) recurseRefit(root_node);
+template <typename BV> void HierarchyTree<BV>::refit() {
+  if (root_node != NULL_NODE)
+    recurseRefit(root_node);
 }
 
 //==============================================================================
 template <typename BV>
-void HierarchyTree<BV>::extractLeaves(size_t root, Node*& leaves) const {
+void HierarchyTree<BV>::extractLeaves(size_t root, Node *&leaves) const {
   if (!nodes[root].isLeaf()) {
     extractLeaves(nodes[root].children[0], leaves);
     extractLeaves(nodes[root].children[1], leaves);
@@ -418,28 +434,26 @@ void HierarchyTree<BV>::extractLeaves(size_t root, Node*& leaves) const {
 }
 
 //==============================================================================
-template <typename BV>
-size_t HierarchyTree<BV>::size() const {
+template <typename BV> size_t HierarchyTree<BV>::size() const {
   return n_leaves;
 }
 
 //==============================================================================
-template <typename BV>
-size_t HierarchyTree<BV>::getRoot() const {
+template <typename BV> size_t HierarchyTree<BV>::getRoot() const {
   return root_node;
 }
 
 //==============================================================================
 template <typename BV>
-typename HierarchyTree<BV>::Node* HierarchyTree<BV>::getNodes() const {
+typename HierarchyTree<BV>::Node *HierarchyTree<BV>::getNodes() const {
   return nodes;
 }
 
 //==============================================================================
-template <typename BV>
-void HierarchyTree<BV>::print(size_t root, int depth) {
-  for (int i = 0; i < depth; ++i) std::cout << " ";
-  Node* n = nodes + root;
+template <typename BV> void HierarchyTree<BV>::print(size_t root, int depth) {
+  for (int i = 0; i < depth; ++i)
+    std::cout << " ";
+  Node *n = nodes + root;
   std::cout << " (" << n->bv.min_[0] << ", " << n->bv.min_[1] << ", "
             << n->bv.min_[2] << "; " << n->bv.max_[0] << ", " << n->bv.max_[1]
             << ", " << n->bv.max_[2] << ")" << std::endl;
@@ -464,7 +478,7 @@ size_t HierarchyTree<BV>::getMaxHeight(size_t node) const {
 //==============================================================================
 template <typename BV>
 void HierarchyTree<BV>::getMaxDepth(size_t node, size_t depth,
-                                    size_t& max_depth) const {
+                                    size_t &max_depth) const {
   if (!nodes[node].isLeaf()) {
     getMaxDepth(nodes[node].children[0], depth + 1, max_depth);
     getmaxDepth(nodes[node].children[1], depth + 1, max_depth);
@@ -474,13 +488,13 @@ void HierarchyTree<BV>::getMaxDepth(size_t node, size_t depth,
 
 //==============================================================================
 template <typename BV>
-void HierarchyTree<BV>::bottomup(size_t* lbeg, size_t* lend) {
-  size_t* lcur_end = lend;
+void HierarchyTree<BV>::bottomup(size_t *lbeg, size_t *lend) {
+  size_t *lcur_end = lend;
   while (lbeg < lcur_end - 1) {
     size_t *min_it1 = nullptr, *min_it2 = nullptr;
     FCL_REAL min_size = (std::numeric_limits<FCL_REAL>::max)();
-    for (size_t* it1 = lbeg; it1 < lcur_end; ++it1) {
-      for (size_t* it2 = it1 + 1; it2 < lcur_end; ++it2) {
+    for (size_t *it1 = lbeg; it1 < lcur_end; ++it1) {
+      for (size_t *it2 = it1 + 1; it2 < lcur_end; ++it2) {
         FCL_REAL cur_size = (nodes[*it1].bv + nodes[*it2].bv).size();
         if (cur_size < min_size) {
           min_size = cur_size;
@@ -506,35 +520,38 @@ void HierarchyTree<BV>::bottomup(size_t* lbeg, size_t* lend) {
 
 //==============================================================================
 template <typename BV>
-size_t HierarchyTree<BV>::topdown(size_t* lbeg, size_t* lend) {
+size_t HierarchyTree<BV>::topdown(size_t *lbeg, size_t *lend) {
   switch (topdown_level) {
-    case 0:
-      return topdown_0(lbeg, lend);
-      break;
-    case 1:
-      return topdown_1(lbeg, lend);
-      break;
-    default:
-      return topdown_0(lbeg, lend);
+  case 0:
+    return topdown_0(lbeg, lend);
+    break;
+  case 1:
+    return topdown_1(lbeg, lend);
+    break;
+  default:
+    return topdown_0(lbeg, lend);
   }
 }
 
 //==============================================================================
 template <typename BV>
-size_t HierarchyTree<BV>::topdown_0(size_t* lbeg, size_t* lend) {
+size_t HierarchyTree<BV>::topdown_0(size_t *lbeg, size_t *lend) {
   long num_leaves = lend - lbeg;
   if (num_leaves > 1) {
     if (num_leaves > bu_threshold) {
       BV vol = nodes[*lbeg].bv;
-      for (size_t* i = lbeg + 1; i < lend; ++i) vol += nodes[*i].bv;
+      for (size_t *i = lbeg + 1; i < lend; ++i)
+        vol += nodes[*i].bv;
 
       size_t best_axis = 0;
       FCL_REAL extent[3] = {vol.width(), vol.height(), vol.depth()};
-      if (extent[1] > extent[0]) best_axis = 1;
-      if (extent[2] > extent[best_axis]) best_axis = 2;
+      if (extent[1] > extent[0])
+        best_axis = 1;
+      if (extent[2] > extent[best_axis])
+        best_axis = 2;
 
       nodeBaseLess<BV> comp(nodes, best_axis);
-      size_t* lcenter = lbeg + num_leaves / 2;
+      size_t *lcenter = lbeg + num_leaves / 2;
       std::nth_element(lbeg, lcenter, lend, comp);
 
       size_t node = createNode(NULL_NODE, vol, nullptr);
@@ -553,23 +570,24 @@ size_t HierarchyTree<BV>::topdown_0(size_t* lbeg, size_t* lend) {
 
 //==============================================================================
 template <typename BV>
-size_t HierarchyTree<BV>::topdown_1(size_t* lbeg, size_t* lend) {
+size_t HierarchyTree<BV>::topdown_1(size_t *lbeg, size_t *lend) {
   long num_leaves = lend - lbeg;
   if (num_leaves > 1) {
     if (num_leaves > bu_threshold) {
       Vec3f split_p = nodes[*lbeg].bv.center();
       BV vol = nodes[*lbeg].bv;
-      for (size_t* i = lbeg + 1; i < lend; ++i) {
+      for (size_t *i = lbeg + 1; i < lend; ++i) {
         split_p += nodes[*i].bv.center();
         vol += nodes[*i].bv;
       }
       split_p /= static_cast<FCL_REAL>(num_leaves);
-      int best_axis = -1;
+      int best_axis = FCL_REAL(-1);
       int bestmidp = (int)num_leaves;
       int splitcount[3][2] = {{0, 0}, {0, 0}, {0, 0}};
-      for (size_t* i = lbeg; i < lend; ++i) {
+      for (size_t *i = lbeg; i < lend; ++i) {
         Vec3f x = nodes[*i].bv.center() - split_p;
-        for (int j = 0; j < 3; ++j) ++splitcount[j][x[j] > 0 ? 1 : 0];
+        for (int j = 0; j < 3; ++j)
+          ++splitcount[j][x[j] > 0 ? 1 : 0];
       }
 
       for (size_t i = 0; i < 3; ++i) {
@@ -582,11 +600,12 @@ size_t HierarchyTree<BV>::topdown_1(size_t* lbeg, size_t* lend) {
         }
       }
 
-      if (best_axis < 0) best_axis = 0;
+      if (best_axis < 0)
+        best_axis = 0;
 
       FCL_REAL split_value = split_p[best_axis];
-      size_t* lcenter = lbeg;
-      for (size_t* i = lbeg; i < lend; ++i) {
+      size_t *lcenter = lbeg;
+      for (size_t *i = lbeg; i < lend; ++i) {
         if (nodes[*i].bv.center()[best_axis] < split_value) {
           size_t temp = *i;
           *i = *lcenter;
@@ -611,13 +630,13 @@ size_t HierarchyTree<BV>::topdown_1(size_t* lbeg, size_t* lend) {
 
 //==============================================================================
 template <typename BV>
-size_t HierarchyTree<BV>::mortonRecurse_0(size_t* lbeg, size_t* lend,
-                                          const uint32_t& split, int bits) {
+size_t HierarchyTree<BV>::mortonRecurse_0(size_t *lbeg, size_t *lend,
+                                          const uint32_t &split, int bits) {
   long num_leaves = lend - lbeg;
   if (num_leaves > 1) {
     if (bits > 0) {
       const SortByMorton comp{nodes, split};
-      size_t* lcenter = std::lower_bound(lbeg, lend, NULL_NODE, comp);
+      size_t *lcenter = std::lower_bound(lbeg, lend, NULL_NODE, comp);
 
       if (lcenter == lbeg) {
         uint32_t split2 = split | (1 << (bits - 1));
@@ -648,13 +667,13 @@ size_t HierarchyTree<BV>::mortonRecurse_0(size_t* lbeg, size_t* lend,
 
 //==============================================================================
 template <typename BV>
-size_t HierarchyTree<BV>::mortonRecurse_1(size_t* lbeg, size_t* lend,
-                                          const uint32_t& split, int bits) {
+size_t HierarchyTree<BV>::mortonRecurse_1(size_t *lbeg, size_t *lend,
+                                          const uint32_t &split, int bits) {
   long num_leaves = lend - lbeg;
   if (num_leaves > 1) {
     if (bits > 0) {
       const SortByMorton comp{nodes, split};
-      size_t* lcenter = std::lower_bound(lbeg, lend, NULL_NODE, comp);
+      size_t *lcenter = std::lower_bound(lbeg, lend, NULL_NODE, comp);
 
       if (lcenter == lbeg) {
         uint32_t split2 = split | (1 << (bits - 1));
@@ -691,7 +710,7 @@ size_t HierarchyTree<BV>::mortonRecurse_1(size_t* lbeg, size_t* lend,
 
 //==============================================================================
 template <typename BV>
-size_t HierarchyTree<BV>::mortonRecurse_2(size_t* lbeg, size_t* lend) {
+size_t HierarchyTree<BV>::mortonRecurse_2(size_t *lbeg, size_t *lend) {
   long num_leaves = lend - lbeg;
   if (num_leaves > 1) {
     size_t child1 = mortonRecurse_2(lbeg, lbeg + num_leaves / 2);
@@ -747,8 +766,7 @@ void HierarchyTree<BV>::insertLeaf(size_t root, size_t leaf) {
 }
 
 //==============================================================================
-template <typename BV>
-size_t HierarchyTree<BV>::removeLeaf(size_t leaf) {
+template <typename BV> size_t HierarchyTree<BV>::removeLeaf(size_t leaf) {
   if (leaf == root_node) {
     root_node = NULL_NODE;
     return NULL_NODE;
@@ -783,7 +801,7 @@ size_t HierarchyTree<BV>::removeLeaf(size_t leaf) {
 
 //==============================================================================
 template <typename BV>
-void HierarchyTree<BV>::update_(size_t leaf, const BV& bv) {
+void HierarchyTree<BV>::update_(size_t leaf, const BV &bv) {
   size_t root = removeLeaf(leaf);
   if (root != NULL_NODE) {
     if (max_lookahead_level >= 0) {
@@ -798,22 +816,21 @@ void HierarchyTree<BV>::update_(size_t leaf, const BV& bv) {
 }
 
 //==============================================================================
-template <typename BV>
-size_t HierarchyTree<BV>::indexOf(size_t node) {
+template <typename BV> size_t HierarchyTree<BV>::indexOf(size_t node) {
   return (nodes[nodes[node].parent].children[1] == node);
 }
 
 //==============================================================================
-template <typename BV>
-size_t HierarchyTree<BV>::allocateNode() {
+template <typename BV> size_t HierarchyTree<BV>::allocateNode() {
   if (freelist == NULL_NODE) {
-    Node* old_nodes = nodes;
+    Node *old_nodes = nodes;
     n_nodes_alloc *= 2;
     nodes = new Node[n_nodes_alloc];
     std::copy(old_nodes, old_nodes + n_nodes, nodes);
     delete[] old_nodes;
 
-    for (size_t i = n_nodes; i < n_nodes_alloc - 1; ++i) nodes[i].next = i + 1;
+    for (size_t i = n_nodes; i < n_nodes_alloc - 1; ++i)
+      nodes[i].next = i + 1;
     nodes[n_nodes_alloc - 1].next = NULL_NODE;
     freelist = n_nodes;
   }
@@ -829,8 +846,8 @@ size_t HierarchyTree<BV>::allocateNode() {
 
 //==============================================================================
 template <typename BV>
-size_t HierarchyTree<BV>::createNode(size_t parent, const BV& bv1,
-                                     const BV& bv2, void* data) {
+size_t HierarchyTree<BV>::createNode(size_t parent, const BV &bv1,
+                                     const BV &bv2, void *data) {
   size_t node = allocateNode();
   nodes[node].parent = parent;
   nodes[node].data = data;
@@ -840,7 +857,7 @@ size_t HierarchyTree<BV>::createNode(size_t parent, const BV& bv1,
 
 //==============================================================================
 template <typename BV>
-size_t HierarchyTree<BV>::createNode(size_t parent, const BV& bv, void* data) {
+size_t HierarchyTree<BV>::createNode(size_t parent, const BV &bv, void *data) {
   size_t node = allocateNode();
   nodes[node].parent = parent;
   nodes[node].data = data;
@@ -850,7 +867,7 @@ size_t HierarchyTree<BV>::createNode(size_t parent, const BV& bv, void* data) {
 
 //==============================================================================
 template <typename BV>
-size_t HierarchyTree<BV>::createNode(size_t parent, void* data) {
+size_t HierarchyTree<BV>::createNode(size_t parent, void *data) {
   size_t node = allocateNode();
   nodes[node].parent = parent;
   nodes[node].data = data;
@@ -858,16 +875,14 @@ size_t HierarchyTree<BV>::createNode(size_t parent, void* data) {
 }
 
 //==============================================================================
-template <typename BV>
-void HierarchyTree<BV>::deleteNode(size_t node) {
+template <typename BV> void HierarchyTree<BV>::deleteNode(size_t node) {
   nodes[node].next = freelist;
   freelist = node;
   --n_nodes;
 }
 
 //==============================================================================
-template <typename BV>
-void HierarchyTree<BV>::recurseRefit(size_t node) {
+template <typename BV> void HierarchyTree<BV>::recurseRefit(size_t node) {
   if (!nodes[node].isLeaf()) {
     recurseRefit(nodes[node].children[0]);
     recurseRefit(nodes[node].children[1]);
@@ -879,7 +894,7 @@ void HierarchyTree<BV>::recurseRefit(size_t node) {
 
 //==============================================================================
 template <typename BV>
-void HierarchyTree<BV>::fetchLeaves(size_t root, Node*& leaves, int depth) {
+void HierarchyTree<BV>::fetchLeaves(size_t root, Node *&leaves, int depth) {
   if ((!nodes[root].isLeaf()) && depth) {
     fetchLeaves(nodes[root].children[0], leaves, depth - 1);
     fetchLeaves(nodes[root].children[1], leaves, depth - 1);
@@ -892,7 +907,7 @@ void HierarchyTree<BV>::fetchLeaves(size_t root, Node*& leaves, int depth) {
 
 //==============================================================================
 template <typename BV>
-nodeBaseLess<BV>::nodeBaseLess(const NodeBase<BV>* nodes_, size_t d_)
+nodeBaseLess<BV>::nodeBaseLess(const NodeBase<BV> *nodes_, size_t d_)
     : nodes(nodes_), d(d_) {
   // Do nothing
 }
@@ -900,16 +915,16 @@ nodeBaseLess<BV>::nodeBaseLess(const NodeBase<BV>* nodes_, size_t d_)
 //==============================================================================
 template <typename BV>
 bool nodeBaseLess<BV>::operator()(size_t i, size_t j) const {
-  if (nodes[i].bv.center()[(int)d] < nodes[j].bv.center()[(int)d]) return true;
+  if (nodes[i].bv.center()[(int)d] < nodes[j].bv.center()[(int)d])
+    return true;
 
   return false;
 }
 
 //==============================================================================
-template <typename S, typename BV>
-struct SelectImpl {
+template <typename S, typename BV> struct SelectImpl {
   static bool run(size_t query, size_t node1, size_t node2,
-                  NodeBase<BV>* nodes) {
+                  NodeBase<BV> *nodes) {
     HPP_FCL_UNUSED_VARIABLE(query);
     HPP_FCL_UNUSED_VARIABLE(node1);
     HPP_FCL_UNUSED_VARIABLE(node2);
@@ -918,8 +933,8 @@ struct SelectImpl {
     return 0;
   }
 
-  static bool run(const BV& query, size_t node1, size_t node2,
-                  NodeBase<BV>* nodes) {
+  static bool run(const BV &query, size_t node1, size_t node2,
+                  NodeBase<BV> *nodes) {
     HPP_FCL_UNUSED_VARIABLE(query);
     HPP_FCL_UNUSED_VARIABLE(node1);
     HPP_FCL_UNUSED_VARIABLE(node2);
@@ -931,25 +946,24 @@ struct SelectImpl {
 
 //==============================================================================
 template <typename BV>
-size_t select(size_t query, size_t node1, size_t node2, NodeBase<BV>* nodes) {
+size_t select(size_t query, size_t node1, size_t node2, NodeBase<BV> *nodes) {
   return SelectImpl<FCL_REAL, BV>::run(query, node1, node2, nodes);
 }
 
 //==============================================================================
 template <typename BV>
-size_t select(const BV& query, size_t node1, size_t node2,
-              NodeBase<BV>* nodes) {
+size_t select(const BV &query, size_t node1, size_t node2,
+              NodeBase<BV> *nodes) {
   return SelectImpl<FCL_REAL, BV>::run(query, node1, node2, nodes);
 }
 
 //==============================================================================
-template <typename S>
-struct SelectImpl<S, AABB> {
+template <typename S> struct SelectImpl<S, AABB> {
   static bool run(size_t query, size_t node1, size_t node2,
-                  NodeBase<AABB>* nodes) {
-    const AABB& bv = nodes[query].bv;
-    const AABB& bv1 = nodes[node1].bv;
-    const AABB& bv2 = nodes[node2].bv;
+                  NodeBase<AABB> *nodes) {
+    const AABB &bv = nodes[query].bv;
+    const AABB &bv1 = nodes[node1].bv;
+    const AABB &bv2 = nodes[node2].bv;
     Vec3f v = bv.min_ + bv.max_;
     Vec3f v1 = v - (bv1.min_ + bv1.max_);
     Vec3f v2 = v - (bv2.min_ + bv2.max_);
@@ -958,11 +972,11 @@ struct SelectImpl<S, AABB> {
     return (d1 < d2) ? 0 : 1;
   }
 
-  static bool run(const AABB& query, size_t node1, size_t node2,
-                  NodeBase<AABB>* nodes) {
-    const AABB& bv = query;
-    const AABB& bv1 = nodes[node1].bv;
-    const AABB& bv2 = nodes[node2].bv;
+  static bool run(const AABB &query, size_t node1, size_t node2,
+                  NodeBase<AABB> *nodes) {
+    const AABB &bv = query;
+    const AABB &bv1 = nodes[node1].bv;
+    const AABB &bv2 = nodes[node2].bv;
     Vec3f v = bv.min_ + bv.max_;
     Vec3f v1 = v - (bv1.min_ + bv1.max_);
     Vec3f v2 = v - (bv2.min_ + bv2.max_);
@@ -972,9 +986,9 @@ struct SelectImpl<S, AABB> {
   }
 };
 
-}  // namespace implementation_array
-}  // namespace detail
-}  // namespace fcl
-}  // namespace hpp
+} // namespace implementation_array
+} // namespace detail
+} // namespace fcl
+} // namespace hpp
 
 #endif

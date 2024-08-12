@@ -38,14 +38,14 @@
 #ifndef HPP_FCL_HIERARCHY_TREE_ARRAY_H
 #define HPP_FCL_HIERARCHY_TREE_ARRAY_H
 
-#include <vector>
-#include <map>
 #include <functional>
+#include <map>
+#include <vector>
 
-#include "hpp/fcl/fwd.hh"
 #include "hpp/fcl/BV/AABB.h"
 #include "hpp/fcl/broadphase/detail/morton.h"
 #include "hpp/fcl/broadphase/detail/node_base_array.h"
+#include "hpp/fcl/fwd.hh"
 
 namespace hpp {
 namespace fcl {
@@ -55,15 +55,14 @@ namespace detail {
 namespace implementation_array {
 
 /// @brief Class for hierarchy tree structure
-template <typename BV>
-class HierarchyTree {
- public:
+template <typename BV> class HierarchyTree {
+public:
   typedef NodeBase<BV> Node;
 
- private:
+private:
   struct SortByMorton {
-    SortByMorton(Node* nodes_in) : nodes(nodes_in) {}
-    SortByMorton(Node* nodes_in, uint32_t split_in)
+    SortByMorton(Node *nodes_in) : nodes(nodes_in) {}
+    SortByMorton(Node *nodes_in, uint32_t split_in)
         : nodes(nodes_in), split(split_in) {}
     bool operator()(size_t a, size_t b) const {
       if ((a != NULL_NODE) && (b != NULL_NODE))
@@ -76,11 +75,11 @@ class HierarchyTree {
       return false;
     }
 
-    Node* nodes{};
+    Node *nodes{};
     uint32_t split{};
   };
 
- public:
+public:
   /// @brief Create hierarchy tree with suitable setting.
   /// bu_threshold decides the height of tree node to start bottom-up
   /// construction / optimization; topdown_level decides different methods to
@@ -92,11 +91,11 @@ class HierarchyTree {
 
   /// @brief Initialize the tree by a set of leaves using algorithm with a given
   /// level.
-  void init(Node* leaves, int n_leaves_, int level = 0);
+  void init(Node *leaves, int n_leaves_, int level = 0);
 
   /// @brief Initialize the tree by a set of leaves using algorithm with a given
   /// level.
-  size_t insert(const BV& bv, void* data);
+  size_t insert(const BV &bv, void *data);
 
   /// @brief Remove a leaf node
   void remove(size_t leaf);
@@ -108,17 +107,17 @@ class HierarchyTree {
   bool empty() const;
 
   /// @brief update one leaf node
-  void update(size_t leaf, int lookahead_level = -1);
+  void update(size_t leaf, int lookahead_level = FCL_REAL(-1));
 
   /// @brief update the tree when the bounding volume of a given leaf has
   /// changed
-  bool update(size_t leaf, const BV& bv);
+  bool update(size_t leaf, const BV &bv);
 
   /// @brief update one leaf's bounding volume, with prediction
-  bool update(size_t leaf, const BV& bv, const Vec3f& vel, FCL_REAL margin);
+  bool update(size_t leaf, const BV &bv, const Vec3f &vel, FCL_REAL margin);
 
   /// @brief update one leaf's bounding volume, with prediction
-  bool update(size_t leaf, const BV& bv, const Vec3f& vel);
+  bool update(size_t leaf, const BV &bv, const Vec3f &vel);
 
   /// @brief get the max height of the tree
   size_t getMaxHeight() const;
@@ -140,7 +139,7 @@ class HierarchyTree {
   void refit();
 
   /// @brief extract all the leaves of the tree
-  void extractLeaves(size_t root, Node*& leaves) const;
+  void extractLeaves(size_t root, Node *&leaves) const;
 
   /// @brief number of leaves in the tree
   size_t size() const;
@@ -149,30 +148,30 @@ class HierarchyTree {
   size_t getRoot() const;
 
   /// @brief get the pointer to the nodes array
-  Node* getNodes() const;
+  Node *getNodes() const;
 
   /// @brief print the tree in a recursive way
   void print(size_t root, int depth);
 
- private:
+private:
   /// @brief construct a tree for a set of leaves from bottom -- very heavy way
-  void bottomup(size_t* lbeg, size_t* lend);
+  void bottomup(size_t *lbeg, size_t *lend);
 
   /// @brief construct a tree for a set of leaves from top
-  size_t topdown(size_t* lbeg, size_t* lend);
+  size_t topdown(size_t *lbeg, size_t *lend);
 
   /// @brief compute the maximum height of a subtree rooted from a given node
   size_t getMaxHeight(size_t node) const;
 
   /// @brief compute the maximum depth of a subtree rooted from a given node
-  void getMaxDepth(size_t node, size_t depth, size_t& max_depth) const;
+  void getMaxDepth(size_t node, size_t depth, size_t &max_depth) const;
 
   /// @brief construct a tree from a list of nodes stored in [lbeg, lend) in a
   /// topdown manner. During construction, first compute the best split axis as
   /// the axis along with the longest AABB edge. Then compute the median of all
   /// nodes' center projection onto the axis and using it as the split
   /// threshold.
-  size_t topdown_0(size_t* lbeg, size_t* lend);
+  size_t topdown_0(size_t *lbeg, size_t *lend);
 
   /// @brief construct a tree from a list of nodes stored in [lbeg, lend) in a
   /// topdown manner. During construction, first compute the best split
@@ -180,39 +179,39 @@ class HierarchyTree {
   /// choose the split axis as the axis whose threshold can divide the nodes
   /// into two parts with almost similar size. This construction is more
   /// expensive then topdown_0, but also can provide tree with better quality.
-  size_t topdown_1(size_t* lbeg, size_t* lend);
+  size_t topdown_1(size_t *lbeg, size_t *lend);
 
   /// @brief init tree from leaves in the topdown manner (topdown_0 or
   /// topdown_1)
-  void init_0(Node* leaves, int n_leaves_);
+  void init_0(Node *leaves, int n_leaves_);
 
   /// @brief init tree from leaves using morton code. It uses morton_0, i.e.,
   /// for nodes which is of depth more than the maximum bits of the morton code,
   /// we use bottomup method to construct the subtree, which is slow but can
   /// construct tree with high quality.
-  void init_1(Node* leaves, int n_leaves_);
+  void init_1(Node *leaves, int n_leaves_);
 
   /// @brief init tree from leaves using morton code. It uses morton_0, i.e.,
   /// for nodes which is of depth more than the maximum bits of the morton code,
   /// we split the leaves into two parts with the same size simply using the
   /// node index.
-  void init_2(Node* leaves, int n_leaves_);
+  void init_2(Node *leaves, int n_leaves_);
 
   /// @brief init tree from leaves using morton code. It uses morton_2, i.e.,
   /// for all nodes, we simply divide the leaves into parts with the same size
   /// simply using the node index.
-  void init_3(Node* leaves, int n_leaves_);
+  void init_3(Node *leaves, int n_leaves_);
 
-  size_t mortonRecurse_0(size_t* lbeg, size_t* lend, const uint32_t& split,
+  size_t mortonRecurse_0(size_t *lbeg, size_t *lend, const uint32_t &split,
                          int bits);
 
-  size_t mortonRecurse_1(size_t* lbeg, size_t* lend, const uint32_t& split,
+  size_t mortonRecurse_1(size_t *lbeg, size_t *lend, const uint32_t &split,
                          int bits);
 
-  size_t mortonRecurse_2(size_t* lbeg, size_t* lend);
+  size_t mortonRecurse_2(size_t *lbeg, size_t *lend);
 
   /// @brief update one leaf node's bounding volume
-  void update_(size_t leaf, const BV& bv);
+  void update_(size_t leaf, const BV &bv);
 
   /// @brief Insert a leaf node and also update its ancestors
   void insertLeaf(size_t root, size_t leaf);
@@ -224,26 +223,26 @@ class HierarchyTree {
 
   /// @brief Delete all internal nodes and return all leaves nodes with given
   /// depth from root
-  void fetchLeaves(size_t root, Node*& leaves, int depth = -1);
+  void fetchLeaves(size_t root, Node *&leaves, int depth = FCL_REAL(-1));
 
   size_t indexOf(size_t node);
 
   size_t allocateNode();
 
   /// @brief create one node (leaf or internal)
-  size_t createNode(size_t parent, const BV& bv1, const BV& bv2, void* data);
+  size_t createNode(size_t parent, const BV &bv1, const BV &bv2, void *data);
 
-  size_t createNode(size_t parent, const BV& bv, void* data);
+  size_t createNode(size_t parent, const BV &bv, void *data);
 
-  size_t createNode(size_t parent, void* data);
+  size_t createNode(size_t parent, void *data);
 
   void deleteNode(size_t node);
 
   void recurseRefit(size_t node);
 
- protected:
+protected:
   size_t root_node;
-  Node* nodes;
+  Node *nodes;
   size_t n_nodes;
   size_t n_nodes_alloc;
 
@@ -253,30 +252,28 @@ class HierarchyTree {
 
   int max_lookahead_level;
 
- public:
+public:
   /// @brief decide which topdown algorithm to use
   int topdown_level;
 
   /// @brief decide the depth to use expensive bottom-up algorithm
   int bu_threshold;
 
- public:
+public:
   static const size_t NULL_NODE = std::numeric_limits<size_t>::max();
 };
 
-template <typename BV>
-const size_t HierarchyTree<BV>::NULL_NODE;
+template <typename BV> const size_t HierarchyTree<BV>::NULL_NODE;
 
 /// @brief Functor comparing two nodes
-template <typename BV>
-struct nodeBaseLess {
-  nodeBaseLess(const NodeBase<BV>* nodes_, size_t d_);
+template <typename BV> struct nodeBaseLess {
+  nodeBaseLess(const NodeBase<BV> *nodes_, size_t d_);
 
   bool operator()(size_t i, size_t j) const;
 
- private:
+private:
   /// @brief the nodes array
-  const NodeBase<BV>* nodes;
+  const NodeBase<BV> *nodes;
 
   /// @brief the dimension to compare
   size_t d;
@@ -285,17 +282,17 @@ struct nodeBaseLess {
 /// @brief select the node from node1 and node2 which is close to the query-th
 /// node in the nodes. 0 for node1 and 1 for node2.
 template <typename BV>
-size_t select(size_t query, size_t node1, size_t node2, NodeBase<BV>* nodes);
+size_t select(size_t query, size_t node1, size_t node2, NodeBase<BV> *nodes);
 
 /// @brief select the node from node1 and node2 which is close to the query
 /// AABB. 0 for node1 and 1 for node2.
 template <typename BV>
-size_t select(const BV& query, size_t node1, size_t node2, NodeBase<BV>* nodes);
+size_t select(const BV &query, size_t node1, size_t node2, NodeBase<BV> *nodes);
 
-}  // namespace implementation_array
-}  // namespace detail
-}  // namespace fcl
-}  // namespace hpp
+} // namespace implementation_array
+} // namespace detail
+} // namespace fcl
+} // namespace hpp
 
 #include "hpp/fcl/broadphase/detail/hierarchy_tree_array-inl.h"
 
