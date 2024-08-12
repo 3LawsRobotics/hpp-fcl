@@ -38,17 +38,17 @@
 #ifndef GEOMETRIC_SHAPE_TO_BVH_MODEL_H
 #define GEOMETRIC_SHAPE_TO_BVH_MODEL_H
 
-#include <hpp/fcl/shape/geometric_shapes.h>
-#include <hpp/fcl/BVH/BVH_model.h>
 #include <boost/math/constants/constants.hpp>
+#include <hpp/fcl/BVH/BVH_model.h>
+#include <hpp/fcl/shape/geometric_shapes.h>
 
 namespace hpp {
 namespace fcl {
 
 /// @brief Generate BVH model from box
 template <typename BV>
-void generateBVHModel(BVHModel<BV>& model, const Box& shape,
-                      const Transform3f& pose) {
+void generateBVHModel(BVHModel<BV> &model, const Box &shape,
+                      const Transform3f &pose) {
   FCL_REAL a = shape.halfSide[0];
   FCL_REAL b = shape.halfSide[1];
   FCL_REAL c = shape.halfSide[2];
@@ -89,8 +89,8 @@ void generateBVHModel(BVHModel<BV>& model, const Box& shape,
 /// @brief Generate BVH model from sphere, given the number of segments along
 /// longitude and number of rings along latitude.
 template <typename BV>
-void generateBVHModel(BVHModel<BV>& model, const Sphere& shape,
-                      const Transform3f& pose, unsigned int seg,
+void generateBVHModel(BVHModel<BV> &model, const Sphere &shape,
+                      const Transform3f &pose, unsigned int seg,
                       unsigned int ring) {
   std::vector<Vec3f> points;
   std::vector<Triangle> tri_indices;
@@ -155,12 +155,13 @@ void generateBVHModel(BVHModel<BV>& model, const Sphere& shape,
 /// then the number of triangles is r * r * N so that the area represented by a
 /// single triangle is approximately the same.s
 template <typename BV>
-void generateBVHModel(BVHModel<BV>& model, const Sphere& shape,
-                      const Transform3f& pose,
+void generateBVHModel(BVHModel<BV> &model, const Sphere &shape,
+                      const Transform3f &pose,
                       unsigned int n_faces_for_unit_sphere) {
   FCL_REAL r = shape.radius;
   FCL_REAL n_low_bound =
-      std::sqrt((FCL_REAL)n_faces_for_unit_sphere / FCL_REAL(2.)) * r * r;
+      std::sqrt((FCL_REAL)n_faces_for_unit_sphere / FCL_REAL(FCL_REAL(2.))) *
+      r * r;
   unsigned int ring = (unsigned int)ceil(n_low_bound);
   unsigned int seg = (unsigned int)ceil(n_low_bound);
 
@@ -170,8 +171,8 @@ void generateBVHModel(BVHModel<BV>& model, const Sphere& shape,
 /// @brief Generate BVH model from cylinder, given the number of segments along
 /// circle and the number of segments along axis.
 template <typename BV>
-void generateBVHModel(BVHModel<BV>& model, const Cylinder& shape,
-                      const Transform3f& pose, unsigned int tot,
+void generateBVHModel(BVHModel<BV> &model, const Cylinder &shape,
+                      const Transform3f &pose, unsigned int tot,
                       unsigned int h_num) {
   std::vector<Vec3f> points;
   std::vector<Triangle> tri_indices;
@@ -243,8 +244,8 @@ void generateBVHModel(BVHModel<BV>& model, const Cylinder& shape,
 /// tot for a cylinder with unit radius. For cylinder with larger radius, the
 /// number of circle split number is r * tot.
 template <typename BV>
-void generateBVHModel(BVHModel<BV>& model, const Cylinder& shape,
-                      const Transform3f& pose,
+void generateBVHModel(BVHModel<BV> &model, const Cylinder &shape,
+                      const Transform3f &pose,
                       unsigned int tot_for_unit_cylinder) {
   FCL_REAL r = shape.radius;
   FCL_REAL h = 2 * shape.halfLength;
@@ -262,8 +263,8 @@ void generateBVHModel(BVHModel<BV>& model, const Cylinder& shape,
 /// @brief Generate BVH model from cone, given the number of segments along
 /// circle and the number of segments along axis.
 template <typename BV>
-void generateBVHModel(BVHModel<BV>& model, const Cone& shape,
-                      const Transform3f& pose, unsigned int tot,
+void generateBVHModel(BVHModel<BV> &model, const Cone &shape,
+                      const Transform3f &pose, unsigned int tot,
                       unsigned int h_num) {
   std::vector<Vec3f> points;
   std::vector<Triangle> tri_indices;
@@ -280,7 +281,7 @@ void generateBVHModel(BVHModel<BV>& model, const Cone& shape,
 
   for (unsigned int i = 0; i < h_num - 1; ++i) {
     FCL_REAL h_i = h - (i + 1) * hd;
-    FCL_REAL rh = r * (0.5 - h_i / h / 2);
+    FCL_REAL rh = r * (FCL_REAL(0.5) - h_i / h / 2);
     for (unsigned int j = 0; j < tot; ++j) {
       points.push_back(
           Vec3f(rh * cos(phi + phid * j), rh * sin(phi + phid * j), h_i));
@@ -335,8 +336,8 @@ void generateBVHModel(BVHModel<BV>& model, const Cone& shape,
 /// tot for a cylinder with unit radius. For cone with larger radius, the number
 /// of circle split number is r * tot.
 template <typename BV>
-void generateBVHModel(BVHModel<BV>& model, const Cone& shape,
-                      const Transform3f& pose, unsigned int tot_for_unit_cone) {
+void generateBVHModel(BVHModel<BV> &model, const Cone &shape,
+                      const Transform3f &pose, unsigned int tot_for_unit_cone) {
   FCL_REAL r = shape.radius;
   FCL_REAL h = 2 * shape.halfLength;
 
@@ -350,8 +351,8 @@ void generateBVHModel(BVHModel<BV>& model, const Cone& shape,
   generateBVHModel(model, shape, pose, tot, h_num);
 }
 
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp
 
 #endif

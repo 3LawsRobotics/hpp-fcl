@@ -36,8 +36,8 @@
 /** \author Jia Pan */
 
 #include <hpp/fcl/BV/kDOP.h>
-#include <limits>
 #include <iostream>
+#include <limits>
 
 #include <hpp/fcl/collision_data.h>
 
@@ -45,7 +45,7 @@ namespace hpp {
 namespace fcl {
 
 /// @brief Find the smaller and larger one of two values
-inline void minmax(FCL_REAL a, FCL_REAL b, FCL_REAL& minv, FCL_REAL& maxv) {
+inline void minmax(FCL_REAL a, FCL_REAL b, FCL_REAL &minv, FCL_REAL &maxv) {
   if (a > b) {
     minv = b;
     maxv = a;
@@ -55,19 +55,19 @@ inline void minmax(FCL_REAL a, FCL_REAL b, FCL_REAL& minv, FCL_REAL& maxv) {
   }
 }
 /// @brief Merge the interval [minv, maxv] and value p/
-inline void minmax(FCL_REAL p, FCL_REAL& minv, FCL_REAL& maxv) {
-  if (p > maxv) maxv = p;
-  if (p < minv) minv = p;
+inline void minmax(FCL_REAL p, FCL_REAL &minv, FCL_REAL &maxv) {
+  if (p > maxv)
+    maxv = p;
+  if (p < minv)
+    minv = p;
 }
 
 /// @brief Compute the distances to planes with normals from KDOP vectors except
 /// those of AABB face planes
-template <short N>
-void getDistances(const Vec3f& /*p*/, FCL_REAL* /*d*/) {}
+template <short N> void getDistances(const Vec3f & /*p*/, FCL_REAL * /*d*/) {}
 
 /// @brief Specification of getDistances
-template <>
-inline void getDistances<5>(const Vec3f& p, FCL_REAL* d) {
+template <> inline void getDistances<5>(const Vec3f &p, FCL_REAL *d) {
   d[0] = p[0] + p[1];
   d[1] = p[0] + p[2];
   d[2] = p[1] + p[2];
@@ -75,8 +75,7 @@ inline void getDistances<5>(const Vec3f& p, FCL_REAL* d) {
   d[4] = p[0] - p[2];
 }
 
-template <>
-inline void getDistances<6>(const Vec3f& p, FCL_REAL* d) {
+template <> inline void getDistances<6>(const Vec3f &p, FCL_REAL *d) {
   d[0] = p[0] + p[1];
   d[1] = p[0] + p[2];
   d[2] = p[1] + p[2];
@@ -85,8 +84,7 @@ inline void getDistances<6>(const Vec3f& p, FCL_REAL* d) {
   d[5] = p[1] - p[2];
 }
 
-template <>
-inline void getDistances<9>(const Vec3f& p, FCL_REAL* d) {
+template <> inline void getDistances<9>(const Vec3f &p, FCL_REAL *d) {
   d[0] = p[0] + p[1];
   d[1] = p[0] + p[2];
   d[2] = p[1] + p[2];
@@ -98,15 +96,13 @@ inline void getDistances<9>(const Vec3f& p, FCL_REAL* d) {
   d[8] = p[1] + p[2] - p[0];
 }
 
-template <short N>
-KDOP<N>::KDOP() {
+template <short N> KDOP<N>::KDOP() {
   FCL_REAL real_max = (std::numeric_limits<FCL_REAL>::max)();
   dist_.template head<N / 2>().setConstant(real_max);
   dist_.template tail<N / 2>().setConstant(-real_max);
 }
 
-template <short N>
-KDOP<N>::KDOP(const Vec3f& v) {
+template <short N> KDOP<N>::KDOP(const Vec3f &v) {
   for (short i = 0; i < 3; ++i) {
     dist_[i] = dist_[N / 2 + i] = v[i];
   }
@@ -118,8 +114,7 @@ KDOP<N>::KDOP(const Vec3f& v) {
   }
 }
 
-template <short N>
-KDOP<N>::KDOP(const Vec3f& a, const Vec3f& b) {
+template <short N> KDOP<N>::KDOP(const Vec3f &a, const Vec3f &b) {
   for (short i = 0; i < 3; ++i) {
     minmax(a[i], b[i], dist_[i], dist_[i + N / 2]);
   }
@@ -132,8 +127,7 @@ KDOP<N>::KDOP(const Vec3f& a, const Vec3f& b) {
   }
 }
 
-template <short N>
-bool KDOP<N>::overlap(const KDOP<N>& other) const {
+template <short N> bool KDOP<N>::overlap(const KDOP<N> &other) const {
   if ((dist_.template head<N / 2>() > other.dist_.template tail<N / 2>()).any())
     return false;
   if ((dist_.template tail<N / 2>() < other.dist_.template head<N / 2>()).any())
@@ -142,8 +136,8 @@ bool KDOP<N>::overlap(const KDOP<N>& other) const {
 }
 
 template <short N>
-bool KDOP<N>::overlap(const KDOP<N>& other, const CollisionRequest& request,
-                      FCL_REAL& sqrDistLowerBound) const {
+bool KDOP<N>::overlap(const KDOP<N> &other, const CollisionRequest &request,
+                      FCL_REAL &sqrDistLowerBound) const {
   const FCL_REAL breakDistance(request.break_distance +
                                request.security_margin);
 
@@ -167,23 +161,25 @@ bool KDOP<N>::overlap(const KDOP<N>& other, const CollisionRequest& request,
   return true;
 }
 
-template <short N>
-bool KDOP<N>::inside(const Vec3f& p) const {
-  if ((p.array() < dist_.template head<3>()).any()) return false;
-  if ((p.array() > dist_.template segment<3>(N / 2)).any()) return false;
+template <short N> bool KDOP<N>::inside(const Vec3f &p) const {
+  if ((p.array() < dist_.template head<3>()).any())
+    return false;
+  if ((p.array() > dist_.template segment<3>(N / 2)).any())
+    return false;
 
   enum { P = ((N - 6) / 2) };
   Eigen::Array<FCL_REAL, P, 1> d;
   getDistances<P>(p, d.data());
 
-  if ((d < dist_.template segment<P>(3)).any()) return false;
-  if ((d > dist_.template segment<P>(3 + N / 2)).any()) return false;
+  if ((d < dist_.template segment<P>(3)).any())
+    return false;
+  if ((d > dist_.template segment<P>(3 + N / 2)).any())
+    return false;
 
   return true;
 }
 
-template <short N>
-KDOP<N>& KDOP<N>::operator+=(const Vec3f& p) {
+template <short N> KDOP<N> &KDOP<N>::operator+=(const Vec3f &p) {
   for (short i = 0; i < 3; ++i) {
     minmax(p[i], dist_[i], dist_[N / 2 + i]);
   }
@@ -197,8 +193,7 @@ KDOP<N>& KDOP<N>::operator+=(const Vec3f& p) {
   return *this;
 }
 
-template <short N>
-KDOP<N>& KDOP<N>::operator+=(const KDOP<N>& other) {
+template <short N> KDOP<N> &KDOP<N>::operator+=(const KDOP<N> &other) {
   for (short i = 0; i < N / 2; ++i) {
     dist_[i] = std::min(other.dist_[i], dist_[i]);
     dist_[i + N / 2] = std::max(other.dist_[i + N / 2], dist_[i + N / 2]);
@@ -206,21 +201,19 @@ KDOP<N>& KDOP<N>::operator+=(const KDOP<N>& other) {
   return *this;
 }
 
-template <short N>
-KDOP<N> KDOP<N>::operator+(const KDOP<N>& other) const {
+template <short N> KDOP<N> KDOP<N>::operator+(const KDOP<N> &other) const {
   KDOP<N> res(*this);
   return res += other;
 }
 
 template <short N>
-FCL_REAL KDOP<N>::distance(const KDOP<N>& /*other*/, Vec3f* /*P*/,
-                           Vec3f* /*Q*/) const {
+FCL_REAL KDOP<N>::distance(const KDOP<N> & /*other*/, Vec3f * /*P*/,
+                           Vec3f * /*Q*/) const {
   std::cerr << "KDOP distance not implemented!" << std::endl;
-  return 0.0;
+  return FCL_REAL(0.);
 }
 
-template <short N>
-KDOP<N> translate(const KDOP<N>& bv, const Vec3f& t) {
+template <short N> KDOP<N> translate(const KDOP<N> &bv, const Vec3f &t) {
   KDOP<N> res(bv);
   for (short i = 0; i < 3; ++i) {
     res.dist(i) += t[i];
@@ -241,10 +234,10 @@ template class KDOP<16>;
 template class KDOP<18>;
 template class KDOP<24>;
 
-template KDOP<16> translate<16>(const KDOP<16>&, const Vec3f&);
-template KDOP<18> translate<18>(const KDOP<18>&, const Vec3f&);
-template KDOP<24> translate<24>(const KDOP<24>&, const Vec3f&);
+template KDOP<16> translate<16>(const KDOP<16> &, const Vec3f &);
+template KDOP<18> translate<18>(const KDOP<18> &, const Vec3f &);
+template KDOP<24> translate<24>(const KDOP<24> &, const Vec3f &);
 
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp

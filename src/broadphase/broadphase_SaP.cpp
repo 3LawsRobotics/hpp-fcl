@@ -41,18 +41,20 @@ namespace hpp {
 namespace fcl {
 
 //==============================================================================
-void SaPCollisionManager::unregisterObject(CollisionObject* obj) {
+void SaPCollisionManager::unregisterObject(CollisionObject *obj) {
   auto it = AABB_arr.begin();
   for (auto end = AABB_arr.end(); it != end; ++it) {
-    if ((*it)->obj == obj) break;
+    if ((*it)->obj == obj)
+      break;
   }
 
   AABB_arr.erase(it);
   obj_aabb_map.erase(obj);
 
-  if (it == AABB_arr.end()) return;
+  if (it == AABB_arr.end())
+    return;
 
-  SaPAABB* curr = *it;
+  SaPAABB *curr = *it;
   *it = nullptr;
 
   for (int coord = 0; coord < 3; ++coord) {
@@ -95,16 +97,17 @@ SaPCollisionManager::~SaPCollisionManager() { clear(); }
 
 //==============================================================================
 void SaPCollisionManager::registerObjects(
-    const std::vector<CollisionObject*>& other_objs) {
-  if (other_objs.empty()) return;
+    const std::vector<CollisionObject *> &other_objs) {
+  if (other_objs.empty())
+    return;
 
   if (size() > 0)
     BroadPhaseCollisionManager::registerObjects(other_objs);
   else {
-    std::vector<EndPoint*> endpoints(2 * other_objs.size());
+    std::vector<EndPoint *> endpoints(2 * other_objs.size());
 
     for (size_t i = 0; i < other_objs.size(); ++i) {
-      SaPAABB* sapaabb = new SaPAABB();
+      SaPAABB *sapaabb = new SaPAABB();
       sapaabb->obj = other_objs[i];
       sapaabb->lo = new EndPoint();
       sapaabb->hi = new EndPoint();
@@ -148,24 +151,28 @@ void SaPCollisionManager::registerObjects(
     }
 
     int axis = 0;
-    if (scale[axis] < scale[1]) axis = 1;
-    if (scale[axis] < scale[2]) axis = 2;
+    if (scale[axis] < scale[1])
+      axis = 1;
+    if (scale[axis] < scale[2])
+      axis = 2;
 
-    EndPoint* pos = elist[axis];
+    EndPoint *pos = elist[axis];
 
     while (pos != nullptr) {
-      EndPoint* pos_next = nullptr;
-      SaPAABB* aabb = pos->aabb;
-      EndPoint* pos_it = pos->next[axis];
+      EndPoint *pos_next = nullptr;
+      SaPAABB *aabb = pos->aabb;
+      EndPoint *pos_it = pos->next[axis];
 
       while (pos_it != nullptr) {
         if (pos_it->aabb == aabb) {
-          if (pos_next == nullptr) pos_next = pos_it;
+          if (pos_next == nullptr)
+            pos_next = pos_it;
           break;
         }
 
         if (pos_it->minmax == 0) {
-          if (pos_next == nullptr) pos_next = pos_it;
+          if (pos_next == nullptr)
+            pos_next = pos_it;
           if (pos_it->aabb->cached.overlap(aabb->cached))
             overlap_pairs.emplace_back(pos_it->aabb->obj, aabb->obj);
         }
@@ -180,8 +187,8 @@ void SaPCollisionManager::registerObjects(
 }
 
 //==============================================================================
-void SaPCollisionManager::registerObject(CollisionObject* obj) {
-  SaPAABB* curr = new SaPAABB;
+void SaPCollisionManager::registerObject(CollisionObject *obj) {
+  SaPAABB *curr = new SaPAABB;
   curr->cached = obj->getAABB();
   curr->obj = obj;
   curr->lo = new EndPoint;
@@ -193,16 +200,16 @@ void SaPCollisionManager::registerObject(CollisionObject* obj) {
   curr->hi->aabb = curr;
 
   for (int coord = 0; coord < 3; ++coord) {
-    EndPoint* current = elist[coord];
+    EndPoint *current = elist[coord];
 
     // first insert the lo end point
-    if (current == nullptr)  // empty list
+    if (current == nullptr) // empty list
     {
       elist[coord] = curr->lo;
       curr->lo->prev[coord] = curr->lo->next[coord] = nullptr;
-    } else  // otherwise, find the correct location in the list and insert
+    } else // otherwise, find the correct location in the list and insert
     {
-      EndPoint* curr_lo = curr->lo;
+      EndPoint *curr_lo = curr->lo;
       FCL_REAL curr_lo_val = curr_lo->getVal()[coord];
       while ((current->getVal()[coord] < curr_lo_val) &&
              (current->next[coord] != nullptr))
@@ -227,7 +234,7 @@ void SaPCollisionManager::registerObject(CollisionObject* obj) {
     // now insert hi end point
     current = curr->lo;
 
-    EndPoint* curr_hi = curr->hi;
+    EndPoint *curr_hi = curr->hi;
     FCL_REAL curr_hi_val = curr_hi->getVal()[coord];
 
     if (coord == 0) {
@@ -270,7 +277,8 @@ void SaPCollisionManager::registerObject(CollisionObject* obj) {
 
 //==============================================================================
 void SaPCollisionManager::setup() {
-  if (size() == 0) return;
+  if (size() == 0)
+    return;
 
   FCL_REAL scale[3];
   scale[0] = (velist[0].back())->getVal(0) - velist[0][0]->getVal(0);
@@ -278,16 +286,19 @@ void SaPCollisionManager::setup() {
   ;
   scale[2] = (velist[2].back())->getVal(2) - velist[2][0]->getVal(2);
   int axis = 0;
-  if (scale[axis] < scale[1]) axis = 1;
-  if (scale[axis] < scale[2]) axis = 2;
+  if (scale[axis] < scale[1])
+    axis = 1;
+  if (scale[axis] < scale[2])
+    axis = 2;
   optimal_axis = axis;
 }
 
 //==============================================================================
-void SaPCollisionManager::update_(SaPAABB* updated_aabb) {
-  if (updated_aabb->cached == updated_aabb->obj->getAABB()) return;
+void SaPCollisionManager::update_(SaPAABB *updated_aabb) {
+  if (updated_aabb->cached == updated_aabb->obj->getAABB())
+    return;
 
-  SaPAABB* current = updated_aabb;
+  SaPAABB *current = updated_aabb;
 
   Vec3f new_min = current->obj->getAABB().min_;
   Vec3f new_max = current->obj->getAABB().max_;
@@ -296,17 +307,17 @@ void SaPCollisionManager::update_(SaPAABB* updated_aabb) {
   dummy.cached = current->obj->getAABB();
 
   for (int coord = 0; coord < 3; ++coord) {
-    int direction;  // -1 reverse, 0 nochange, 1 forward
-    EndPoint* temp;
+    int direction; // FCL_REAL(-1) reverse, 0 nochange, 1 forward
+    EndPoint *temp;
 
     if (current->lo->getVal((size_t)coord) > new_min[coord])
-      direction = -1;
+      direction = FCL_REAL(-1);
     else if (current->lo->getVal((size_t)coord) < new_min[coord])
       direction = 1;
     else
       direction = 0;
 
-    if (direction == -1) {
+    if (direction == FCL_REAL(-1)) {
       // first update the "lo" endpoint of the interval
       if (current->lo->prev[coord] != nullptr) {
         temp = current->lo;
@@ -417,7 +428,7 @@ void SaPCollisionManager::update_(SaPAABB* updated_aabb) {
 void SaPCollisionManager::updateVelist() {
   for (int coord = 0; coord < 3; ++coord) {
     velist[coord].resize(size() * 2);
-    EndPoint* current = elist[coord];
+    EndPoint *current = elist[coord];
     size_t id = 0;
     while (current) {
       velist[coord][id] = current;
@@ -428,7 +439,7 @@ void SaPCollisionManager::updateVelist() {
 }
 
 //==============================================================================
-void SaPCollisionManager::update(CollisionObject* updated_obj) {
+void SaPCollisionManager::update(CollisionObject *updated_obj) {
   update_(obj_aabb_map[updated_obj]);
 
   updateVelist();
@@ -438,7 +449,7 @@ void SaPCollisionManager::update(CollisionObject* updated_obj) {
 
 //==============================================================================
 void SaPCollisionManager::update(
-    const std::vector<CollisionObject*>& updated_objs) {
+    const std::vector<CollisionObject *> &updated_objs) {
   for (size_t i = 0; i < updated_objs.size(); ++i)
     update_(obj_aabb_map[updated_objs[i]]);
 
@@ -483,7 +494,7 @@ void SaPCollisionManager::clear() {
 
 //==============================================================================
 void SaPCollisionManager::getObjects(
-    std::vector<CollisionObject*>& objs) const {
+    std::vector<CollisionObject *> &objs) const {
   objs.resize(AABB_arr.size());
   size_t i = 0;
   for (auto it = AABB_arr.cbegin(), end = AABB_arr.cend(); it != end;
@@ -493,10 +504,10 @@ void SaPCollisionManager::getObjects(
 }
 
 //==============================================================================
-bool SaPCollisionManager::collide_(CollisionObject* obj,
-                                   CollisionCallBackBase* callback) const {
+bool SaPCollisionManager::collide_(CollisionObject *obj,
+                                   CollisionCallBackBase *callback) const {
   int axis = optimal_axis;
-  const AABB& obj_aabb = obj->getAABB();
+  const AABB &obj_aabb = obj->getAABB();
 
   FCL_REAL min_val = obj_aabb.min_[axis];
   //  FCL_REAL max_val = obj_aabb.max_[axis];
@@ -519,17 +530,19 @@ bool SaPCollisionManager::collide_(CollisionObject* obj,
                               &EndPoint::getVal),
                           std::placeholders::_2, axis)));
 
-  EndPoint* end_pos = nullptr;
-  if (res_it != velist[axis].end()) end_pos = *res_it;
+  EndPoint *end_pos = nullptr;
+  if (res_it != velist[axis].end())
+    end_pos = *res_it;
 
-  EndPoint* pos = elist[axis];
+  EndPoint *pos = elist[axis];
 
   while (pos != end_pos) {
     if (pos->aabb->obj != obj) {
       if ((pos->minmax == 0) &&
           (pos->aabb->hi->getVal((size_t)axis) >= min_val)) {
         if (pos->aabb->cached.overlap(obj->getAABB()))
-          if ((*callback)(obj, pos->aabb->obj)) return true;
+          if ((*callback)(obj, pos->aabb->obj))
+            return true;
       }
     }
     pos = pos->next[axis];
@@ -539,7 +552,7 @@ bool SaPCollisionManager::collide_(CollisionObject* obj,
 }
 
 //==============================================================================
-void SaPCollisionManager::addToOverlapPairs(const SaPPair& p) {
+void SaPCollisionManager::addToOverlapPairs(const SaPPair &p) {
   bool repeated = false;
   for (auto it = overlap_pairs.begin(), end = overlap_pairs.end(); it != end;
        ++it) {
@@ -549,11 +562,12 @@ void SaPCollisionManager::addToOverlapPairs(const SaPPair& p) {
     }
   }
 
-  if (!repeated) overlap_pairs.push_back(p);
+  if (!repeated)
+    overlap_pairs.push_back(p);
 }
 
 //==============================================================================
-void SaPCollisionManager::removeFromOverlapPairs(const SaPPair& p) {
+void SaPCollisionManager::removeFromOverlapPairs(const SaPPair &p) {
   for (auto it = overlap_pairs.begin(), end = overlap_pairs.end(); it != end;
        ++it) {
     if (*it == p) {
@@ -566,19 +580,20 @@ void SaPCollisionManager::removeFromOverlapPairs(const SaPPair& p) {
 }
 
 //==============================================================================
-void SaPCollisionManager::collide(CollisionObject* obj,
-                                  CollisionCallBackBase* callback) const {
+void SaPCollisionManager::collide(CollisionObject *obj,
+                                  CollisionCallBackBase *callback) const {
   callback->init();
-  if (size() == 0) return;
+  if (size() == 0)
+    return;
 
   collide_(obj, callback);
 }
 
 //==============================================================================
-bool SaPCollisionManager::distance_(CollisionObject* obj,
-                                    DistanceCallBackBase* callback,
-                                    FCL_REAL& min_dist) const {
-  Vec3f delta = (obj->getAABB().max_ - obj->getAABB().min_) * 0.5;
+bool SaPCollisionManager::distance_(CollisionObject *obj,
+                                    DistanceCallBackBase *callback,
+                                    FCL_REAL &min_dist) const {
+  Vec3f delta = (obj->getAABB().max_ - obj->getAABB().min_) * FCL_REAL(0.5);
   AABB aabb = obj->getAABB();
 
   if (min_dist < (std::numeric_limits<FCL_REAL>::max)()) {
@@ -591,7 +606,7 @@ bool SaPCollisionManager::distance_(CollisionObject* obj,
   int status = 1;
   FCL_REAL old_min_distance;
 
-  EndPoint* start_pos = elist[axis];
+  EndPoint *start_pos = elist[axis];
 
   while (1) {
     old_min_distance = min_dist;
@@ -614,26 +629,29 @@ bool SaPCollisionManager::distance_(CollisionObject* obj,
                                 &EndPoint::getVal),
                             std::placeholders::_2, axis)));
 
-    EndPoint* end_pos = nullptr;
-    if (res_it != velist[axis].end()) end_pos = *res_it;
+    EndPoint *end_pos = nullptr;
+    if (res_it != velist[axis].end())
+      end_pos = *res_it;
 
-    EndPoint* pos = start_pos;
+    EndPoint *pos = start_pos;
 
     while (pos != end_pos) {
       // can change to pos->aabb->hi->getVal(axis) >= min_val - min_dist, and
       // then update start_pos to end_pos. but this seems slower.
       if ((pos->minmax == 0) &&
           (pos->aabb->hi->getVal((size_t)axis) >= min_val)) {
-        CollisionObject* curr_obj = pos->aabb->obj;
+        CollisionObject *curr_obj = pos->aabb->obj;
         if (curr_obj != obj) {
           if (!this->enable_tested_set_) {
             if (pos->aabb->cached.distance(obj->getAABB()) < min_dist) {
-              if ((*callback)(curr_obj, obj, min_dist)) return true;
+              if ((*callback)(curr_obj, obj, min_dist))
+                return true;
             }
           } else {
             if (!this->inTestedSet(curr_obj, obj)) {
               if (pos->aabb->cached.distance(obj->getAABB()) < min_dist) {
-                if ((*callback)(curr_obj, obj, min_dist)) return true;
+                if ((*callback)(curr_obj, obj, min_dist))
+                  return true;
               }
 
               this->insertTestedSet(curr_obj, obj);
@@ -657,7 +675,7 @@ bool SaPCollisionManager::distance_(CollisionObject* obj,
           if (aabb == obj->getAABB())
             aabb.expand(delta);
           else
-            aabb.expand(obj->getAABB(), 2.0);
+            aabb.expand(obj->getAABB(), FCL_REAL(2.0));
         }
       }
     } else if (status == 0)
@@ -668,10 +686,11 @@ bool SaPCollisionManager::distance_(CollisionObject* obj,
 }
 
 //==============================================================================
-void SaPCollisionManager::distance(CollisionObject* obj,
-                                   DistanceCallBackBase* callback) const {
+void SaPCollisionManager::distance(CollisionObject *obj,
+                                   DistanceCallBackBase *callback) const {
   callback->init();
-  if (size() == 0) return;
+  if (size() == 0)
+    return;
 
   FCL_REAL min_dist = (std::numeric_limits<FCL_REAL>::max)();
 
@@ -679,23 +698,26 @@ void SaPCollisionManager::distance(CollisionObject* obj,
 }
 
 //==============================================================================
-void SaPCollisionManager::collide(CollisionCallBackBase* callback) const {
+void SaPCollisionManager::collide(CollisionCallBackBase *callback) const {
   callback->init();
-  if (size() == 0) return;
+  if (size() == 0)
+    return;
 
   for (auto it = overlap_pairs.cbegin(), end = overlap_pairs.cend(); it != end;
        ++it) {
-    CollisionObject* obj1 = it->obj1;
-    CollisionObject* obj2 = it->obj2;
+    CollisionObject *obj1 = it->obj1;
+    CollisionObject *obj2 = it->obj2;
 
-    if ((*callback)(obj1, obj2)) return;
+    if ((*callback)(obj1, obj2))
+      return;
   }
 }
 
 //==============================================================================
-void SaPCollisionManager::distance(DistanceCallBackBase* callback) const {
+void SaPCollisionManager::distance(DistanceCallBackBase *callback) const {
   callback->init();
-  if (size() == 0) return;
+  if (size() == 0)
+    return;
 
   this->enable_tested_set_ = true;
   this->tested_set.clear();
@@ -703,7 +725,8 @@ void SaPCollisionManager::distance(DistanceCallBackBase* callback) const {
   FCL_REAL min_dist = (std::numeric_limits<FCL_REAL>::max)();
 
   for (auto it = AABB_arr.cbegin(), end = AABB_arr.cend(); it != end; ++it) {
-    if (distance_((*it)->obj, callback, min_dist)) break;
+    if (distance_((*it)->obj, callback, min_dist))
+      break;
   }
 
   this->enable_tested_set_ = false;
@@ -711,13 +734,14 @@ void SaPCollisionManager::distance(DistanceCallBackBase* callback) const {
 }
 
 //==============================================================================
-void SaPCollisionManager::collide(BroadPhaseCollisionManager* other_manager_,
-                                  CollisionCallBackBase* callback) const {
+void SaPCollisionManager::collide(BroadPhaseCollisionManager *other_manager_,
+                                  CollisionCallBackBase *callback) const {
   callback->init();
-  SaPCollisionManager* other_manager =
-      static_cast<SaPCollisionManager*>(other_manager_);
+  SaPCollisionManager *other_manager =
+      static_cast<SaPCollisionManager *>(other_manager_);
 
-  if ((size() == 0) || (other_manager->size() == 0)) return;
+  if ((size() == 0) || (other_manager->size() == 0))
+    return;
 
   if (this == other_manager) {
     collide(callback);
@@ -726,25 +750,28 @@ void SaPCollisionManager::collide(BroadPhaseCollisionManager* other_manager_,
 
   if (this->size() < other_manager->size()) {
     for (auto it = AABB_arr.cbegin(); it != AABB_arr.cend(); ++it) {
-      if (other_manager->collide_((*it)->obj, callback)) return;
+      if (other_manager->collide_((*it)->obj, callback))
+        return;
     }
   } else {
     for (auto it = other_manager->AABB_arr.cbegin(),
               end = other_manager->AABB_arr.cend();
          it != end; ++it) {
-      if (collide_((*it)->obj, callback)) return;
+      if (collide_((*it)->obj, callback))
+        return;
     }
   }
 }
 
 //==============================================================================
-void SaPCollisionManager::distance(BroadPhaseCollisionManager* other_manager_,
-                                   DistanceCallBackBase* callback) const {
+void SaPCollisionManager::distance(BroadPhaseCollisionManager *other_manager_,
+                                   DistanceCallBackBase *callback) const {
   callback->init();
-  SaPCollisionManager* other_manager =
-      static_cast<SaPCollisionManager*>(other_manager_);
+  SaPCollisionManager *other_manager =
+      static_cast<SaPCollisionManager *>(other_manager_);
 
-  if ((size() == 0) || (other_manager->size() == 0)) return;
+  if ((size() == 0) || (other_manager->size() == 0))
+    return;
 
   if (this == other_manager) {
     distance(callback);
@@ -755,13 +782,15 @@ void SaPCollisionManager::distance(BroadPhaseCollisionManager* other_manager_,
 
   if (this->size() < other_manager->size()) {
     for (auto it = AABB_arr.cbegin(), end = AABB_arr.cend(); it != end; ++it) {
-      if (other_manager->distance_((*it)->obj, callback, min_dist)) return;
+      if (other_manager->distance_((*it)->obj, callback, min_dist))
+        return;
     }
   } else {
     for (auto it = other_manager->AABB_arr.cbegin(),
               end = other_manager->AABB_arr.cend();
          it != end; ++it) {
-      if (distance_((*it)->obj, callback, min_dist)) return;
+      if (distance_((*it)->obj, callback, min_dist))
+        return;
     }
   }
 }
@@ -773,7 +802,7 @@ bool SaPCollisionManager::empty() const { return AABB_arr.empty(); }
 size_t SaPCollisionManager::size() const { return AABB_arr.size(); }
 
 //==============================================================================
-const Vec3f& SaPCollisionManager::EndPoint::getVal() const {
+const Vec3f &SaPCollisionManager::EndPoint::getVal() const {
   if (minmax)
     return aabb->cached.max_;
   else
@@ -781,7 +810,7 @@ const Vec3f& SaPCollisionManager::EndPoint::getVal() const {
 }
 
 //==============================================================================
-Vec3f& SaPCollisionManager::EndPoint::getVal() {
+Vec3f &SaPCollisionManager::EndPoint::getVal() {
   if (minmax)
     return aabb->cached.max_;
   else
@@ -797,7 +826,7 @@ FCL_REAL SaPCollisionManager::EndPoint::getVal(size_t i) const {
 }
 
 //==============================================================================
-FCL_REAL& SaPCollisionManager::EndPoint::getVal(size_t i) {
+FCL_REAL &SaPCollisionManager::EndPoint::getVal(size_t i) {
   if (minmax)
     return aabb->cached.max_[(int)i];
   else
@@ -805,7 +834,7 @@ FCL_REAL& SaPCollisionManager::EndPoint::getVal(size_t i) {
 }
 
 //==============================================================================
-SaPCollisionManager::SaPPair::SaPPair(CollisionObject* a, CollisionObject* b) {
+SaPCollisionManager::SaPPair::SaPPair(CollisionObject *a, CollisionObject *b) {
   if (a < b) {
     obj1 = a;
     obj2 = b;
@@ -816,32 +845,32 @@ SaPCollisionManager::SaPPair::SaPPair(CollisionObject* a, CollisionObject* b) {
 }
 
 //==============================================================================
-bool SaPCollisionManager::SaPPair::operator==(const SaPPair& other) const {
+bool SaPCollisionManager::SaPPair::operator==(const SaPPair &other) const {
   return ((obj1 == other.obj1) && (obj2 == other.obj2));
 }
 
 //==============================================================================
-SaPCollisionManager::isUnregistered::isUnregistered(CollisionObject* obj_)
+SaPCollisionManager::isUnregistered::isUnregistered(CollisionObject *obj_)
     : obj(obj_) {}
 
 //==============================================================================
 bool SaPCollisionManager::isUnregistered::operator()(
-    const SaPPair& pair) const {
+    const SaPPair &pair) const {
   return (pair.obj1 == obj) || (pair.obj2 == obj);
 }
 
 //==============================================================================
-SaPCollisionManager::isNotValidPair::isNotValidPair(CollisionObject* obj1_,
-                                                    CollisionObject* obj2_)
+SaPCollisionManager::isNotValidPair::isNotValidPair(CollisionObject *obj1_,
+                                                    CollisionObject *obj2_)
     : obj1(obj1_), obj2(obj2_) {
   // Do nothing
 }
 
 //==============================================================================
-bool SaPCollisionManager::isNotValidPair::operator()(const SaPPair& pair) {
+bool SaPCollisionManager::isNotValidPair::operator()(const SaPPair &pair) {
   return (pair.obj1 == obj1) && (pair.obj2 == obj2);
 }
 
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp

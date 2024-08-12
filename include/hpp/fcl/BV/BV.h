@@ -38,11 +38,11 @@
 #ifndef HPP_FCL_BV_H
 #define HPP_FCL_BV_H
 
-#include <hpp/fcl/BV/kDOP.h>
 #include <hpp/fcl/BV/AABB.h>
 #include <hpp/fcl/BV/OBB.h>
-#include <hpp/fcl/BV/RSS.h>
 #include <hpp/fcl/BV/OBBRSS.h>
+#include <hpp/fcl/BV/RSS.h>
+#include <hpp/fcl/BV/kDOP.h>
 #include <hpp/fcl/BV/kIOS.h>
 #include <hpp/fcl/math/transform.h>
 
@@ -55,116 +55,111 @@ namespace details {
 
 /// @brief Convert a bounding volume of type BV1 in configuration tf1 to a
 /// bounding volume of type BV2 in I configuration.
-template <typename BV1, typename BV2>
-struct Converter {
-  static void convert(const BV1& bv1, const Transform3f& tf1, BV2& bv2);
-  static void convert(const BV1& bv1, BV2& bv2);
+template <typename BV1, typename BV2> struct Converter {
+  static void convert(const BV1 &bv1, const Transform3f &tf1, BV2 &bv2);
+  static void convert(const BV1 &bv1, BV2 &bv2);
 };
 
 /// @brief Convert from AABB to AABB, not very tight but is fast.
-template <>
-struct Converter<AABB, AABB> {
-  static void convert(const AABB& bv1, const Transform3f& tf1, AABB& bv2) {
-    const Vec3f& center = bv1.center();
-    FCL_REAL r = (bv1.max_ - bv1.min_).norm() * 0.5;
+template <> struct Converter<AABB, AABB> {
+  static void convert(const AABB &bv1, const Transform3f &tf1, AABB &bv2) {
+    const Vec3f &center = bv1.center();
+    FCL_REAL r = (bv1.max_ - bv1.min_).norm() * FCL_REAL(0.5);
     const Vec3f center2 = tf1.transform(center);
     bv2.min_ = center2 - Vec3f::Constant(r);
     bv2.max_ = center2 + Vec3f::Constant(r);
   }
 
-  static void convert(const AABB& bv1, AABB& bv2) { bv2 = bv1; }
+  static void convert(const AABB &bv1, AABB &bv2) { bv2 = bv1; }
 };
 
-template <>
-struct Converter<AABB, OBB> {
-  static void convert(const AABB& bv1, const Transform3f& tf1, OBB& bv2) {
+template <> struct Converter<AABB, OBB> {
+  static void convert(const AABB &bv1, const Transform3f &tf1, OBB &bv2) {
     bv2.To = tf1.transform(bv1.center());
-    bv2.extent.noalias() = (bv1.max_ - bv1.min_) * 0.5;
+    bv2.extent.noalias() = (bv1.max_ - bv1.min_) * FCL_REAL(0.5);
     bv2.axes = tf1.getRotation();
   }
 
-  static void convert(const AABB& bv1, OBB& bv2) {
+  static void convert(const AABB &bv1, OBB &bv2) {
     bv2.To = bv1.center();
-    bv2.extent.noalias() = (bv1.max_ - bv1.min_) * 0.5;
+    bv2.extent.noalias() = (bv1.max_ - bv1.min_) * FCL_REAL(0.5);
     bv2.axes.setIdentity();
   }
 };
 
-template <>
-struct Converter<OBB, OBB> {
-  static void convert(const OBB& bv1, const Transform3f& tf1, OBB& bv2) {
+template <> struct Converter<OBB, OBB> {
+  static void convert(const OBB &bv1, const Transform3f &tf1, OBB &bv2) {
     bv2.extent = bv1.extent;
     bv2.To = tf1.transform(bv1.To);
     bv2.axes.noalias() = tf1.getRotation() * bv1.axes;
   }
 
-  static void convert(const OBB& bv1, OBB& bv2) { bv2 = bv1; }
+  static void convert(const OBB &bv1, OBB &bv2) { bv2 = bv1; }
 };
 
-template <>
-struct Converter<OBBRSS, OBB> {
-  static void convert(const OBBRSS& bv1, const Transform3f& tf1, OBB& bv2) {
+template <> struct Converter<OBBRSS, OBB> {
+  static void convert(const OBBRSS &bv1, const Transform3f &tf1, OBB &bv2) {
     Converter<OBB, OBB>::convert(bv1.obb, tf1, bv2);
   }
 
-  static void convert(const OBBRSS& bv1, OBB& bv2) {
+  static void convert(const OBBRSS &bv1, OBB &bv2) {
     Converter<OBB, OBB>::convert(bv1.obb, bv2);
   }
 };
 
-template <>
-struct Converter<RSS, OBB> {
-  static void convert(const RSS& bv1, const Transform3f& tf1, OBB& bv2) {
-    bv2.extent = Vec3f(bv1.length[0] * 0.5 + bv1.radius,
-                       bv1.length[1] * 0.5 + bv1.radius, bv1.radius);
+template <> struct Converter<RSS, OBB> {
+  static void convert(const RSS &bv1, const Transform3f &tf1, OBB &bv2) {
+    bv2.extent = Vec3f(bv1.length[0] * FCL_REAL(0.5) + bv1.radius,
+                       bv1.length[1] * FCL_REAL(0.5) + bv1.radius,
+                       bv1.radius);
     bv2.To = tf1.transform(bv1.Tr);
     bv2.axes.noalias() = tf1.getRotation() * bv1.axes;
   }
 
-  static void convert(const RSS& bv1, OBB& bv2) {
-    bv2.extent = Vec3f(bv1.length[0] * 0.5 + bv1.radius,
-                       bv1.length[1] * 0.5 + bv1.radius, bv1.radius);
+  static void convert(const RSS &bv1, OBB &bv2) {
+    bv2.extent = Vec3f(bv1.length[0] * FCL_REAL(0.5) + bv1.radius,
+                       bv1.length[1] * FCL_REAL(0.5) + bv1.radius,
+                       bv1.radius);
     bv2.To = bv1.Tr;
     bv2.axes = bv1.axes;
   }
 };
 
-template <typename BV1>
-struct Converter<BV1, AABB> {
-  static void convert(const BV1& bv1, const Transform3f& tf1, AABB& bv2) {
-    const Vec3f& center = bv1.center();
-    FCL_REAL r = Vec3f(bv1.width(), bv1.height(), bv1.depth()).norm() * 0.5;
+template <typename BV1> struct Converter<BV1, AABB> {
+  static void convert(const BV1 &bv1, const Transform3f &tf1, AABB &bv2) {
+    const Vec3f &center = bv1.center();
+    FCL_REAL r = Vec3f(bv1.width(), bv1.height(), bv1.depth()).norm() *
+                 FCL_REAL(0.5);
     const Vec3f center2 = tf1.transform(center);
     bv2.min_ = center2 - Vec3f::Constant(r);
     bv2.max_ = center2 + Vec3f::Constant(r);
   }
 
-  static void convert(const BV1& bv1, AABB& bv2) {
-    const Vec3f& center = bv1.center();
-    FCL_REAL r = Vec3f(bv1.width(), bv1.height(), bv1.depth()).norm() * 0.5;
+  static void convert(const BV1 &bv1, AABB &bv2) {
+    const Vec3f &center = bv1.center();
+    FCL_REAL r = Vec3f(bv1.width(), bv1.height(), bv1.depth()).norm() *
+                 FCL_REAL(0.5);
     bv2.min_ = center - Vec3f::Constant(r);
     bv2.max_ = center + Vec3f::Constant(r);
   }
 };
 
-template <typename BV1>
-struct Converter<BV1, OBB> {
-  static void convert(const BV1& bv1, const Transform3f& tf1, OBB& bv2) {
+template <typename BV1> struct Converter<BV1, OBB> {
+  static void convert(const BV1 &bv1, const Transform3f &tf1, OBB &bv2) {
     AABB bv;
     Converter<BV1, AABB>::convert(bv1, bv);
     Converter<AABB, OBB>::convert(bv, tf1, bv2);
   }
 
-  static void convert(const BV1& bv1, OBB& bv2) {
+  static void convert(const BV1 &bv1, OBB &bv2) {
     AABB bv;
     Converter<BV1, AABB>::convert(bv1, bv);
     Converter<AABB, OBB>::convert(bv, bv2);
   }
 };
 
-template <>
-struct Converter<OBB, RSS> {
-  static void convert(const OBB& bv1, const Transform3f& tf1, RSS& bv2) {
+template <> struct Converter<OBB, RSS> {
+  static void convert(const OBB &bv1, const Transform3f &tf1, RSS &bv2) {
     bv2.Tr = tf1.transform(bv1.To);
     bv2.axes.noalias() = tf1.getRotation() * bv1.axes;
 
@@ -173,7 +168,7 @@ struct Converter<OBB, RSS> {
     bv2.length[1] = 2 * (bv1.extent[1] - bv2.radius);
   }
 
-  static void convert(const OBB& bv1, RSS& bv2) {
+  static void convert(const OBB &bv1, RSS &bv2) {
     bv2.Tr = bv1.To;
     bv2.axes = bv1.axes;
 
@@ -183,9 +178,8 @@ struct Converter<OBB, RSS> {
   }
 };
 
-template <>
-struct Converter<RSS, RSS> {
-  static void convert(const RSS& bv1, const Transform3f& tf1, RSS& bv2) {
+template <> struct Converter<RSS, RSS> {
+  static void convert(const RSS &bv1, const Transform3f &tf1, RSS &bv2) {
     bv2.Tr = tf1.transform(bv1.Tr);
     bv2.axes.noalias() = tf1.getRotation() * bv1.axes;
 
@@ -194,23 +188,21 @@ struct Converter<RSS, RSS> {
     bv2.length[1] = bv1.length[1];
   }
 
-  static void convert(const RSS& bv1, RSS& bv2) { bv2 = bv1; }
+  static void convert(const RSS &bv1, RSS &bv2) { bv2 = bv1; }
 };
 
-template <>
-struct Converter<OBBRSS, RSS> {
-  static void convert(const OBBRSS& bv1, const Transform3f& tf1, RSS& bv2) {
+template <> struct Converter<OBBRSS, RSS> {
+  static void convert(const OBBRSS &bv1, const Transform3f &tf1, RSS &bv2) {
     Converter<RSS, RSS>::convert(bv1.rss, tf1, bv2);
   }
 
-  static void convert(const OBBRSS& bv1, RSS& bv2) {
+  static void convert(const OBBRSS &bv1, RSS &bv2) {
     Converter<RSS, RSS>::convert(bv1.rss, bv2);
   }
 };
 
-template <>
-struct Converter<AABB, RSS> {
-  static void convert(const AABB& bv1, const Transform3f& tf1, RSS& bv2) {
+template <> struct Converter<AABB, RSS> {
+  static void convert(const AABB &bv1, const Transform3f &tf1, RSS &bv2) {
     bv2.Tr = tf1.transform(bv1.center());
 
     /// Sort the AABB edges so that AABB extents are ordered.
@@ -234,12 +226,12 @@ struct Converter<AABB, RSS> {
       }
     }
 
-    const Vec3f extent = (bv1.max_ - bv1.min_) * 0.5;
+    const Vec3f extent = (bv1.max_ - bv1.min_) * FCL_REAL(0.5);
     bv2.radius = extent[id[2]];
     bv2.length[0] = (extent[id[0]] - bv2.radius) * 2;
     bv2.length[1] = (extent[id[1]] - bv2.radius) * 2;
 
-    const Matrix3f& R = tf1.getRotation();
+    const Matrix3f &R = tf1.getRotation();
     const bool left_hand = (id[0] == (id[1] + 1) % 3);
     if (left_hand)
       bv2.axes.col(0) = -R.col(id[0]);
@@ -249,44 +241,43 @@ struct Converter<AABB, RSS> {
     bv2.axes.col(2) = R.col(id[2]);
   }
 
-  static void convert(const AABB& bv1, RSS& bv2) {
+  static void convert(const AABB &bv1, RSS &bv2) {
     convert(bv1, Transform3f(), bv2);
   }
 };
 
-template <>
-struct Converter<AABB, OBBRSS> {
-  static void convert(const AABB& bv1, const Transform3f& tf1, OBBRSS& bv2) {
+template <> struct Converter<AABB, OBBRSS> {
+  static void convert(const AABB &bv1, const Transform3f &tf1, OBBRSS &bv2) {
     Converter<AABB, OBB>::convert(bv1, tf1, bv2.obb);
     Converter<AABB, RSS>::convert(bv1, tf1, bv2.rss);
   }
 
-  static void convert(const AABB& bv1, OBBRSS& bv2) {
+  static void convert(const AABB &bv1, OBBRSS &bv2) {
     Converter<AABB, OBB>::convert(bv1, bv2.obb);
     Converter<AABB, RSS>::convert(bv1, bv2.rss);
   }
 };
 
-}  // namespace details
+} // namespace details
 
 /// @endcond
 
 /// @brief Convert a bounding volume of type BV1 in configuration tf1 to
 /// bounding volume of type BV2 in identity configuration.
 template <typename BV1, typename BV2>
-static inline void convertBV(const BV1& bv1, const Transform3f& tf1, BV2& bv2) {
+static inline void convertBV(const BV1 &bv1, const Transform3f &tf1, BV2 &bv2) {
   details::Converter<BV1, BV2>::convert(bv1, tf1, bv2);
 }
 
 /// @brief Convert a bounding volume of type BV1 to bounding volume of type BV2
 /// in identity configuration.
 template <typename BV1, typename BV2>
-static inline void convertBV(const BV1& bv1, BV2& bv2) {
+static inline void convertBV(const BV1 &bv1, BV2 &bv2) {
   details::Converter<BV1, BV2>::convert(bv1, bv2);
 }
 
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp
 
 #endif

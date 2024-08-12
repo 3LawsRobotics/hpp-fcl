@@ -40,11 +40,11 @@
 
 /// @cond INTERNAL
 
-#include <hpp/fcl/collision_data.h>
-#include <hpp/fcl/narrowphase/narrowphase.h>
 #include <hpp/fcl/BV/BV.h>
-#include <hpp/fcl/shape/geometric_shapes_utility.h>
+#include <hpp/fcl/collision_data.h>
 #include <hpp/fcl/internal/traversal_node_base.h>
+#include <hpp/fcl/narrowphase/narrowphase.h>
+#include <hpp/fcl/shape/geometric_shapes_utility.h>
 
 namespace hpp {
 namespace fcl {
@@ -56,8 +56,8 @@ namespace fcl {
 template <typename S1, typename S2>
 class HPP_FCL_DLLAPI ShapeCollisionTraversalNode
     : public CollisionTraversalNodeBase {
- public:
-  ShapeCollisionTraversalNode(const CollisionRequest& request)
+public:
+  ShapeCollisionTraversalNode(const CollisionRequest &request)
       : CollisionTraversalNodeBase(request) {
     model1 = NULL;
     model2 = NULL;
@@ -66,12 +66,12 @@ class HPP_FCL_DLLAPI ShapeCollisionTraversalNode
   }
 
   /// @brief BV culling test in one BVTT node
-  bool BVDisjoints(int, int, FCL_REAL&) const {
+  bool BVDisjoints(int, int, FCL_REAL &) const {
     HPP_FCL_THROW_PRETTY("Not implemented", std::runtime_error);
   }
 
   /// @brief Intersection testing between leaves (two shapes)
-  void leafCollides(int, int, FCL_REAL&) const {
+  void leafCollides(int, int, FCL_REAL &) const {
     FCL_REAL distance;
     if (request.enable_contact &&
         request.num_max_contacts > result->numContacts()) {
@@ -95,10 +95,10 @@ class HPP_FCL_DLLAPI ShapeCollisionTraversalNode
     }
   }
 
-  const S1* model1;
-  const S2* model2;
+  const S1 *model1;
+  const S2 *model2;
 
-  const GJKSolver* nsolver;
+  const GJKSolver *nsolver;
 };
 
 /// @}
@@ -110,7 +110,7 @@ class HPP_FCL_DLLAPI ShapeCollisionTraversalNode
 template <typename S1, typename S2>
 class HPP_FCL_DLLAPI ShapeDistanceTraversalNode
     : public DistanceTraversalNodeBase {
- public:
+public:
   ShapeDistanceTraversalNode() : DistanceTraversalNodeBase() {
     model1 = NULL;
     model2 = NULL;
@@ -120,7 +120,7 @@ class HPP_FCL_DLLAPI ShapeDistanceTraversalNode
 
   /// @brief BV culling test in one BVTT node
   FCL_REAL BVDistanceLowerBound(unsigned int, unsigned int) const {
-    return -1;  // should not be used
+    return FCL_REAL(-1); // should not be used
   }
 
   /// @brief Distance testing between leaves (two shapes)
@@ -133,17 +133,17 @@ class HPP_FCL_DLLAPI ShapeDistanceTraversalNode
                    DistanceResult::NONE, closest_p1, closest_p2, normal);
   }
 
-  const S1* model1;
-  const S2* model2;
+  const S1 *model1;
+  const S2 *model2;
 
-  const GJKSolver* nsolver;
+  const GJKSolver *nsolver;
 };
 
 /// @}
 
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp
 
 /// @endcond
 

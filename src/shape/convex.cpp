@@ -1,13 +1,13 @@
 #include <hpp/fcl/shape/convex.h>
 
 #ifdef HPP_FCL_HAS_QHULL
+#include <libqhullcpp/Qhull.h>
 #include <libqhullcpp/QhullError.h>
 #include <libqhullcpp/QhullFacet.h>
 #include <libqhullcpp/QhullLinkedList.h>
+#include <libqhullcpp/QhullRidge.h>
 #include <libqhullcpp/QhullVertex.h>
 #include <libqhullcpp/QhullVertexSet.h>
-#include <libqhullcpp/QhullRidge.h>
-#include <libqhullcpp/Qhull.h>
 
 using orgQhull::Qhull;
 using orgQhull::QhullFacet;
@@ -23,7 +23,7 @@ namespace fcl {
 
 // Reorders `tri` such that the dot product between the normal of triangle and
 // the vector `triangle barycentre - convex_tri.center` is positive.
-void reorderTriangle(const Convex<Triangle>* convex_tri, Triangle& tri) {
+void reorderTriangle(const Convex<Triangle> *convex_tri, Triangle &tri) {
   Vec3f p0, p1, p2;
   p0 = convex_tri->points[tri[0]];
   p1 = convex_tri->points[tri[1]];
@@ -43,36 +43,36 @@ void reorderTriangle(const Convex<Triangle>* convex_tri, Triangle& tri) {
   }
 }
 
-ConvexBase* ConvexBase::convexHull(const Vec3f* pts, unsigned int num_points,
+ConvexBase *ConvexBase::convexHull(const Vec3f *pts, unsigned int num_points,
                                    bool keepTriangles,
-                                   const char* qhullCommand) {
+                                   const char *qhullCommand) {
 #ifdef HPP_FCL_HAS_QHULL
   if (num_points <= 3) {
-    throw std::invalid_argument(
-        "You shouldn't use this function with less than"
-        " 4 points.");
+    throw std::invalid_argument("You shouldn't use this function with less than"
+                                " 4 points.");
   }
   assert(pts[0].data() + 3 == pts[1].data());
 
   Qhull qh;
-  const char* command =
+  const char *command =
       qhullCommand ? qhullCommand : (keepTriangles ? "Qt" : "");
   qh.runQhull("", 3, static_cast<int>(num_points), pts[0].data(), command);
 
   if (qh.qhullStatus() != qh_ERRnone) {
-    if (qh.hasQhullMessage()) std::cerr << qh.qhullMessage() << std::endl;
+    if (qh.hasQhullMessage())
+      std::cerr << qh.qhullMessage() << std::endl;
     throw std::logic_error("Qhull failed");
   }
 
   typedef std::size_t index_type;
   typedef int size_type;
 
-  // Map index in pts to index in vertices. -1 means not used
-  std::vector<int> pts_to_vertices(num_points, -1);
+  // Map index in pts to index in vertices. FCL_REAL(-1) means not used
+  std::vector<int> pts_to_vertices(num_points, FCL_REAL(-1));
 
   // Initialize the vertices
   int nvertex = (qh.vertexCount());
-  Vec3f* vertices = new Vec3f[size_t(nvertex)];
+  Vec3f *vertices = new Vec3f[size_t(nvertex)];
   QhullVertexList vertexList(qh.vertexList());
   int i_vertex = 0;
   for (QhullVertexList::const_iterator v = vertexList.begin();
@@ -84,8 +84,8 @@ ConvexBase* ConvexBase::convexHull(const Vec3f* pts, unsigned int num_points,
   }
   assert(i_vertex == nvertex);
 
-  Convex<Triangle>* convex_tri(NULL);
-  ConvexBase* convex(NULL);
+  Convex<Triangle> *convex_tri(NULL);
+  ConvexBase *convex(NULL);
   if (keepTriangles)
     convex = convex_tri = new Convex<Triangle>();
   else
@@ -94,7 +94,7 @@ ConvexBase* ConvexBase::convexHull(const Vec3f* pts, unsigned int num_points,
 
   // Build the neighbors
   convex->neighbors = new Neighbors[size_t(nvertex)];
-  std::vector<std::set<index_type> > nneighbors(static_cast<size_t>(nvertex));
+  std::vector<std::set<index_type>> nneighbors(static_cast<size_t>(nvertex));
   if (keepTriangles) {
     convex_tri->num_polygons = static_cast<unsigned int>(qh.facetCount());
     convex_tri->polygons = new Triangle[convex_tri->num_polygons];
@@ -127,18 +127,20 @@ ConvexBase* ConvexBase::convexHull(const Vec3f* pts, unsigned int num_points,
         size_t i = (j == 0) ? n - 1 : j - 1;
         size_t k = (j == n - 1) ? 0 : j + 1;
         // Update neighbors of pj;
-        if (nneighbors[tri[j]].insert(tri[i]).second) c_nneighbors++;
-        if (nneighbors[tri[j]].insert(tri[k]).second) c_nneighbors++;
+        if (nneighbors[tri[j]].insert(tri[i]).second)
+          c_nneighbors++;
+        if (nneighbors[tri[j]].insert(tri[k]).second)
+          c_nneighbors++;
       }
     } else {
-      if (keepTriangles) {  // TODO I think there is a memory leak here.
+      if (keepTriangles) { // TODO I think there is a memory leak here.
         throw std::invalid_argument(
             "You requested to keep triangles so you "
             "must pass option \"Qt\" to qhull via the qhull command argument.");
       }
       // Non-simplicial faces have more than 3 vertices and contains a list of
-      // rigdes. Ridges are (3-1)D simplex (i.e. one edge). We mark the two
-      // vertices of each ridge as neighbors.
+      // rigdes. Ridges are (3FCL_REAL(-1))D simplex (i.e. one edge). We mark
+      // the two vertices of each ridge as neighbors.
       QhullRidgeSet f_ridges(facet.ridges());
       for (size_type j = 0; j < f_ridges.count(); ++j) {
         assert(f_ridges[j].vertices().count() == 2);
@@ -162,9 +164,9 @@ ConvexBase* ConvexBase::convexHull(const Vec3f* pts, unsigned int num_points,
 
   // Fill the neighbor attribute of the returned object.
   convex->nneighbors_ = new unsigned int[c_nneighbors];
-  unsigned int* p_nneighbors = convex->nneighbors_;
+  unsigned int *p_nneighbors = convex->nneighbors_;
   for (size_t i = 0; i < static_cast<size_t>(nvertex); ++i) {
-    Neighbors& n = convex->neighbors[i];
+    Neighbors &n = convex->neighbors[i];
     if (nneighbors[i].size() >= (std::numeric_limits<unsigned char>::max)())
       throw std::logic_error("Too many neighbors.");
     n.count_ = (unsigned char)nneighbors[i].size();
@@ -183,5 +185,5 @@ ConvexBase* ConvexBase::convexHull(const Vec3f* pts, unsigned int num_points,
   HPP_FCL_UNUSED_VARIABLE(qhullCommand);
 #endif
 }
-}  // namespace fcl
-}  // namespace hpp
+} // namespace fcl
+} // namespace hpp

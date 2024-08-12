@@ -32,10 +32,10 @@
  */
 
 #include <cmath>
-#include <limits>
+#include <hpp/fcl/internal/shape_shape_func.h>
 #include <hpp/fcl/math/transform.h>
 #include <hpp/fcl/shape/geometric_shapes.h>
-#include <hpp/fcl/internal/shape_shape_func.h>
+#include <limits>
 
 // Note that partial specialization of template functions is not allowed.
 // Therefore, two implementations with the default narrow phase solvers are
@@ -50,10 +50,10 @@ namespace fcl {
 struct GJKSolver;
 
 /// Clamp num / denom in [0, 1]
-FCL_REAL clamp(const FCL_REAL& num, const FCL_REAL& denom) {
-  assert(denom >= 0.);
-  if (num <= 0.)
-    return 0.;
+FCL_REAL clamp(const FCL_REAL &num, const FCL_REAL &denom) {
+  assert(denom >= FCL_REAL(0.));
+  if (num <= FCL_REAL(0.))
+    return FCL_REAL(0.);
   else if (num >= denom)
     return 1.;
   else
@@ -61,10 +61,10 @@ FCL_REAL clamp(const FCL_REAL& num, const FCL_REAL& denom) {
 }
 
 /// Clamp s=s_n/s_d in [0, 1] and stores a + s * d in a_sd
-void clamped_linear(Vec3f& a_sd, const Vec3f& a, const FCL_REAL& s_n,
-                    const FCL_REAL& s_d, const Vec3f& d) {
-  assert(s_d >= 0.);
-  if (s_n <= 0.)
+void clamped_linear(Vec3f &a_sd, const Vec3f &a, const FCL_REAL &s_n,
+                    const FCL_REAL &s_d, const Vec3f &d) {
+  assert(s_d >= FCL_REAL(0.));
+  if (s_n <= FCL_REAL(0.))
     a_sd = a;
   else if (s_n >= s_d)
     a_sd = a + d;
@@ -78,17 +78,17 @@ void clamped_linear(Vec3f& a_sd, const Vec3f& a, const FCL_REAL& s_n,
 // Point of Two Line Segments
 template <>
 FCL_REAL ShapeShapeDistance<Capsule, Capsule>(
-    const CollisionGeometry* o1, const Transform3f& tf1,
-    const CollisionGeometry* o2, const Transform3f& tf2, const GJKSolver*,
-    const DistanceRequest& request, DistanceResult& result) {
-  const Capsule* capsule1 = static_cast<const Capsule*>(o1);
-  const Capsule* capsule2 = static_cast<const Capsule*>(o2);
+    const CollisionGeometry *o1, const Transform3f &tf1,
+    const CollisionGeometry *o2, const Transform3f &tf2, const GJKSolver *,
+    const DistanceRequest &request, DistanceResult &result) {
+  const Capsule *capsule1 = static_cast<const Capsule *>(o1);
+  const Capsule *capsule2 = static_cast<const Capsule *>(o2);
 
   FCL_REAL EPSILON = std::numeric_limits<FCL_REAL>::epsilon() * 100;
 
   // We assume that capsules are centered at the origin.
-  const fcl::Vec3f& c1 = tf1.getTranslation();
-  const fcl::Vec3f& c2 = tf2.getTranslation();
+  const fcl::Vec3f &c1 = tf1.getTranslation();
+  const fcl::Vec3f &c2 = tf2.getTranslation();
   // We assume that capsules are oriented along z-axis.
   FCL_REAL halfLength1 = capsule1->halfLength;
   FCL_REAL halfLength2 = capsule2->halfLength;
@@ -135,11 +135,11 @@ FCL_REAL ShapeShapeDistance<Capsule, Capsule>(
       s = clamp((b * f - c * e), denom);
       t = b * s + f;
     } else {
-      s = 0.;
+      s = FCL_REAL(0.);
       t = f;
     }
 
-    if (t <= 0.0) {
+    if (t <= FCL_REAL(0.)) {
       w2 = p2;
       clamped_linear(w1, p1, -c, a, d1);
     } else if (t >= e) {
@@ -169,6 +169,6 @@ FCL_REAL ShapeShapeDistance<Capsule, Capsule>(
   return distance;
 }
 
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp

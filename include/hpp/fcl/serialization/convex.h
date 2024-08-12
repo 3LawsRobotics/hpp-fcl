@@ -10,8 +10,8 @@
 #include "hpp/fcl/serialization/fwd.h"
 #include "hpp/fcl/serialization/geometric_shapes.h"
 #include "hpp/fcl/serialization/memory.h"
-#include "hpp/fcl/serialization/triangle.h"
 #include "hpp/fcl/serialization/quadrilateral.h"
+#include "hpp/fcl/serialization/triangle.h"
 
 namespace boost {
 namespace serialization {
@@ -22,7 +22,7 @@ struct ConvexBaseAccessor : hpp::fcl::ConvexBase {
   using Base::own_storage_;
 };
 
-}  // namespace internal
+} // namespace internal
 
 template <class Archive>
 void serialize(Archive &ar, hpp::fcl::ConvexBase &convex_base,
@@ -49,7 +49,7 @@ void serialize(Archive &ar, hpp::fcl::ConvexBase &convex_base,
   {
     typedef Eigen::Matrix<FCL_REAL, 3, Eigen::Dynamic> MatrixPoints;
     Eigen::Map<MatrixPoints> points_map(
-        reinterpret_cast<double *>(convex_base.points), 3,
+        reinterpret_cast<FCL_REAL *>(convex_base.points), 3,
         convex_base.num_points);
     ar &make_nvp("points", points_map);
   }
@@ -66,7 +66,7 @@ struct ConvexAccessor : hpp::fcl::Convex<PolygonT> {
   using Base::fillNeighbors;
 };
 
-}  // namespace internal
+} // namespace internal
 
 template <class Archive, typename PolygonT>
 void serialize(Archive &ar, hpp::fcl::Convex<PolygonT> &convex_,
@@ -89,11 +89,12 @@ void serialize(Archive &ar, hpp::fcl::Convex<PolygonT> &convex_,
 
   ar &make_array<PolygonT>(convex.polygons, convex.num_polygons);
 
-  if (Archive::is_loading::value) convex.fillNeighbors();
+  if (Archive::is_loading::value)
+    convex.fillNeighbors();
 }
 
-}  // namespace serialization
-}  // namespace boost
+} // namespace serialization
+} // namespace boost
 
 namespace hpp {
 namespace fcl {
@@ -107,7 +108,7 @@ namespace fcl {
 // };
 // }  // namespace internal
 
-}  // namespace fcl
-}  // namespace hpp
+} // namespace fcl
+} // namespace hpp
 
-#endif  // ifndef HPP_FCL_SERIALIZATION_CONVEX_H
+#endif // ifndef HPP_FCL_SERIALIZATION_CONVEX_H

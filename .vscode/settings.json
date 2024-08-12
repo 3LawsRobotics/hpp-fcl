@@ -1,0 +1,22 @@
+{
+  "python.autoComplete.extraPaths": [
+    "/opt/ros/humble/lib/python3.10/site-packages",
+    "/opt/ros/humble/local/lib/python3.10/dist-packages",
+    "",
+    "/home/pierre/dev/3laws-dev/conan/pyModules",
+    "/home/pierre/dev/3laws-dev/cps_characterization/src",
+    "/home/pierre/dev/3laws-dev/cps_characterization/src/dynamic_jax_learning",
+    "/home/pierre/dev/3laws-dev/scripts/python",
+    "/home/pierre/dev/3laws-dev/.build/rdm_sentien/interfaces/CUSTOM/build/Debug/python"
+  ],
+  "python.analysis.extraPaths": [
+    "/opt/ros/humble/lib/python3.10/site-packages",
+    "/opt/ros/humble/local/lib/python3.10/dist-packages",
+    "",
+    "/home/pierre/dev/3laws-dev/conan/pyModules",
+    "/home/pierre/dev/3laws-dev/cps_characterization/src",
+    "/home/pierre/dev/3laws-dev/cps_characterization/src/dynamic_jax_learning",
+    "/home/pierre/dev/3laws-dev/scripts/python",
+    "/home/pierre/dev/3laws-dev/.build/rdm_sentien/interfaces/CUSTOM/build/Debug/python"
+  ]
+}

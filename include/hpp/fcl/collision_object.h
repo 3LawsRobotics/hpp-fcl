@@ -41,9 +41,9 @@
 #include <limits>
 #include <typeinfo>
 
+#include <hpp/fcl/BV/AABB.h>
 #include <hpp/fcl/deprecated.hh>
 #include <hpp/fcl/fwd.hh>
-#include <hpp/fcl/BV/AABB.h>
 #include <hpp/fcl/math/transform.h>
 
 namespace hpp {
@@ -93,24 +93,22 @@ enum NODE_TYPE {
 
 /// @brief The geometry for the object for collision or distance computation
 class HPP_FCL_DLLAPI CollisionGeometry {
- public:
+public:
   CollisionGeometry()
       : aabb_center(Vec3f::Constant((std::numeric_limits<FCL_REAL>::max)())),
-        aabb_radius(-1),
-        cost_density(1),
-        threshold_occupied(1),
+        aabb_radius(FCL_REAL(-1)), cost_density(1), threshold_occupied(1),
         threshold_free(0) {}
 
   /// \brief Copy constructor
-  CollisionGeometry(const CollisionGeometry& other) = default;
+  CollisionGeometry(const CollisionGeometry &other) = default;
 
   virtual ~CollisionGeometry() {}
 
   /// @brief Clone *this into a new CollisionGeometry
-  virtual CollisionGeometry* clone() const = 0;
+  virtual CollisionGeometry *clone() const = 0;
 
   /// \brief Equality operator
-  bool operator==(const CollisionGeometry& other) const {
+  bool operator==(const CollisionGeometry &other) const {
     return cost_density == other.cost_density &&
            threshold_occupied == other.threshold_occupied &&
            threshold_free == other.threshold_free &&
@@ -120,7 +118,7 @@ class HPP_FCL_DLLAPI CollisionGeometry {
   }
 
   /// \brief Difference operator
-  bool operator!=(const CollisionGeometry& other) const {
+  bool operator!=(const CollisionGeometry &other) const {
     return isNotEqual(other);
   }
 
@@ -134,10 +132,10 @@ class HPP_FCL_DLLAPI CollisionGeometry {
   virtual void computeLocalAABB() = 0;
 
   /// @brief get user data in geometry
-  void* getUserData() const { return user_data; }
+  void *getUserData() const { return user_data; }
 
   /// @brief set user data in geometry
-  void setUserData(void* data) { user_data = data; }
+  void setUserData(void *data) { user_data = data; }
 
   /// @brief whether the object is completely occupied
   inline bool isOccupied() const { return cost_density >= threshold_occupied; }
@@ -159,7 +157,7 @@ class HPP_FCL_DLLAPI CollisionGeometry {
   AABB aabb_local;
 
   /// @brief pointer to user defined data specific to this object
-  void* user_data;
+  void *user_data;
 
   /// @brief collision cost for unit volume
   FCL_REAL cost_density;
@@ -197,47 +195,47 @@ class HPP_FCL_DLLAPI CollisionGeometry {
         .finished();
   }
 
- private:
+private:
   /// @brief equal operator with another object of derived type.
-  virtual bool isEqual(const CollisionGeometry& other) const = 0;
+  virtual bool isEqual(const CollisionGeometry &other) const = 0;
 
   /// @brief not equal operator with another object of derived type.
-  virtual bool isNotEqual(const CollisionGeometry& other) const {
+  virtual bool isNotEqual(const CollisionGeometry &other) const {
     return !(*this == other);
   }
 
- public:
+public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 /// @brief the object for collision or distance computation, contains the
 /// geometry and the transform information
 class HPP_FCL_DLLAPI CollisionObject {
- public:
-  CollisionObject(const shared_ptr<CollisionGeometry>& cgeom_,
+public:
+  CollisionObject(const shared_ptr<CollisionGeometry> &cgeom_,
                   bool compute_local_aabb = true)
       : cgeom(cgeom_), user_data(nullptr) {
     init(compute_local_aabb);
   }
 
-  CollisionObject(const shared_ptr<CollisionGeometry>& cgeom_,
-                  const Transform3f& tf, bool compute_local_aabb = true)
+  CollisionObject(const shared_ptr<CollisionGeometry> &cgeom_,
+                  const Transform3f &tf, bool compute_local_aabb = true)
       : cgeom(cgeom_), t(tf), user_data(nullptr) {
     init(compute_local_aabb);
   }
 
-  CollisionObject(const shared_ptr<CollisionGeometry>& cgeom_,
-                  const Matrix3f& R, const Vec3f& T,
+  CollisionObject(const shared_ptr<CollisionGeometry> &cgeom_,
+                  const Matrix3f &R, const Vec3f &T,
                   bool compute_local_aabb = true)
       : cgeom(cgeom_), t(R, T), user_data(nullptr) {
     init(compute_local_aabb);
   }
 
-  bool operator==(const CollisionObject& other) const {
+  bool operator==(const CollisionObject &other) const {
     return cgeom == other.cgeom && t == other.t && user_data == other.user_data;
   }
 
-  bool operator!=(const CollisionObject& other) const {
+  bool operator!=(const CollisionObject &other) const {
     return !(*this == other);
   }
 
@@ -250,10 +248,10 @@ class HPP_FCL_DLLAPI CollisionObject {
   NODE_TYPE getNodeType() const { return cgeom->getNodeType(); }
 
   /// @brief get the AABB in world space
-  const AABB& getAABB() const { return aabb; }
+  const AABB &getAABB() const { return aabb; }
 
   /// @brief get the AABB in world space
-  AABB& getAABB() { return aabb; }
+  AABB &getAABB() { return aabb; }
 
   /// @brief compute the AABB in world space
   void computeAABB() {
@@ -268,31 +266,31 @@ class HPP_FCL_DLLAPI CollisionObject {
   }
 
   /// @brief get user data in object
-  void* getUserData() const { return user_data; }
+  void *getUserData() const { return user_data; }
 
   /// @brief set user data in object
-  void setUserData(void* data) { user_data = data; }
+  void setUserData(void *data) { user_data = data; }
 
   /// @brief get translation of the object
-  inline const Vec3f& getTranslation() const { return t.getTranslation(); }
+  inline const Vec3f &getTranslation() const { return t.getTranslation(); }
 
   /// @brief get matrix rotation of the object
-  inline const Matrix3f& getRotation() const { return t.getRotation(); }
+  inline const Matrix3f &getRotation() const { return t.getRotation(); }
 
   /// @brief get object's transform
-  inline const Transform3f& getTransform() const { return t; }
+  inline const Transform3f &getTransform() const { return t; }
 
   /// @brief set object's rotation matrix
-  void setRotation(const Matrix3f& R) { t.setRotation(R); }
+  void setRotation(const Matrix3f &R) { t.setRotation(R); }
 
   /// @brief set object's translation
-  void setTranslation(const Vec3f& T) { t.setTranslation(T); }
+  void setTranslation(const Vec3f &T) { t.setTranslation(T); }
 
   /// @brief set object's transform
-  void setTransform(const Matrix3f& R, const Vec3f& T) { t.setTransform(R, T); }
+  void setTransform(const Matrix3f &R, const Vec3f &T) { t.setTransform(R, T); }
 
   /// @brief set object's transform
-  void setTransform(const Transform3f& tf) { t = tf; }
+  void setTransform(const Transform3f &tf) { t = tf; }
 
   /// @brief whether the object is in local coordinate
   bool isIdentityTransform() const { return t.isIdentity(); }
@@ -306,13 +304,13 @@ class HPP_FCL_DLLAPI CollisionObject {
   }
 
   /// @brief get shared pointer to collision geometry of the object instance
-  const shared_ptr<CollisionGeometry>& collisionGeometry() { return cgeom; }
+  const shared_ptr<CollisionGeometry> &collisionGeometry() { return cgeom; }
 
   /// @brief get raw pointer to collision geometry of the object instance
-  const CollisionGeometry* collisionGeometryPtr() const { return cgeom.get(); }
+  const CollisionGeometry *collisionGeometryPtr() const { return cgeom.get(); }
 
   /// @brief get raw pointer to collision geometry of the object instance
-  CollisionGeometry* collisionGeometryPtr() { return cgeom.get(); }
+  CollisionGeometry *collisionGeometryPtr() { return cgeom.get(); }
 
   /// @brief Associate a new CollisionGeometry
   ///
@@ -320,19 +318,20 @@ class HPP_FCL_DLLAPI CollisionObject {
   /// @param[in] compute_local_aabb Whether the local aabb of the input new has
   /// to be computed.
   ///
-  void setCollisionGeometry(
-      const shared_ptr<CollisionGeometry>& collision_geometry,
-      bool compute_local_aabb = true) {
+  void
+  setCollisionGeometry(const shared_ptr<CollisionGeometry> &collision_geometry,
+                       bool compute_local_aabb = true) {
     if (collision_geometry.get() != cgeom.get()) {
       cgeom = collision_geometry;
       init(compute_local_aabb);
     }
   }
 
- protected:
+protected:
   void init(bool compute_local_aabb = true) {
     if (cgeom) {
-      if (compute_local_aabb) cgeom->computeLocalAABB();
+      if (compute_local_aabb)
+        cgeom->computeLocalAABB();
       computeAABB();
     }
   }
@@ -345,11 +344,11 @@ class HPP_FCL_DLLAPI CollisionObject {
   mutable AABB aabb;
 
   /// @brief pointer to user defined data specific to this object
-  void* user_data;
+  void *user_data;
 };
 
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp
 
 #endif

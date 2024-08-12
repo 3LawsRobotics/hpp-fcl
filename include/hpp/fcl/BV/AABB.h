@@ -52,7 +52,7 @@ struct CollisionRequest;
 /// @brief A class describing the AABB collision structure, which is a box in 3D
 /// space determined by two diagonal points
 class HPP_FCL_DLLAPI AABB {
- public:
+public:
   /// @brief The min point in the AABB
   Vec3f min_;
   /// @brief The max point in the AABB
@@ -62,90 +62,99 @@ class HPP_FCL_DLLAPI AABB {
   AABB();
 
   /// @brief Creating an AABB at position v with zero size
-  AABB(const Vec3f& v) : min_(v), max_(v) {}
+  AABB(const Vec3f &v) : min_(v), max_(v) {}
 
   /// @brief Creating an AABB with two endpoints a and b
-  AABB(const Vec3f& a, const Vec3f& b)
+  AABB(const Vec3f &a, const Vec3f &b)
       : min_(a.cwiseMin(b)), max_(a.cwiseMax(b)) {}
 
   /// @brief Creating an AABB centered as core and is of half-dimension delta
-  AABB(const AABB& core, const Vec3f& delta)
+  AABB(const AABB &core, const Vec3f &delta)
       : min_(core.min_ - delta), max_(core.max_ + delta) {}
 
   /// @brief Creating an AABB contains three points
-  AABB(const Vec3f& a, const Vec3f& b, const Vec3f& c)
+  AABB(const Vec3f &a, const Vec3f &b, const Vec3f &c)
       : min_(a.cwiseMin(b).cwiseMin(c)), max_(a.cwiseMax(b).cwiseMax(c)) {}
 
-  AABB(const AABB& other) = default;
+  AABB(const AABB &other) = default;
 
-  AABB& operator=(const AABB& other) = default;
+  AABB &operator=(const AABB &other) = default;
 
-  AABB& update(const Vec3f& a, const Vec3f& b) {
+  AABB &update(const Vec3f &a, const Vec3f &b) {
     min_ = a.cwiseMin(b);
     max_ = a.cwiseMax(b);
     return *this;
   }
 
   /// @brief Comparison operator
-  bool operator==(const AABB& other) const {
+  bool operator==(const AABB &other) const {
     return min_ == other.min_ && max_ == other.max_;
   }
 
-  bool operator!=(const AABB& other) const { return !(*this == other); }
+  bool operator!=(const AABB &other) const { return !(*this == other); }
 
   /// @name Bounding volume API
   /// Common API to BVs.
   /// @{
 
   /// @brief Check whether the AABB contains a point
-  inline bool contain(const Vec3f& p) const {
-    if (p[0] < min_[0] || p[0] > max_[0]) return false;
-    if (p[1] < min_[1] || p[1] > max_[1]) return false;
-    if (p[2] < min_[2] || p[2] > max_[2]) return false;
+  inline bool contain(const Vec3f &p) const {
+    if (p[0] < min_[0] || p[0] > max_[0])
+      return false;
+    if (p[1] < min_[1] || p[1] > max_[1])
+      return false;
+    if (p[2] < min_[2] || p[2] > max_[2])
+      return false;
 
     return true;
   }
 
   /// @brief Check whether two AABB are overlap
-  inline bool overlap(const AABB& other) const {
-    if (min_[0] > other.max_[0]) return false;
-    if (min_[1] > other.max_[1]) return false;
-    if (min_[2] > other.max_[2]) return false;
+  inline bool overlap(const AABB &other) const {
+    if (min_[0] > other.max_[0])
+      return false;
+    if (min_[1] > other.max_[1])
+      return false;
+    if (min_[2] > other.max_[2])
+      return false;
 
-    if (max_[0] < other.min_[0]) return false;
-    if (max_[1] < other.min_[1]) return false;
-    if (max_[2] < other.min_[2]) return false;
+    if (max_[0] < other.min_[0])
+      return false;
+    if (max_[1] < other.min_[1])
+      return false;
+    if (max_[2] < other.min_[2])
+      return false;
 
     return true;
   }
 
   /// @brief Check whether two AABB are overlap
-  bool overlap(const AABB& other, const CollisionRequest& request,
-               FCL_REAL& sqrDistLowerBound) const;
+  bool overlap(const AABB &other, const CollisionRequest &request,
+               FCL_REAL &sqrDistLowerBound) const;
 
   /// @brief Distance between two AABBs
-  FCL_REAL distance(const AABB& other) const;
+  FCL_REAL distance(const AABB &other) const;
 
   /// @brief Distance between two AABBs; P and Q, should not be NULL, return the
   /// nearest points
-  FCL_REAL distance(const AABB& other, Vec3f* P, Vec3f* Q) const;
+  FCL_REAL distance(const AABB &other, Vec3f *P, Vec3f *Q) const;
 
   /// @brief Merge the AABB and a point
-  inline AABB& operator+=(const Vec3f& p) {
+  inline AABB &operator+=(const Vec3f &p) {
     min_ = min_.cwiseMin(p);
     max_ = max_.cwiseMax(p);
     return *this;
   }
 
   /// @brief Merge the AABB and another AABB
-  inline AABB& operator+=(const AABB& other) {
+  inline AABB &operator+=(const AABB &other) {
     min_ = min_.cwiseMin(other.min_);
     max_ = max_.cwiseMax(other.max_);
     return *this;
   }
 
   /// @brief Return the merged AABB of current AABB and the other one
-  inline AABB operator+(const AABB& other) const {
+  inline AABB operator+(const AABB &other) const {
     AABB res(*this);
     return res += other;
   }
@@ -154,7 +163,7 @@ class HPP_FCL_DLLAPI AABB {
   inline FCL_REAL size() const { return (max_ - min_).squaredNorm(); }
 
   /// @brief Center of the AABB
-  inline Vec3f center() const { return (min_ + max_) * 0.5; }
+  inline Vec3f center() const { return (min_ + max_) * FCL_REAL(0.5); }
 
   /// @brief Width of the AABB
   inline FCL_REAL width() const { return max_[0] - min_[0]; }
@@ -171,14 +180,14 @@ class HPP_FCL_DLLAPI AABB {
   /// @}
 
   /// @brief Check whether the AABB contains another AABB
-  inline bool contain(const AABB& other) const {
+  inline bool contain(const AABB &other) const {
     return (other.min_[0] >= min_[0]) && (other.max_[0] <= max_[0]) &&
            (other.min_[1] >= min_[1]) && (other.max_[1] <= max_[1]) &&
            (other.min_[2] >= min_[2]) && (other.max_[2] <= max_[2]);
   }
 
   /// @brief Check whether two AABB are overlap and return the overlap part
-  inline bool overlap(const AABB& other, AABB& overlap_part) const {
+  inline bool overlap(const AABB &other, AABB &overlap_part) const {
     if (!overlap(other)) {
       return false;
     }
@@ -189,16 +198,18 @@ class HPP_FCL_DLLAPI AABB {
   }
 
   /// @brief Check whether two AABB are overlapped along specific axis
-  inline bool axisOverlap(const AABB& other, int axis_id) const {
-    if (min_[axis_id] > other.max_[axis_id]) return false;
-    if (max_[axis_id] < other.min_[axis_id]) return false;
+  inline bool axisOverlap(const AABB &other, int axis_id) const {
+    if (min_[axis_id] > other.max_[axis_id])
+      return false;
+    if (max_[axis_id] < other.min_[axis_id])
+      return false;
 
     return true;
   }
 
   /// @brief expand the half size of the AABB by delta, and keep the center
   /// unchanged.
-  inline AABB& expand(const Vec3f& delta) {
+  inline AABB &expand(const Vec3f &delta) {
     min_ -= delta;
     max_ += delta;
     return *this;
@@ -206,14 +217,14 @@ class HPP_FCL_DLLAPI AABB {
 
   /// @brief expand the half size of the AABB by a scalar delta, and keep the
   /// center unchanged.
-  inline AABB& expand(const FCL_REAL delta) {
+  inline AABB &expand(const FCL_REAL delta) {
     min_.array() -= delta;
     max_.array() += delta;
     return *this;
   }
 
   /// @brief expand the aabb by increase the thickness of the plate by a ratio
-  inline AABB& expand(const AABB& core, FCL_REAL ratio) {
+  inline AABB &expand(const AABB &core, FCL_REAL ratio) {
     min_ = min_ * ratio - core.min_;
     max_ = max_ * ratio - core.max_;
     return *this;
@@ -223,19 +234,19 @@ class HPP_FCL_DLLAPI AABB {
 };
 
 /// @brief translate the center of AABB by t
-static inline AABB translate(const AABB& aabb, const Vec3f& t) {
+static inline AABB translate(const AABB &aabb, const Vec3f &t) {
   AABB res(aabb);
   res.min_ += t;
   res.max_ += t;
   return res;
 }
 
-static inline AABB rotate(const AABB& aabb, const Matrix3f& R) {
+static inline AABB rotate(const AABB &aabb, const Matrix3f &R) {
   AABB res(R * aabb.min_);
   Vec3f corner(aabb.min_);
   const Eigen::DenseIndex bit[3] = {1, 2, 4};
   for (Eigen::DenseIndex ic = 1; ic < 8;
-       ++ic) {  // ic = 0 corresponds to aabb.min_. Skip it.
+       ++ic) { // ic = 0 corresponds to aabb.min_. Skip it.
     for (Eigen::DenseIndex i = 0; i < 3; ++i) {
       corner[i] = (ic & bit[i]) ? aabb.max_[i] : aabb.min_[i];
     }
@@ -246,16 +257,16 @@ static inline AABB rotate(const AABB& aabb, const Matrix3f& R) {
 
 /// @brief Check collision between two aabbs, b1 is in configuration (R0, T0)
 /// and b2 is in identity.
-HPP_FCL_DLLAPI bool overlap(const Matrix3f& R0, const Vec3f& T0, const AABB& b1,
-                            const AABB& b2);
+HPP_FCL_DLLAPI bool overlap(const Matrix3f &R0, const Vec3f &T0, const AABB &b1,
+                            const AABB &b2);
 
 /// @brief Check collision between two aabbs, b1 is in configuration (R0, T0)
 /// and b2 is in identity.
-HPP_FCL_DLLAPI bool overlap(const Matrix3f& R0, const Vec3f& T0, const AABB& b1,
-                            const AABB& b2, const CollisionRequest& request,
-                            FCL_REAL& sqrDistLowerBound);
-}  // namespace fcl
+HPP_FCL_DLLAPI bool overlap(const Matrix3f &R0, const Vec3f &T0, const AABB &b1,
+                            const AABB &b2, const CollisionRequest &request,
+                            FCL_REAL &sqrDistLowerBound);
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp
 
 #endif

@@ -38,9 +38,9 @@
 #ifndef HPP_FCL_COLLISION_DATA_H
 #define HPP_FCL_COLLISION_DATA_H
 
-#include <vector>
-#include <set>
 #include <limits>
+#include <set>
+#include <vector>
 
 #include <hpp/fcl/collision_object.h>
 #include <hpp/fcl/config.hh>
@@ -53,20 +53,20 @@ namespace fcl {
 /// @brief Contact information returned by collision
 struct HPP_FCL_DLLAPI Contact {
   /// @brief collision object 1
-  const CollisionGeometry* o1;
+  const CollisionGeometry *o1;
 
   /// @brief collision object 2
-  const CollisionGeometry* o2;
+  const CollisionGeometry *o2;
 
   /// @brief contact primitive in object 1
   /// if object 1 is mesh or point cloud, it is the triangle or point id
-  /// if object 1 is geometry shape, it is NONE (-1),
+  /// if object 1 is geometry shape, it is NONE (FCL_REAL(-1)),
   /// if object 1 is octree, it is the id of the cell
   int b1;
 
   /// @brief contact primitive in object 2
   /// if object 2 is mesh or point cloud, it is the triangle or point id
-  /// if object 2 is geometry shape, it is NONE (-1),
+  /// if object 2 is geometry shape, it is NONE (FCL_REAL(-1)),
   /// if object 2 is octree, it is the id of the cell
   int b2;
 
@@ -80,37 +80,33 @@ struct HPP_FCL_DLLAPI Contact {
   FCL_REAL penetration_depth;
 
   /// @brief invalid contact primitive information
-  static const int NONE = -1;
+  static const int NONE = FCL_REAL(-1);
 
   /// @brief Default constructor
   Contact() : o1(NULL), o2(NULL), b1(NONE), b2(NONE) {}
 
-  Contact(const CollisionGeometry* o1_, const CollisionGeometry* o2_, int b1_,
+  Contact(const CollisionGeometry *o1_, const CollisionGeometry *o2_, int b1_,
           int b2_)
       : o1(o1_), o2(o2_), b1(b1_), b2(b2_) {}
 
-  Contact(const CollisionGeometry* o1_, const CollisionGeometry* o2_, int b1_,
-          int b2_, const Vec3f& pos_, const Vec3f& normal_, FCL_REAL depth_)
-      : o1(o1_),
-        o2(o2_),
-        b1(b1_),
-        b2(b2_),
-        normal(normal_),
-        pos(pos_),
+  Contact(const CollisionGeometry *o1_, const CollisionGeometry *o2_, int b1_,
+          int b2_, const Vec3f &pos_, const Vec3f &normal_, FCL_REAL depth_)
+      : o1(o1_), o2(o2_), b1(b1_), b2(b2_), normal(normal_), pos(pos_),
         penetration_depth(depth_) {}
 
-  bool operator<(const Contact& other) const {
-    if (b1 == other.b1) return b2 < other.b2;
+  bool operator<(const Contact &other) const {
+    if (b1 == other.b1)
+      return b2 < other.b2;
     return b1 < other.b1;
   }
 
-  bool operator==(const Contact& other) const {
+  bool operator==(const Contact &other) const {
     return o1 == other.o1 && o2 == other.o2 && b1 == other.b1 &&
            b2 == other.b2 && normal == other.normal && pos == other.pos &&
            penetration_depth == other.penetration_depth;
   }
 
-  bool operator!=(const Contact& other) const { return !(*this == other); }
+  bool operator!=(const Contact &other) const { return !(*this == other); }
 };
 
 struct QueryResult;
@@ -157,12 +153,10 @@ struct HPP_FCL_DLLAPI QueryRequest {
   /// @brief Default constructor.
   QueryRequest()
       : gjk_initial_guess(GJKInitialGuess::DefaultGuess),
-        enable_cached_gjk_guess(false),
-        gjk_variant(GJKVariant::DefaultGJK),
+        enable_cached_gjk_guess(false), gjk_variant(GJKVariant::DefaultGJK),
         gjk_convergence_criterion(GJKConvergenceCriterion::VDB),
         gjk_convergence_criterion_type(GJKConvergenceCriterionType::Relative),
-        gjk_tolerance(1e-6),
-        gjk_max_iterations(128),
+        gjk_tolerance(FCL_REAL(1e-6)), gjk_max_iterations(128),
         cached_gjk_guess(1, 0, 0),
         cached_support_func_guess(support_func_guess_t::Zero()),
         enable_timings(false),
@@ -170,16 +164,16 @@ struct HPP_FCL_DLLAPI QueryRequest {
             Eigen::NumTraits<FCL_REAL>::dummy_precision()) {}
 
   /// @brief Copy  constructor.
-  QueryRequest(const QueryRequest& other) = default;
+  QueryRequest(const QueryRequest &other) = default;
 
   /// @brief Copy  assignment operator.
-  QueryRequest& operator=(const QueryRequest& other) = default;
+  QueryRequest &operator=(const QueryRequest &other) = default;
   HPP_FCL_COMPILER_DIAGNOSTIC_POP
 
-  void updateGuess(const QueryResult& result);
+  void updateGuess(const QueryResult &result);
 
   /// @brief whether two QueryRequest are the same or not
-  inline bool operator==(const QueryRequest& other) const {
+  inline bool operator==(const QueryRequest &other) const {
     HPP_FCL_COMPILER_DIAGNOSTIC_PUSH
     HPP_FCL_COMPILER_DIAGNOSTIC_IGNORED_DEPRECECATED_DECLARATIONS
     return gjk_initial_guess == other.gjk_initial_guess &&
@@ -204,10 +198,11 @@ struct HPP_FCL_DLLAPI QueryResult {
 
   QueryResult()
       : cached_gjk_guess(Vec3f::Zero()),
-        cached_support_func_guess(support_func_guess_t::Constant(-1)) {}
+        cached_support_func_guess(
+            support_func_guess_t::Constant(FCL_REAL(-1))) {}
 };
 
-inline void QueryRequest::updateGuess(const QueryResult& result) {
+inline void QueryRequest::updateGuess(const QueryResult &result) {
   if (gjk_initial_guess == GJKInitialGuess::CachedGuess) {
     cached_gjk_guess = result.cached_gjk_guess;
     cached_support_func_guess = result.cached_support_func_guess;
@@ -268,26 +263,22 @@ struct HPP_FCL_DLLAPI CollisionRequest : QueryRequest {
   /// @param[in] num_max_contacts  Maximal number of allowed contacts
   ///
   CollisionRequest(const CollisionRequestFlag flag, size_t num_max_contacts_)
-      : num_max_contacts(num_max_contacts_),
-        enable_contact(flag & CONTACT),
+      : num_max_contacts(num_max_contacts_), enable_contact(flag & CONTACT),
         enable_distance_lower_bound(flag & DISTANCE_LOWER_BOUND),
-        security_margin(0),
-        break_distance(1e-3),
+        security_margin(0), break_distance(FCL_REAL(1e-3)),
         distance_upper_bound((std::numeric_limits<FCL_REAL>::max)()) {}
 
   /// @brief Default constructor.
   CollisionRequest()
-      : num_max_contacts(1),
-        enable_contact(false),
-        enable_distance_lower_bound(false),
-        security_margin(0),
-        break_distance(1e-3),
+      : num_max_contacts(1), enable_contact(false),
+        enable_distance_lower_bound(false), security_margin(0),
+        break_distance(FCL_REAL(1e-3)),
         distance_upper_bound((std::numeric_limits<FCL_REAL>::max)()) {}
 
-  bool isSatisfied(const CollisionResult& result) const;
+  bool isSatisfied(const CollisionResult &result) const;
 
   /// @brief whether two CollisionRequest are the same or not
-  inline bool operator==(const CollisionRequest& other) const {
+  inline bool operator==(const CollisionRequest &other) const {
     return QueryRequest::operator==(other) &&
            num_max_contacts == other.num_max_contacts &&
            enable_contact == other.enable_contact &&
@@ -300,11 +291,11 @@ struct HPP_FCL_DLLAPI CollisionRequest : QueryRequest {
 
 /// @brief collision result
 struct HPP_FCL_DLLAPI CollisionResult : QueryResult {
- private:
+private:
   /// @brief contact information
   std::vector<Contact> contacts;
 
- public:
+public:
   /// Lower bound on distance between objects if they are disjoint.
   /// See \ref hpp_fcl_collision_and_distance_lower_bound_computation
   /// @note computed only on request (or if it does not add any computational
@@ -316,21 +307,21 @@ struct HPP_FCL_DLLAPI CollisionResult : QueryResult {
   /// CollisionRequest::break_distance.
   Vec3f nearest_points[2];
 
- public:
+public:
   CollisionResult()
       : distance_lower_bound((std::numeric_limits<FCL_REAL>::max)()) {}
 
   /// @brief Update the lower bound only if the distance is inferior.
-  inline void updateDistanceLowerBound(const FCL_REAL& distance_lower_bound_) {
+  inline void updateDistanceLowerBound(const FCL_REAL &distance_lower_bound_) {
     if (distance_lower_bound_ < distance_lower_bound)
       distance_lower_bound = distance_lower_bound_;
   }
 
   /// @brief add one contact into result structure
-  inline void addContact(const Contact& c) { contacts.push_back(c); }
+  inline void addContact(const Contact &c) { contacts.push_back(c); }
 
   /// @brief whether two CollisionResult are the same or not
-  inline bool operator==(const CollisionResult& other) const {
+  inline bool operator==(const CollisionResult &other) const {
     return contacts == other.contacts &&
            distance_lower_bound == other.distance_lower_bound;
   }
@@ -342,7 +333,7 @@ struct HPP_FCL_DLLAPI CollisionResult : QueryResult {
   size_t numContacts() const { return contacts.size(); }
 
   /// @brief get the i-th contact calculated
-  const Contact& getContact(size_t i) const {
+  const Contact &getContact(size_t i) const {
     if (contacts.size() == 0)
       throw std::invalid_argument(
           "The number of contacts is zero. No Contact can be returned.");
@@ -354,7 +345,7 @@ struct HPP_FCL_DLLAPI CollisionResult : QueryResult {
   }
 
   /// @brief set the i-th contact calculated
-  void setContact(size_t i, const Contact& c) {
+  void setContact(size_t i, const Contact &c) {
     if (contacts.size() == 0)
       throw std::invalid_argument(
           "The number of contacts is zero. No Contact can be returned.");
@@ -366,12 +357,12 @@ struct HPP_FCL_DLLAPI CollisionResult : QueryResult {
   }
 
   /// @brief get all the contacts
-  void getContacts(std::vector<Contact>& contacts_) const {
+  void getContacts(std::vector<Contact> &contacts_) const {
     contacts_.resize(contacts.size());
     std::copy(contacts.begin(), contacts.end(), contacts_.begin());
   }
 
-  const std::vector<Contact>& getContacts() const { return contacts; }
+  const std::vector<Contact> &getContacts() const { return contacts; }
 
   /// @brief clear the results obtained
   void clear() {
@@ -394,22 +385,22 @@ struct HPP_FCL_DLLAPI DistanceRequest : QueryRequest {
   bool enable_nearest_points;
 
   /// @brief error threshold for approximate distance
-  FCL_REAL rel_err;  // relative error, between 0 and 1
-  FCL_REAL abs_err;  // absolute error
+  FCL_REAL rel_err; // relative error, between 0 and 1
+  FCL_REAL abs_err; // absolute error
 
   /// \param enable_nearest_points_ enables the nearest points computation.
   /// \param rel_err_
   /// \param abs_err_
-  DistanceRequest(bool enable_nearest_points_ = false, FCL_REAL rel_err_ = 0.0,
-                  FCL_REAL abs_err_ = 0.0)
-      : enable_nearest_points(enable_nearest_points_),
-        rel_err(rel_err_),
+  DistanceRequest(bool enable_nearest_points_ = false,
+                  FCL_REAL rel_err_ = FCL_REAL(0.),
+                  FCL_REAL abs_err_ = FCL_REAL(0.))
+      : enable_nearest_points(enable_nearest_points_), rel_err(rel_err_),
         abs_err(abs_err_) {}
 
-  bool isSatisfied(const DistanceResult& result) const;
+  bool isSatisfied(const DistanceResult &result) const;
 
   /// @brief whether two DistanceRequest are the same or not
-  inline bool operator==(const DistanceRequest& other) const {
+  inline bool operator==(const DistanceRequest &other) const {
     return QueryRequest::operator==(other) &&
            enable_nearest_points == other.enable_nearest_points &&
            rel_err == other.rel_err && abs_err == other.abs_err;
@@ -418,9 +409,9 @@ struct HPP_FCL_DLLAPI DistanceRequest : QueryRequest {
 
 /// @brief distance result
 struct HPP_FCL_DLLAPI DistanceResult : QueryResult {
- public:
+public:
   /// @brief minimum distance between two objects. if two objects are in
-  /// collision, min_distance <= 0.
+  /// collision, min_distance <= FCL_REAL(0.)
   FCL_REAL min_distance;
 
   /// @brief nearest points
@@ -430,25 +421,25 @@ struct HPP_FCL_DLLAPI DistanceResult : QueryResult {
   Vec3f normal;
 
   /// @brief collision object 1
-  const CollisionGeometry* o1;
+  const CollisionGeometry *o1;
 
   /// @brief collision object 2
-  const CollisionGeometry* o2;
+  const CollisionGeometry *o2;
 
   /// @brief information about the nearest point in object 1
   /// if object 1 is mesh or point cloud, it is the triangle or point id
-  /// if object 1 is geometry shape, it is NONE (-1),
+  /// if object 1 is geometry shape, it is NONE (FCL_REAL(-1)),
   /// if object 1 is octree, it is the id of the cell
   int b1;
 
   /// @brief information about the nearest point in object 2
   /// if object 2 is mesh or point cloud, it is the triangle or point id
-  /// if object 2 is geometry shape, it is NONE (-1),
+  /// if object 2 is geometry shape, it is NONE (FCL_REAL(-1)),
   /// if object 2 is octree, it is the id of the cell
   int b2;
 
   /// @brief invalid contact primitive information
-  static const int NONE = -1;
+  static const int NONE = FCL_REAL(-1);
 
   DistanceResult(
       FCL_REAL min_distance_ = (std::numeric_limits<FCL_REAL>::max)())
@@ -459,8 +450,8 @@ struct HPP_FCL_DLLAPI DistanceResult : QueryResult {
   }
 
   /// @brief add distance information into the result
-  void update(FCL_REAL distance, const CollisionGeometry* o1_,
-              const CollisionGeometry* o2_, int b1_, int b2_) {
+  void update(FCL_REAL distance, const CollisionGeometry *o1_,
+              const CollisionGeometry *o2_, int b1_, int b2_) {
     if (min_distance > distance) {
       min_distance = distance;
       o1 = o1_;
@@ -471,9 +462,9 @@ struct HPP_FCL_DLLAPI DistanceResult : QueryResult {
   }
 
   /// @brief add distance information into the result
-  void update(FCL_REAL distance, const CollisionGeometry* o1_,
-              const CollisionGeometry* o2_, int b1_, int b2_, const Vec3f& p1,
-              const Vec3f& p2, const Vec3f& normal_) {
+  void update(FCL_REAL distance, const CollisionGeometry *o1_,
+              const CollisionGeometry *o2_, int b1_, int b2_, const Vec3f &p1,
+              const Vec3f &p2, const Vec3f &normal_) {
     if (min_distance > distance) {
       min_distance = distance;
       o1 = o1_;
@@ -487,7 +478,7 @@ struct HPP_FCL_DLLAPI DistanceResult : QueryResult {
   }
 
   /// @brief add distance information into the result
-  void update(const DistanceResult& other_result) {
+  void update(const DistanceResult &other_result) {
     if (min_distance > other_result.min_distance) {
       min_distance = other_result.min_distance;
       o1 = other_result.o1;
@@ -514,7 +505,7 @@ struct HPP_FCL_DLLAPI DistanceResult : QueryResult {
   }
 
   /// @brief whether two DistanceResult are the same or not
-  inline bool operator==(const DistanceResult& other) const {
+  inline bool operator==(const DistanceResult &other) const {
     bool is_same = min_distance == other.min_distance &&
                    nearest_points[0] == other.nearest_points[0] &&
                    nearest_points[1] == other.nearest_points[1] &&
@@ -522,11 +513,13 @@ struct HPP_FCL_DLLAPI DistanceResult : QueryResult {
                    b1 == other.b1 && b2 == other.b2;
 
     // TODO: check also that two GeometryObject are indeed equal.
-    if ((o1 != NULL) ^ (other.o1 != NULL)) return false;
+    if ((o1 != NULL) ^ (other.o1 != NULL))
+      return false;
     is_same &= (o1 == other.o1);
     //    else if (o1 != NULL and other.o1 != NULL) is_same &= *o1 == *other.o1;
 
-    if ((o2 != NULL) ^ (other.o2 != NULL)) return false;
+    if ((o2 != NULL) ^ (other.o2 != NULL))
+      return false;
     is_same &= (o2 == other.o2);
     //    else if (o2 != NULL and other.o2 != NULL) is_same &= *o2 == *other.o2;
 
@@ -535,26 +528,28 @@ struct HPP_FCL_DLLAPI DistanceResult : QueryResult {
 };
 
 namespace internal {
-inline void updateDistanceLowerBoundFromBV(const CollisionRequest& /*req*/,
-                                           CollisionResult& res,
-                                           const FCL_REAL& sqrDistLowerBound) {
+inline void updateDistanceLowerBoundFromBV(const CollisionRequest & /*req*/,
+                                           CollisionResult &res,
+                                           const FCL_REAL &sqrDistLowerBound) {
   // BV cannot find negative distance.
-  if (res.distance_lower_bound <= 0) return;
-  FCL_REAL new_dlb = std::sqrt(sqrDistLowerBound);  // - req.security_margin;
-  if (new_dlb < res.distance_lower_bound) res.distance_lower_bound = new_dlb;
+  if (res.distance_lower_bound <= 0)
+    return;
+  FCL_REAL new_dlb = std::sqrt(sqrDistLowerBound); // - req.security_margin;
+  if (new_dlb < res.distance_lower_bound)
+    res.distance_lower_bound = new_dlb;
 }
 
-inline void updateDistanceLowerBoundFromLeaf(const CollisionRequest&,
-                                             CollisionResult& res,
-                                             const FCL_REAL& distance,
-                                             const Vec3f& p0, const Vec3f& p1) {
+inline void updateDistanceLowerBoundFromLeaf(const CollisionRequest &,
+                                             CollisionResult &res,
+                                             const FCL_REAL &distance,
+                                             const Vec3f &p0, const Vec3f &p1) {
   if (distance < res.distance_lower_bound) {
     res.distance_lower_bound = distance;
     res.nearest_points[0] = p0;
     res.nearest_points[1] = p1;
   }
 }
-}  // namespace internal
+} // namespace internal
 
 inline CollisionRequestFlag operator~(CollisionRequestFlag a) {
   return static_cast<CollisionRequestFlag>(~static_cast<int>(a));
@@ -578,23 +573,23 @@ inline CollisionRequestFlag operator^(CollisionRequestFlag a,
                                            static_cast<int>(b));
 }
 
-inline CollisionRequestFlag& operator|=(CollisionRequestFlag& a,
+inline CollisionRequestFlag &operator|=(CollisionRequestFlag &a,
                                         CollisionRequestFlag b) {
-  return (CollisionRequestFlag&)((int&)(a) |= static_cast<int>(b));
+  return (CollisionRequestFlag &)((int &)(a) |= static_cast<int>(b));
 }
 
-inline CollisionRequestFlag& operator&=(CollisionRequestFlag& a,
+inline CollisionRequestFlag &operator&=(CollisionRequestFlag &a,
                                         CollisionRequestFlag b) {
-  return (CollisionRequestFlag&)((int&)(a) &= static_cast<int>(b));
+  return (CollisionRequestFlag &)((int &)(a) &= static_cast<int>(b));
 }
 
-inline CollisionRequestFlag& operator^=(CollisionRequestFlag& a,
+inline CollisionRequestFlag &operator^=(CollisionRequestFlag &a,
                                         CollisionRequestFlag b) {
-  return (CollisionRequestFlag&)((int&)(a) ^= static_cast<int>(b));
+  return (CollisionRequestFlag &)((int &)(a) ^= static_cast<int>(b));
 }
 
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp
 
 #endif

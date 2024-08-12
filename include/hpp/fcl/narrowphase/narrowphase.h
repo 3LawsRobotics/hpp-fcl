@@ -40,11 +40,11 @@
 #ifndef HPP_FCL_NARROWPHASE_H
 #define HPP_FCL_NARROWPHASE_H
 
-#include <limits>
 #include <iostream>
+#include <limits>
 
-#include <hpp/fcl/narrowphase/gjk.h>
 #include <hpp/fcl/collision_data.h>
+#include <hpp/fcl/narrowphase/gjk.h>
 
 namespace hpp {
 namespace fcl {
@@ -56,32 +56,32 @@ struct HPP_FCL_DLLAPI GJKSolver {
 
   /// @brief initialize GJK
   template <typename S1, typename S2>
-  void initialize_gjk(details::GJK& gjk, const details::MinkowskiDiff& shape,
-                      const S1& s1, const S2& s2, Vec3f& guess,
-                      support_func_guess_t& support_hint) const {
+  void initialize_gjk(details::GJK &gjk, const details::MinkowskiDiff &shape,
+                      const S1 &s1, const S2 &s2, Vec3f &guess,
+                      support_func_guess_t &support_hint) const {
     switch (gjk_initial_guess) {
-      case GJKInitialGuess::DefaultGuess:
-        guess = Vec3f(1, 0, 0);
-        support_hint.setZero();
-        break;
-      case GJKInitialGuess::CachedGuess:
-        guess = cached_guess;
-        support_hint = support_func_cached_guess;
-        break;
-      case GJKInitialGuess::BoundingVolumeGuess:
-        if (s1.aabb_local.volume() < 0 || s2.aabb_local.volume() < 0) {
-          HPP_FCL_THROW_PRETTY(
-              "computeLocalAABB must have been called on the shapes before "
-              "using "
-              "GJKInitialGuess::BoundingVolumeGuess.",
-              std::logic_error);
-        }
-        guess.noalias() = s1.aabb_local.center() -
-                          (shape.oR1 * s2.aabb_local.center() + shape.ot1);
-        support_hint.setZero();
-        break;
-      default:
-        HPP_FCL_THROW_PRETTY("Wrong initial guess for GJK.", std::logic_error);
+    case GJKInitialGuess::DefaultGuess:
+      guess = Vec3f(1, 0, 0);
+      support_hint.setZero();
+      break;
+    case GJKInitialGuess::CachedGuess:
+      guess = cached_guess;
+      support_hint = support_func_cached_guess;
+      break;
+    case GJKInitialGuess::BoundingVolumeGuess:
+      if (s1.aabb_local.volume() < 0 || s2.aabb_local.volume() < 0) {
+        HPP_FCL_THROW_PRETTY(
+            "computeLocalAABB must have been called on the shapes before "
+            "using "
+            "GJKInitialGuess::BoundingVolumeGuess.",
+            std::logic_error);
+      }
+      guess.noalias() = s1.aabb_local.center() -
+                        (shape.oR1 * s2.aabb_local.center() + shape.ot1);
+      support_hint.setZero();
+      break;
+    default:
+      HPP_FCL_THROW_PRETTY("Wrong initial guess for GJK.", std::logic_error);
     }
     // TODO: use gjk_initial_guess instead
     HPP_FCL_COMPILER_DIAGNOSTIC_PUSH
@@ -101,10 +101,10 @@ struct HPP_FCL_DLLAPI GJKSolver {
 
   /// @brief intersection checking between two shapes
   template <typename S1, typename S2>
-  bool shapeIntersect(const S1& s1, const Transform3f& tf1, const S2& s2,
-                      const Transform3f& tf2, FCL_REAL& distance_lower_bound,
-                      bool enable_penetration, Vec3f* contact_points,
-                      Vec3f* normal) const {
+  bool shapeIntersect(const S1 &s1, const Transform3f &tf1, const S2 &s2,
+                      const Transform3f &tf2, FCL_REAL &distance_lower_bound,
+                      bool enable_penetration, Vec3f *contact_points,
+                      Vec3f *normal) const {
     details::MinkowskiDiff shape;
     shape.set(&s1, &s2, tf1, tf2);
 
@@ -125,47 +125,51 @@ struct HPP_FCL_DLLAPI GJKSolver {
 
     Vec3f w0, w1;
     switch (gjk_status) {
-      case details::GJK::Inside:
-        if (!enable_penetration && contact_points == NULL && normal == NULL)
-          return true;
-        if (gjk.hasPenetrationInformation(shape)) {
-          gjk.getClosestPoints(shape, w0, w1);
-          distance_lower_bound = gjk.distance;
+    case details::GJK::Inside:
+      if (!enable_penetration && contact_points == NULL && normal == NULL)
+        return true;
+      if (gjk.hasPenetrationInformation(shape)) {
+        gjk.getClosestPoints(shape, w0, w1);
+        distance_lower_bound = gjk.distance;
+        if (normal)
+          (*normal).noalias() = tf1.getRotation() * (w0 - w1).normalized();
+        if (contact_points)
+          *contact_points = tf1.transform((w0 + w1) / 2);
+        return true;
+      } else {
+        details::EPA epa(epa_max_face_num, epa_max_vertex_num,
+                         epa_max_iterations, epa_tolerance);
+        details::EPA::Status epa_status = epa.evaluate(gjk, -guess);
+        if (epa_status & details::EPA::Valid ||
+            epa_status == details::EPA::OutOfFaces       // Warnings
+            || epa_status == details::EPA::OutOfVertices // Warnings
+        ) {
+          epa.getClosestPoints(shape, w0, w1);
+          distance_lower_bound = -epa.depth;
           if (normal)
-            (*normal).noalias() = tf1.getRotation() * (w0 - w1).normalized();
-          if (contact_points) *contact_points = tf1.transform((w0 + w1) / 2);
+            (*normal).noalias() = tf1.getRotation() * epa.normal;
+          if (contact_points)
+            *contact_points =
+                tf1.transform(w0 - epa.normal * (epa.depth * FCL_REAL(0.5)));
           return true;
-        } else {
-          details::EPA epa(epa_max_face_num, epa_max_vertex_num,
-                           epa_max_iterations, epa_tolerance);
-          details::EPA::Status epa_status = epa.evaluate(gjk, -guess);
-          if (epa_status & details::EPA::Valid ||
-              epa_status == details::EPA::OutOfFaces        // Warnings
-              || epa_status == details::EPA::OutOfVertices  // Warnings
-          ) {
-            epa.getClosestPoints(shape, w0, w1);
-            distance_lower_bound = -epa.depth;
-            if (normal) (*normal).noalias() = tf1.getRotation() * epa.normal;
-            if (contact_points)
-              *contact_points =
-                  tf1.transform(w0 - epa.normal * (epa.depth * 0.5));
-            return true;
-          } else if (epa_status == details::EPA::FallBack) {
-            epa.getClosestPoints(shape, w0, w1);
-            distance_lower_bound = -epa.depth;  // Should be zero
-            if (normal) (*normal).noalias() = tf1.getRotation() * epa.normal;
-            if (contact_points) *contact_points = tf1.transform(w0);
-            return true;
-          }
-          distance_lower_bound = -(std::numeric_limits<FCL_REAL>::max)();
-          // EPA failed but we know there is a collision so we should
+        } else if (epa_status == details::EPA::FallBack) {
+          epa.getClosestPoints(shape, w0, w1);
+          distance_lower_bound = -epa.depth; // Should be zero
+          if (normal)
+            (*normal).noalias() = tf1.getRotation() * epa.normal;
+          if (contact_points)
+            *contact_points = tf1.transform(w0);
           return true;
         }
-        break;
-      case details::GJK::Valid:
-        distance_lower_bound = gjk.distance;
-        break;
-      default:;
+        distance_lower_bound = -(std::numeric_limits<FCL_REAL>::max)();
+        // EPA failed but we know there is a collision so we should
+        return true;
+      }
+      break;
+    case details::GJK::Valid:
+      distance_lower_bound = gjk.distance;
+      break;
+    default:;
     }
 
     return false;
@@ -175,11 +179,11 @@ struct HPP_FCL_DLLAPI GJKSolver {
   /// transformation
   /// @return true if the shape are colliding.
   template <typename S>
-  bool shapeTriangleInteraction(const S& s, const Transform3f& tf1,
-                                const Vec3f& P1, const Vec3f& P2,
-                                const Vec3f& P3, const Transform3f& tf2,
-                                FCL_REAL& distance, Vec3f& p1, Vec3f& p2,
-                                Vec3f& normal) const {
+  bool shapeTriangleInteraction(const S &s, const Transform3f &tf1,
+                                const Vec3f &P1, const Vec3f &P2,
+                                const Vec3f &P3, const Transform3f &tf2,
+                                FCL_REAL &distance, Vec3f &p1, Vec3f &p2,
+                                Vec3f &normal) const {
     bool col;
     // Express everything in frame 1
     const Transform3f tf_1M2(tf1.inverseTimes(tf2));
@@ -207,60 +211,61 @@ struct HPP_FCL_DLLAPI GJKSolver {
 
     Vec3f w0, w1;
     switch (gjk_status) {
-      case details::GJK::Inside:
-        col = true;
-        if (gjk.hasPenetrationInformation(shape)) {
-          gjk.getClosestPoints(shape, w0, w1);
-          distance = gjk.distance;
-          normal.noalias() = tf1.getRotation() * (w0 - w1).normalized();
-          p1 = p2 = tf1.transform((w0 + w1) / 2);
-        } else {
-          details::EPA epa(epa_max_face_num, epa_max_vertex_num,
-                           epa_max_iterations, epa_tolerance);
-          details::EPA::Status epa_status = epa.evaluate(gjk, -guess);
-          if (epa_status & details::EPA::Valid ||
-              epa_status == details::EPA::OutOfFaces        // Warnings
-              || epa_status == details::EPA::OutOfVertices  // Warnings
-          ) {
-            epa.getClosestPoints(shape, w0, w1);
-            distance = -epa.depth;
-            normal.noalias() = tf1.getRotation() * epa.normal;
-            p1 = p2 = tf1.transform(w0 - epa.normal * (epa.depth * 0.5));
-            assert(distance <= 1e-6);
-          } else {
-            distance = -(std::numeric_limits<FCL_REAL>::max)();
-            gjk.getClosestPoints(shape, w0, w1);
-            p1 = p2 = tf1.transform(w0);
-          }
-        }
-        break;
-      case details::GJK::Valid:
-      case details::GJK::EarlyStopped:
-      case details::GJK::Failed:
-        col = false;
-
-        gjk.getClosestPoints(shape, p1, p2);
-        // TODO On degenerated case, the closest point may be wrong
-        // (i.e. an object face normal is colinear to gjk.ray
-        // assert (distance == (w0 - w1).norm());
+    case details::GJK::Inside:
+      col = true;
+      if (gjk.hasPenetrationInformation(shape)) {
+        gjk.getClosestPoints(shape, w0, w1);
         distance = gjk.distance;
+        normal.noalias() = tf1.getRotation() * (w0 - w1).normalized();
+        p1 = p2 = tf1.transform((w0 + w1) / 2);
+      } else {
+        details::EPA epa(epa_max_face_num, epa_max_vertex_num,
+                         epa_max_iterations, epa_tolerance);
+        details::EPA::Status epa_status = epa.evaluate(gjk, -guess);
+        if (epa_status & details::EPA::Valid ||
+            epa_status == details::EPA::OutOfFaces       // Warnings
+            || epa_status == details::EPA::OutOfVertices // Warnings
+        ) {
+          epa.getClosestPoints(shape, w0, w1);
+          distance = -epa.depth;
+          normal.noalias() = tf1.getRotation() * epa.normal;
+          p1 = p2 =
+              tf1.transform(w0 - epa.normal * (epa.depth * FCL_REAL(0.5)));
+          assert(distance <= 1e-6f);
+        } else {
+          distance = -(std::numeric_limits<FCL_REAL>::max)();
+          gjk.getClosestPoints(shape, w0, w1);
+          p1 = p2 = tf1.transform(w0);
+        }
+      }
+      break;
+    case details::GJK::Valid:
+    case details::GJK::EarlyStopped:
+    case details::GJK::Failed:
+      col = false;
 
-        p1 = tf1.transform(p1);
-        p2 = tf1.transform(p2);
-        assert(distance > 0);
-        break;
-      default:
-        assert(false && "should not reach type part.");
-        throw std::logic_error("GJKSolver: should not reach this part.");
+      gjk.getClosestPoints(shape, p1, p2);
+      // TODO On degenerated case, the closest point may be wrong
+      // (i.e. an object face normal is colinear to gjk.ray
+      // assert (distance == (w0 - w1).norm());
+      distance = gjk.distance;
+
+      p1 = tf1.transform(p1);
+      p2 = tf1.transform(p2);
+      assert(distance > 0);
+      break;
+    default:
+      assert(false && "should not reach type part.");
+      throw std::logic_error("GJKSolver: should not reach this part.");
     }
     return col;
   }
 
   /// @brief distance computation between two shapes
   template <typename S1, typename S2>
-  bool shapeDistance(const S1& s1, const Transform3f& tf1, const S2& s2,
-                     const Transform3f& tf2, FCL_REAL& distance, Vec3f& p1,
-                     Vec3f& p2, Vec3f& normal) const {
+  bool shapeDistance(const S1 &s1, const Transform3f &tf1, const S2 &s2,
+                     const Transform3f &tf2, FCL_REAL &distance, Vec3f &p1,
+                     Vec3f &p2, Vec3f &normal) const {
 #ifndef NDEBUG
     FCL_REAL eps(sqrt(std::numeric_limits<FCL_REAL>::epsilon()));
 #endif
@@ -323,13 +328,13 @@ struct HPP_FCL_DLLAPI GJKSolver {
                          epa_max_iterations, epa_tolerance);
         details::EPA::Status epa_status = epa.evaluate(gjk, -guess);
         if (epa_status & details::EPA::Valid ||
-            epa_status == details::EPA::OutOfFaces        // Warnings
-            || epa_status == details::EPA::OutOfVertices  // Warnings
+            epa_status == details::EPA::OutOfFaces       // Warnings
+            || epa_status == details::EPA::OutOfVertices // Warnings
             || epa_status == details::EPA::FallBack) {
           Vec3f w0, w1;
           epa.getClosestPoints(shape, w0, w1);
           assert(epa.depth >= -eps);
-          distance = (std::min)(0., -epa.depth);
+          distance = (std::min)(FCL_REAL(0.), -epa.depth);
           normal.noalias() = tf1.getRotation() * epa.normal;
           p1 = tf1.transform(w0);
           p2 = tf1.transform(w1);
@@ -349,12 +354,12 @@ struct HPP_FCL_DLLAPI GJKSolver {
   /// @brief Default constructor for GJK algorithm
   GJKSolver() {
     gjk_max_iterations = 128;
-    gjk_tolerance = 1e-6;
+    gjk_tolerance = 1e-6f;
     epa_max_face_num = 128;
     epa_max_vertex_num = 64;
     epa_max_iterations = 255;
-    epa_tolerance = 1e-6;
-    enable_cached_guess = false;  // TODO: use gjk_initial_guess instead
+    epa_tolerance = 1e-6f;
+    enable_cached_guess = false; // TODO: use gjk_initial_guess instead
     cached_guess = Vec3f(1, 0, 0);
     support_func_cached_guess = support_func_guess_t::Zero();
     distance_upper_bound = (std::numeric_limits<FCL_REAL>::max)();
@@ -368,7 +373,7 @@ struct HPP_FCL_DLLAPI GJKSolver {
   ///
   /// \param[in] request DistanceRequest input
   ///
-  GJKSolver(const DistanceRequest& request) {
+  GJKSolver(const DistanceRequest &request) {
     cached_guess = Vec3f(1, 0, 0);
     support_func_cached_guess = support_func_guess_t::Zero();
     distance_upper_bound = (std::numeric_limits<FCL_REAL>::max)();
@@ -377,7 +382,7 @@ struct HPP_FCL_DLLAPI GJKSolver {
     epa_max_face_num = 128;
     epa_max_vertex_num = 64;
     epa_max_iterations = 255;
-    epa_tolerance = 1e-6;
+    epa_tolerance = 1e-6f;
 
     set(request);
   }
@@ -386,7 +391,7 @@ struct HPP_FCL_DLLAPI GJKSolver {
   ///
   /// \param[in] request DistanceRequest input
   ///
-  void set(const DistanceRequest& request) {
+  void set(const DistanceRequest &request) {
     gjk_initial_guess = request.gjk_initial_guess;
     // TODO: use gjk_initial_guess instead
     enable_cached_guess = request.enable_cached_gjk_guess;
@@ -406,7 +411,7 @@ struct HPP_FCL_DLLAPI GJKSolver {
   ///
   /// \param[in] request CollisionRequest input
   ///
-  GJKSolver(const CollisionRequest& request) {
+  GJKSolver(const CollisionRequest &request) {
     cached_guess = Vec3f(1, 0, 0);
     support_func_cached_guess = support_func_guess_t::Zero();
     distance_upper_bound = (std::numeric_limits<FCL_REAL>::max)();
@@ -415,7 +420,7 @@ struct HPP_FCL_DLLAPI GJKSolver {
     epa_max_face_num = 128;
     epa_max_vertex_num = 64;
     epa_max_iterations = 255;
-    epa_tolerance = 1e-6;
+    epa_tolerance = 1e-6f;
 
     set(request);
   }
@@ -424,7 +429,7 @@ struct HPP_FCL_DLLAPI GJKSolver {
   ///
   /// \param[in] request CollisionRequest input
   ///
-  void set(const CollisionRequest& request) {
+  void set(const CollisionRequest &request) {
     gjk_initial_guess = request.gjk_initial_guess;
     // TODO: use gjk_initial_guess instead
     enable_cached_guess = request.enable_cached_gjk_guess;
@@ -441,24 +446,25 @@ struct HPP_FCL_DLLAPI GJKSolver {
 
     // The distance upper bound should be at least greater to the requested
     // security margin. Otherwise, we will likely miss some collisions.
-    distance_upper_bound = (std::max)(
-        0., (std::max)(request.distance_upper_bound, request.security_margin));
+    distance_upper_bound =
+        (std::max)(FCL_REAL(0.), (std::max)(request.distance_upper_bound,
+                                            request.security_margin));
   }
 
   /// @brief Copy constructor
-  GJKSolver(const GJKSolver& other) = default;
+  GJKSolver(const GJKSolver &other) = default;
 
   HPP_FCL_COMPILER_DIAGNOSTIC_PUSH
   HPP_FCL_COMPILER_DIAGNOSTIC_IGNORED_DEPRECECATED_DECLARATIONS
-  bool operator==(const GJKSolver& other) const {
+  bool operator==(const GJKSolver &other) const {
     return epa_max_face_num == other.epa_max_face_num &&
            epa_max_vertex_num == other.epa_max_vertex_num &&
            epa_max_iterations == other.epa_max_iterations &&
            epa_tolerance == other.epa_tolerance &&
            gjk_max_iterations == other.gjk_max_iterations &&
            enable_cached_guess ==
-               other.enable_cached_guess &&  // TODO: use gjk_initial_guess
-                                             // instead
+               other.enable_cached_guess && // TODO: use gjk_initial_guess
+                                            // instead
            cached_guess == other.cached_guess &&
            support_func_cached_guess == other.support_func_cached_guess &&
            distance_upper_bound == other.distance_upper_bound &&
@@ -470,7 +476,7 @@ struct HPP_FCL_DLLAPI GJKSolver {
   }
   HPP_FCL_COMPILER_DIAGNOSTIC_POP
 
-  bool operator!=(const GJKSolver& other) const { return !(*this == other); }
+  bool operator!=(const GJKSolver &other) const { return !(*this == other); }
 
   /// @brief maximum number of simplex face used in EPA algorithm
   unsigned int epa_max_face_num;
@@ -519,37 +525,37 @@ struct HPP_FCL_DLLAPI GJKSolver {
   ///        the two shapes have a distance greather than distance_upper_bound.
   mutable FCL_REAL distance_upper_bound;
 
- public:
+public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 template <>
 HPP_FCL_DLLAPI bool GJKSolver::shapeTriangleInteraction(
-    const Sphere& s, const Transform3f& tf1, const Vec3f& P1, const Vec3f& P2,
-    const Vec3f& P3, const Transform3f& tf2, FCL_REAL& distance, Vec3f& p1,
-    Vec3f& p2, Vec3f& normal) const;
+    const Sphere &s, const Transform3f &tf1, const Vec3f &P1, const Vec3f &P2,
+    const Vec3f &P3, const Transform3f &tf2, FCL_REAL &distance, Vec3f &p1,
+    Vec3f &p2, Vec3f &normal) const;
 
 template <>
 HPP_FCL_DLLAPI bool GJKSolver::shapeTriangleInteraction(
-    const Halfspace& s, const Transform3f& tf1, const Vec3f& P1,
-    const Vec3f& P2, const Vec3f& P3, const Transform3f& tf2,
-    FCL_REAL& distance, Vec3f& p1, Vec3f& p2, Vec3f& normal) const;
+    const Halfspace &s, const Transform3f &tf1, const Vec3f &P1,
+    const Vec3f &P2, const Vec3f &P3, const Transform3f &tf2,
+    FCL_REAL &distance, Vec3f &p1, Vec3f &p2, Vec3f &normal) const;
 
 template <>
 HPP_FCL_DLLAPI bool GJKSolver::shapeTriangleInteraction(
-    const Plane& s, const Transform3f& tf1, const Vec3f& P1, const Vec3f& P2,
-    const Vec3f& P3, const Transform3f& tf2, FCL_REAL& distance, Vec3f& p1,
-    Vec3f& p2, Vec3f& normal) const;
+    const Plane &s, const Transform3f &tf1, const Vec3f &P1, const Vec3f &P2,
+    const Vec3f &P3, const Transform3f &tf2, FCL_REAL &distance, Vec3f &p1,
+    Vec3f &p2, Vec3f &normal) const;
 
-#define SHAPE_INTERSECT_SPECIALIZATION_BASE(S1, S2)                 \
-  template <>                                                       \
-  HPP_FCL_DLLAPI bool GJKSolver::shapeIntersect<S1, S2>(            \
-      const S1& s1, const Transform3f& tf1, const S2& s2,           \
-      const Transform3f& tf2, FCL_REAL& distance_lower_bound, bool, \
-      Vec3f* contact_points, Vec3f* normal) const
+#define SHAPE_INTERSECT_SPECIALIZATION_BASE(S1, S2)                            \
+  template <>                                                                  \
+  HPP_FCL_DLLAPI bool GJKSolver::shapeIntersect<S1, S2>(                       \
+      const S1 &s1, const Transform3f &tf1, const S2 &s2,                      \
+      const Transform3f &tf2, FCL_REAL &distance_lower_bound, bool,            \
+      Vec3f *contact_points, Vec3f *normal) const
 
-#define SHAPE_INTERSECT_SPECIALIZATION(S1, S2) \
-  SHAPE_INTERSECT_SPECIALIZATION_BASE(S1, S2); \
+#define SHAPE_INTERSECT_SPECIALIZATION(S1, S2)                                 \
+  SHAPE_INTERSECT_SPECIALIZATION_BASE(S1, S2);                                 \
   SHAPE_INTERSECT_SPECIALIZATION_BASE(S2, S1)
 
 SHAPE_INTERSECT_SPECIALIZATION(Sphere, Capsule);
@@ -572,15 +578,15 @@ SHAPE_INTERSECT_SPECIALIZATION(Plane, Cone);
 #undef SHAPE_INTERSECT_SPECIALIZATION
 #undef SHAPE_INTERSECT_SPECIALIZATION_BASE
 
-#define SHAPE_DISTANCE_SPECIALIZATION_BASE(S1, S2)                  \
-  template <>                                                       \
-  HPP_FCL_DLLAPI bool GJKSolver::shapeDistance<S1, S2>(             \
-      const S1& s1, const Transform3f& tf1, const S2& s2,           \
-      const Transform3f& tf2, FCL_REAL& dist, Vec3f& p1, Vec3f& p2, \
-      Vec3f& normal) const
+#define SHAPE_DISTANCE_SPECIALIZATION_BASE(S1, S2)                             \
+  template <>                                                                  \
+  HPP_FCL_DLLAPI bool GJKSolver::shapeDistance<S1, S2>(                        \
+      const S1 &s1, const Transform3f &tf1, const S2 &s2,                      \
+      const Transform3f &tf2, FCL_REAL &dist, Vec3f &p1, Vec3f &p2,            \
+      Vec3f &normal) const
 
-#define SHAPE_DISTANCE_SPECIALIZATION(S1, S2) \
-  SHAPE_DISTANCE_SPECIALIZATION_BASE(S1, S2); \
+#define SHAPE_DISTANCE_SPECIALIZATION(S1, S2)                                  \
+  SHAPE_DISTANCE_SPECIALIZATION_BASE(S1, S2);                                  \
   SHAPE_DISTANCE_SPECIALIZATION_BASE(S2, S1)
 
 SHAPE_DISTANCE_SPECIALIZATION(Sphere, Capsule);
@@ -602,17 +608,17 @@ SHAPE_DISTANCE_SPECIALIZATION_BASE(TriangleP, TriangleP);
 
 // param doc is the doxygen detailled description (should be enclosed in /** */
 // and contain no dot for some obscure reasons).
-#define HPP_FCL_DECLARE_SHAPE_INTERSECT(Shape1, Shape2, doc)      \
-  /** @brief Fast implementation for Shape1-Shape2 collision. */  \
-  doc template <>                                                 \
-  HPP_FCL_DLLAPI bool GJKSolver::shapeIntersect<Shape1, Shape2>(  \
-      const Shape1& s1, const Transform3f& tf1, const Shape2& s2, \
-      const Transform3f& tf2, FCL_REAL& distance_lower_bound,     \
-      bool enable_penetration, Vec3f* contact_points, Vec3f* normal) const
-#define HPP_FCL_DECLARE_SHAPE_INTERSECT_SELF(Shape, doc) \
+#define HPP_FCL_DECLARE_SHAPE_INTERSECT(Shape1, Shape2, doc)                   \
+  /** @brief Fast implementation for Shape1-Shape2 collision. */               \
+  doc template <>                                                              \
+  HPP_FCL_DLLAPI bool GJKSolver::shapeIntersect<Shape1, Shape2>(               \
+      const Shape1 &s1, const Transform3f &tf1, const Shape2 &s2,              \
+      const Transform3f &tf2, FCL_REAL &distance_lower_bound,                  \
+      bool enable_penetration, Vec3f *contact_points, Vec3f *normal) const
+#define HPP_FCL_DECLARE_SHAPE_INTERSECT_SELF(Shape, doc)                       \
   HPP_FCL_DECLARE_SHAPE_INTERSECT(Shape, Shape, doc)
-#define HPP_FCL_DECLARE_SHAPE_INTERSECT_PAIR(Shape1, Shape2, doc) \
-  HPP_FCL_DECLARE_SHAPE_INTERSECT(Shape1, Shape2, doc);           \
+#define HPP_FCL_DECLARE_SHAPE_INTERSECT_PAIR(Shape1, Shape2, doc)              \
+  HPP_FCL_DECLARE_SHAPE_INTERSECT(Shape1, Shape2, doc);                        \
   HPP_FCL_DECLARE_SHAPE_INTERSECT(Shape2, Shape1, doc)
 
 HPP_FCL_DECLARE_SHAPE_INTERSECT_SELF(Sphere, );
@@ -622,19 +628,19 @@ HPP_FCL_DECLARE_SHAPE_INTERSECT_PAIR(Sphere, Plane, );
 
 template <>
 HPP_FCL_DLLAPI bool GJKSolver::shapeIntersect<Box, Sphere>(
-    const Box& s1, const Transform3f& tf1, const Sphere& s2,
-    const Transform3f& tf2, FCL_REAL& distance_lower_bound,
-    bool enable_penetration, Vec3f* contact_points, Vec3f* normal) const;
+    const Box &s1, const Transform3f &tf1, const Sphere &s2,
+    const Transform3f &tf2, FCL_REAL &distance_lower_bound,
+    bool enable_penetration, Vec3f *contact_points, Vec3f *normal) const;
 
-#ifdef IS_DOXYGEN  // for doxygen only
+#ifdef IS_DOXYGEN // for doxygen only
 /** \todo currently disabled and to re-enable it, API of function
  *  \ref obbDisjointAndLowerBoundDistance should be modified.
  *  */
 template <>
 HPP_FCL_DLLAPI bool GJKSolver::shapeIntersect<Box, Box>(
-    const Box& s1, const Transform3f& tf1, const Box& s2,
-    const Transform3f& tf2, FCL_REAL& distance_lower_bound,
-    bool enable_penetration, Vec3f* contact_points, Vec3f* normal) const;
+    const Box &s1, const Transform3f &tf1, const Box &s2,
+    const Transform3f &tf2, FCL_REAL &distance_lower_bound,
+    bool enable_penetration, Vec3f *contact_points, Vec3f *normal) const;
 #endif
 // HPP_FCL_DECLARE_SHAPE_INTERSECT_SELF(Box,);
 HPP_FCL_DECLARE_SHAPE_INTERSECT_PAIR(Box, Halfspace, );
@@ -665,13 +671,13 @@ HPP_FCL_DECLARE_SHAPE_INTERSECT_PAIR(Plane, Halfspace, );
 
 // param doc is the doxygen detailled description (should be enclosed in /** */
 // and contain no dot for some obscure reasons).
-#define HPP_FCL_DECLARE_SHAPE_TRIANGLE(Shape, doc)                  \
-  /** @brief Fast implementation for Shape-Triangle interaction. */ \
-  doc template <>                                                   \
-  HPP_FCL_DLLAPI bool GJKSolver::shapeTriangleInteraction<Shape>(   \
-      const Shape& s, const Transform3f& tf1, const Vec3f& P1,      \
-      const Vec3f& P2, const Vec3f& P3, const Transform3f& tf2,     \
-      FCL_REAL& distance, Vec3f& p1, Vec3f& p2, Vec3f& normal) const
+#define HPP_FCL_DECLARE_SHAPE_TRIANGLE(Shape, doc)                             \
+  /** @brief Fast implementation for Shape-Triangle interaction. */            \
+  doc template <>                                                              \
+  HPP_FCL_DLLAPI bool GJKSolver::shapeTriangleInteraction<Shape>(              \
+      const Shape &s, const Transform3f &tf1, const Vec3f &P1,                 \
+      const Vec3f &P2, const Vec3f &P3, const Transform3f &tf2,                \
+      FCL_REAL &distance, Vec3f &p1, Vec3f &p2, Vec3f &normal) const
 
 HPP_FCL_DECLARE_SHAPE_TRIANGLE(Sphere, );
 HPP_FCL_DECLARE_SHAPE_TRIANGLE(Halfspace, );
@@ -686,17 +692,17 @@ HPP_FCL_DECLARE_SHAPE_TRIANGLE(Plane, );
 
 // param doc is the doxygen detailled description (should be enclosed in /** */
 // and contain no dot for some obscure reasons).
-#define HPP_FCL_DECLARE_SHAPE_DISTANCE(Shape1, Shape2, doc)         \
-  /** @brief Fast implementation for Shape1-Shape2 distance. */     \
-  doc template <>                                                   \
-  bool HPP_FCL_DLLAPI GJKSolver::shapeDistance<Shape1, Shape2>(     \
-      const Shape1& s1, const Transform3f& tf1, const Shape2& s2,   \
-      const Transform3f& tf2, FCL_REAL& dist, Vec3f& p1, Vec3f& p2, \
-      Vec3f& normal) const
-#define HPP_FCL_DECLARE_SHAPE_DISTANCE_SELF(Shape, doc) \
+#define HPP_FCL_DECLARE_SHAPE_DISTANCE(Shape1, Shape2, doc)                    \
+  /** @brief Fast implementation for Shape1-Shape2 distance. */                \
+  doc template <>                                                              \
+  bool HPP_FCL_DLLAPI GJKSolver::shapeDistance<Shape1, Shape2>(                \
+      const Shape1 &s1, const Transform3f &tf1, const Shape2 &s2,              \
+      const Transform3f &tf2, FCL_REAL &dist, Vec3f &p1, Vec3f &p2,            \
+      Vec3f &normal) const
+#define HPP_FCL_DECLARE_SHAPE_DISTANCE_SELF(Shape, doc)                        \
   HPP_FCL_DECLARE_SHAPE_DISTANCE(Shape, Shape, doc)
-#define HPP_FCL_DECLARE_SHAPE_DISTANCE_PAIR(Shape1, Shape2, doc) \
-  HPP_FCL_DECLARE_SHAPE_DISTANCE(Shape1, Shape2, doc);           \
+#define HPP_FCL_DECLARE_SHAPE_DISTANCE_PAIR(Shape1, Shape2, doc)               \
+  HPP_FCL_DECLARE_SHAPE_DISTANCE(Shape1, Shape2, doc);                         \
   HPP_FCL_DECLARE_SHAPE_DISTANCE(Shape2, Shape1, doc)
 
 HPP_FCL_DECLARE_SHAPE_DISTANCE_PAIR(Sphere, Box, );
@@ -723,8 +729,8 @@ HPP_FCL_DECLARE_SHAPE_DISTANCE_SELF(
 #if !(__cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER >= 1600))
 #pragma GCC diagnostic pop
 #endif
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp
 
 #endif

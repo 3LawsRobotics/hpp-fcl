@@ -35,20 +35,20 @@
 
 /** \author Jia Pan */
 
-#include <hpp/fcl/internal/BV_fitter.h>
 #include <hpp/fcl/BVH/BVH_utility.h>
-#include <limits>
+#include <hpp/fcl/internal/BV_fitter.h>
 #include <hpp/fcl/internal/tools.h>
+#include <limits>
 
 namespace hpp {
 namespace fcl {
 
-static const double kIOS_RATIO = 1.5;
-static const double invSinA = 2;
-static const double cosA = sqrt(3.0) / 2.0;
+static const FCL_REAL kIOS_RATIO = 1.5;
+static const FCL_REAL invSinA = 2;
+static const FCL_REAL cosA = sqrt(FCL_REAL(3.0)) / FCL_REAL(2.0);
 
 static inline void axisFromEigen(Vec3f eigenV[3], Matrix3f::Scalar eigenS[3],
-                                 Matrix3f& axes) {
+                                 Matrix3f &axes) {
   int min, mid, max;
   if (eigenS[0] > eigenS[1]) {
     max = 0;
@@ -77,15 +77,15 @@ static inline void axisFromEigen(Vec3f eigenV[3], Matrix3f::Scalar eigenS[3],
 
 namespace OBB_fit_functions {
 
-void fit1(Vec3f* ps, OBB& bv) {
+void fit1(Vec3f *ps, OBB &bv) {
   bv.To.noalias() = ps[0];
   bv.axes.setIdentity();
   bv.extent.setZero();
 }
 
-void fit2(Vec3f* ps, OBB& bv) {
-  const Vec3f& p1 = ps[0];
-  const Vec3f& p2 = ps[1];
+void fit2(Vec3f *ps, OBB &bv) {
+  const Vec3f &p1 = ps[0];
+  const Vec3f &p2 = ps[1];
   Vec3f p1p2 = p1 - p2;
   FCL_REAL len_p1p2 = p1p2.norm();
   p1p2.normalize();
@@ -93,14 +93,14 @@ void fit2(Vec3f* ps, OBB& bv) {
   bv.axes.col(0).noalias() = p1p2;
   generateCoordinateSystem(bv.axes.col(0), bv.axes.col(1), bv.axes.col(2));
 
-  bv.extent << len_p1p2 * 0.5, 0, 0;
+  bv.extent << len_p1p2 * FCL_REAL(0.5), 0, 0;
   bv.To.noalias() = (p1 + p2) / 2;
 }
 
-void fit3(Vec3f* ps, OBB& bv) {
-  const Vec3f& p1 = ps[0];
-  const Vec3f& p2 = ps[1];
-  const Vec3f& p3 = ps[2];
+void fit3(Vec3f *ps, OBB &bv) {
+  const Vec3f &p1 = ps[0];
+  const Vec3f &p2 = ps[1];
+  const Vec3f &p3 = ps[2];
   Vec3f e[3];
   e[0] = p1 - p2;
   e[1] = p2 - p3;
@@ -111,8 +111,10 @@ void fit3(Vec3f* ps, OBB& bv) {
   len[2] = e[2].squaredNorm();
 
   int imax = 0;
-  if (len[1] > len[0]) imax = 1;
-  if (len[2] > len[imax]) imax = 2;
+  if (len[1] > len[0])
+    imax = 1;
+  if (len[2] > len[imax])
+    imax = 2;
 
   bv.axes.col(2).noalias() = e[0].cross(e[1]).normalized();
   bv.axes.col(0).noalias() = e[imax].normalized();
@@ -121,17 +123,17 @@ void fit3(Vec3f* ps, OBB& bv) {
   getExtentAndCenter(ps, NULL, NULL, NULL, 3, bv.axes, bv.To, bv.extent);
 }
 
-void fit6(Vec3f* ps, OBB& bv) {
+void fit6(Vec3f *ps, OBB &bv) {
   OBB bv1, bv2;
   fit3(ps, bv1);
   fit3(ps + 3, bv2);
   bv = bv1 + bv2;
 }
 
-void fitn(Vec3f* ps, unsigned int n, OBB& bv) {
+void fitn(Vec3f *ps, unsigned int n, OBB &bv) {
   Matrix3f M;
   Vec3f E[3];
-  Matrix3f::Scalar s[3] = {0, 0, 0};  // three eigen values
+  Matrix3f::Scalar s[3] = {0, 0, 0}; // three eigen values
 
   getCovariance(ps, NULL, NULL, NULL, n, M);
   eigen(M, s, E);
@@ -141,10 +143,10 @@ void fitn(Vec3f* ps, unsigned int n, OBB& bv) {
   getExtentAndCenter(ps, NULL, NULL, NULL, n, bv.axes, bv.To, bv.extent);
 }
 
-}  // namespace OBB_fit_functions
+} // namespace OBB_fit_functions
 
 namespace RSS_fit_functions {
-void fit1(Vec3f* ps, RSS& bv) {
+void fit1(Vec3f *ps, RSS &bv) {
   bv.Tr.noalias() = ps[0];
   bv.axes.setIdentity();
   bv.length[0] = 0;
@@ -152,9 +154,9 @@ void fit1(Vec3f* ps, RSS& bv) {
   bv.radius = 0;
 }
 
-void fit2(Vec3f* ps, RSS& bv) {
-  const Vec3f& p1 = ps[0];
-  const Vec3f& p2 = ps[1];
+void fit2(Vec3f *ps, RSS &bv) {
+  const Vec3f &p1 = ps[0];
+  const Vec3f &p2 = ps[1];
   bv.axes.col(0).noalias() = p1 - p2;
   FCL_REAL len_p1p2 = bv.axes.col(0).norm();
   bv.axes.col(0) /= len_p1p2;
@@ -167,10 +169,10 @@ void fit2(Vec3f* ps, RSS& bv) {
   bv.radius = 0;
 }
 
-void fit3(Vec3f* ps, RSS& bv) {
-  const Vec3f& p1 = ps[0];
-  const Vec3f& p2 = ps[1];
-  const Vec3f& p3 = ps[2];
+void fit3(Vec3f *ps, RSS &bv) {
+  const Vec3f &p1 = ps[0];
+  const Vec3f &p2 = ps[1];
+  const Vec3f &p3 = ps[2];
   Vec3f e[3];
   e[0] = p1 - p2;
   e[1] = p2 - p3;
@@ -181,8 +183,10 @@ void fit3(Vec3f* ps, RSS& bv) {
   len[2] = e[2].squaredNorm();
 
   int imax = 0;
-  if (len[1] > len[0]) imax = 1;
-  if (len[2] > len[imax]) imax = 2;
+  if (len[1] > len[0])
+    imax = 1;
+  if (len[2] > len[imax])
+    imax = 2;
 
   bv.axes.col(2).noalias() = e[0].cross(e[1]).normalized();
   bv.axes.col(0).noalias() = e[imax].normalized();
@@ -192,16 +196,16 @@ void fit3(Vec3f* ps, RSS& bv) {
                                      bv.length, bv.radius);
 }
 
-void fit6(Vec3f* ps, RSS& bv) {
+void fit6(Vec3f *ps, RSS &bv) {
   RSS bv1, bv2;
   fit3(ps, bv1);
   fit3(ps + 3, bv2);
   bv = bv1 + bv2;
 }
 
-void fitn(Vec3f* ps, unsigned int n, RSS& bv) {
-  Matrix3f M;  // row first matrix
-  Vec3f E[3];  // row first eigen-vectors
+void fitn(Vec3f *ps, unsigned int n, RSS &bv) {
+  Matrix3f M; // row first matrix
+  Vec3f E[3]; // row first eigen-vectors
   Matrix3f::Scalar s[3] = {0, 0, 0};
 
   getCovariance(ps, NULL, NULL, NULL, n, M);
@@ -213,11 +217,11 @@ void fitn(Vec3f* ps, unsigned int n, RSS& bv) {
                                      bv.length, bv.radius);
 }
 
-}  // namespace RSS_fit_functions
+} // namespace RSS_fit_functions
 
 namespace kIOS_fit_functions {
 
-void fit1(Vec3f* ps, kIOS& bv) {
+void fit1(Vec3f *ps, kIOS &bv) {
   bv.num_spheres = 1;
   bv.spheres[0].o.noalias() = ps[0];
   bv.spheres[0].r = 0;
@@ -227,22 +231,22 @@ void fit1(Vec3f* ps, kIOS& bv) {
   bv.obb.To.noalias() = ps[0];
 }
 
-void fit2(Vec3f* ps, kIOS& bv) {
+void fit2(Vec3f *ps, kIOS &bv) {
   bv.num_spheres = 5;
 
-  const Vec3f& p1 = ps[0];
-  const Vec3f& p2 = ps[1];
+  const Vec3f &p1 = ps[0];
+  const Vec3f &p2 = ps[1];
   Vec3f p1p2 = p1 - p2;
   FCL_REAL len_p1p2 = p1p2.norm();
   p1p2.normalize();
 
-  Matrix3f& axes = bv.obb.axes;
+  Matrix3f &axes = bv.obb.axes;
   axes.col(0).noalias() = p1p2;
   generateCoordinateSystem(axes.col(0), axes.col(1), axes.col(2));
 
-  FCL_REAL r0 = len_p1p2 * 0.5;
+  FCL_REAL r0 = len_p1p2 * FCL_REAL(0.5);
   bv.obb.extent << r0, 0, 0;
-  bv.obb.To = (p1 + p2) * 0.5;
+  bv.obb.To = (p1 + p2) * FCL_REAL(0.5);
 
   bv.spheres[0].o = bv.obb.To;
   bv.spheres[0].r = r0;
@@ -262,12 +266,12 @@ void fit2(Vec3f* ps, kIOS& bv) {
   bv.spheres[4].o = bv.spheres[0].o + delta;
 }
 
-void fit3(Vec3f* ps, kIOS& bv) {
+void fit3(Vec3f *ps, kIOS &bv) {
   bv.num_spheres = 3;
 
-  const Vec3f& p1 = ps[0];
-  const Vec3f& p2 = ps[1];
-  const Vec3f& p3 = ps[2];
+  const Vec3f &p1 = ps[0];
+  const Vec3f &p2 = ps[1];
+  const Vec3f &p3 = ps[2];
   Vec3f e[3];
   e[0] = p1 - p2;
   e[1] = p2 - p3;
@@ -278,8 +282,10 @@ void fit3(Vec3f* ps, kIOS& bv) {
   len[2] = e[2].squaredNorm();
 
   int imax = 0;
-  if (len[1] > len[0]) imax = 1;
-  if (len[2] > len[imax]) imax = 2;
+  if (len[1] > len[0])
+    imax = 1;
+  if (len[2] > len[imax])
+    imax = 2;
 
   bv.obb.axes.col(2).noalias() = e[0].cross(e[1]).normalized();
   bv.obb.axes.col(0).noalias() = e[imax].normalized();
@@ -305,22 +311,22 @@ void fit3(Vec3f* ps, kIOS& bv) {
   bv.spheres[2].o = center + delta;
 }
 
-void fitn(Vec3f* ps, unsigned int n, kIOS& bv) {
+void fitn(Vec3f *ps, unsigned int n, kIOS &bv) {
   Matrix3f M;
   Vec3f E[3];
-  Matrix3f::Scalar s[3] = {0, 0, 0};  // three eigen values;
+  Matrix3f::Scalar s[3] = {0, 0, 0}; // three eigen values;
 
   getCovariance(ps, NULL, NULL, NULL, n, M);
   eigen(M, s, E);
 
-  Matrix3f& axes = bv.obb.axes;
+  Matrix3f &axes = bv.obb.axes;
   axisFromEigen(E, s, axes);
 
   getExtentAndCenter(ps, NULL, NULL, NULL, n, axes, bv.obb.To, bv.obb.extent);
 
   // get center and extension
-  const Vec3f& center = bv.obb.To;
-  const Vec3f& extent = bv.obb.extent;
+  const Vec3f &center = bv.obb.To;
+  const Vec3f &extent = bv.obb.extent;
   FCL_REAL r0 = maximumDistance(ps, NULL, NULL, NULL, n, center);
 
   // decide the k in kIOS
@@ -372,118 +378,114 @@ void fitn(Vec3f* ps, unsigned int n, kIOS& bv) {
   }
 }
 
-}  // namespace kIOS_fit_functions
+} // namespace kIOS_fit_functions
 
 namespace OBBRSS_fit_functions {
-void fit1(Vec3f* ps, OBBRSS& bv) {
+void fit1(Vec3f *ps, OBBRSS &bv) {
   OBB_fit_functions::fit1(ps, bv.obb);
   RSS_fit_functions::fit1(ps, bv.rss);
 }
 
-void fit2(Vec3f* ps, OBBRSS& bv) {
+void fit2(Vec3f *ps, OBBRSS &bv) {
   OBB_fit_functions::fit2(ps, bv.obb);
   RSS_fit_functions::fit2(ps, bv.rss);
 }
 
-void fit3(Vec3f* ps, OBBRSS& bv) {
+void fit3(Vec3f *ps, OBBRSS &bv) {
   OBB_fit_functions::fit3(ps, bv.obb);
   RSS_fit_functions::fit3(ps, bv.rss);
 }
 
-void fitn(Vec3f* ps, unsigned int n, OBBRSS& bv) {
+void fitn(Vec3f *ps, unsigned int n, OBBRSS &bv) {
   OBB_fit_functions::fitn(ps, n, bv.obb);
   RSS_fit_functions::fitn(ps, n, bv.rss);
 }
 
-}  // namespace OBBRSS_fit_functions
+} // namespace OBBRSS_fit_functions
 
-template <>
-void fit(Vec3f* ps, unsigned int n, OBB& bv) {
+template <> void fit(Vec3f *ps, unsigned int n, OBB &bv) {
   switch (n) {
-    case 1:
-      OBB_fit_functions::fit1(ps, bv);
-      break;
-    case 2:
-      OBB_fit_functions::fit2(ps, bv);
-      break;
-    case 3:
-      OBB_fit_functions::fit3(ps, bv);
-      break;
-    case 6:
-      OBB_fit_functions::fit6(ps, bv);
-      break;
-    default:
-      OBB_fit_functions::fitn(ps, n, bv);
+  case 1:
+    OBB_fit_functions::fit1(ps, bv);
+    break;
+  case 2:
+    OBB_fit_functions::fit2(ps, bv);
+    break;
+  case 3:
+    OBB_fit_functions::fit3(ps, bv);
+    break;
+  case 6:
+    OBB_fit_functions::fit6(ps, bv);
+    break;
+  default:
+    OBB_fit_functions::fitn(ps, n, bv);
   }
 }
 
-template <>
-void fit(Vec3f* ps, unsigned int n, RSS& bv) {
+template <> void fit(Vec3f *ps, unsigned int n, RSS &bv) {
   switch (n) {
-    case 1:
-      RSS_fit_functions::fit1(ps, bv);
-      break;
-    case 2:
-      RSS_fit_functions::fit2(ps, bv);
-      break;
-    case 3:
-      RSS_fit_functions::fit3(ps, bv);
-      break;
-    default:
-      RSS_fit_functions::fitn(ps, n, bv);
+  case 1:
+    RSS_fit_functions::fit1(ps, bv);
+    break;
+  case 2:
+    RSS_fit_functions::fit2(ps, bv);
+    break;
+  case 3:
+    RSS_fit_functions::fit3(ps, bv);
+    break;
+  default:
+    RSS_fit_functions::fitn(ps, n, bv);
   }
 }
 
-template <>
-void fit(Vec3f* ps, unsigned int n, kIOS& bv) {
+template <> void fit(Vec3f *ps, unsigned int n, kIOS &bv) {
   switch (n) {
-    case 1:
-      kIOS_fit_functions::fit1(ps, bv);
-      break;
-    case 2:
-      kIOS_fit_functions::fit2(ps, bv);
-      break;
-    case 3:
-      kIOS_fit_functions::fit3(ps, bv);
-      break;
-    default:
-      kIOS_fit_functions::fitn(ps, n, bv);
+  case 1:
+    kIOS_fit_functions::fit1(ps, bv);
+    break;
+  case 2:
+    kIOS_fit_functions::fit2(ps, bv);
+    break;
+  case 3:
+    kIOS_fit_functions::fit3(ps, bv);
+    break;
+  default:
+    kIOS_fit_functions::fitn(ps, n, bv);
   }
 }
 
-template <>
-void fit(Vec3f* ps, unsigned int n, OBBRSS& bv) {
+template <> void fit(Vec3f *ps, unsigned int n, OBBRSS &bv) {
   switch (n) {
-    case 1:
-      OBBRSS_fit_functions::fit1(ps, bv);
-      break;
-    case 2:
-      OBBRSS_fit_functions::fit2(ps, bv);
-      break;
-    case 3:
-      OBBRSS_fit_functions::fit3(ps, bv);
-      break;
-    default:
-      OBBRSS_fit_functions::fitn(ps, n, bv);
+  case 1:
+    OBBRSS_fit_functions::fit1(ps, bv);
+    break;
+  case 2:
+    OBBRSS_fit_functions::fit2(ps, bv);
+    break;
+  case 3:
+    OBBRSS_fit_functions::fit3(ps, bv);
+    break;
+  default:
+    OBBRSS_fit_functions::fitn(ps, n, bv);
   }
 }
 
-template <>
-void fit(Vec3f* ps, unsigned int n, AABB& bv) {
-  if (n <= 0) return;
+template <> void fit(Vec3f *ps, unsigned int n, AABB &bv) {
+  if (n <= 0)
+    return;
   bv = AABB(ps[0]);
   for (unsigned int i = 1; i < n; ++i) {
     bv += ps[i];
   }
 }
 
-OBB BVFitter<OBB>::fit(unsigned int* primitive_indices,
+OBB BVFitter<OBB>::fit(unsigned int *primitive_indices,
                        unsigned int num_primitives) {
   OBB bv;
 
-  Matrix3f M;             // row first matrix
-  Vec3f E[3];             // row first eigen-vectors
-  Matrix3f::Scalar s[3];  // three eigen values
+  Matrix3f M;            // row first matrix
+  Vec3f E[3];            // row first eigen-vectors
+  Matrix3f::Scalar s[3]; // three eigen values
 
   getCovariance(vertices, prev_vertices, tri_indices, primitive_indices,
                 num_primitives, M);
@@ -498,7 +500,7 @@ OBB BVFitter<OBB>::fit(unsigned int* primitive_indices,
   return bv;
 }
 
-OBBRSS BVFitter<OBBRSS>::fit(unsigned int* primitive_indices,
+OBBRSS BVFitter<OBBRSS>::fit(unsigned int *primitive_indices,
                              unsigned int num_primitives) {
   OBBRSS bv;
   Matrix3f M;
@@ -530,13 +532,13 @@ OBBRSS BVFitter<OBBRSS>::fit(unsigned int* primitive_indices,
   return bv;
 }
 
-RSS BVFitter<RSS>::fit(unsigned int* primitive_indices,
+RSS BVFitter<RSS>::fit(unsigned int *primitive_indices,
                        unsigned int num_primitives) {
   RSS bv;
 
-  Matrix3f M;             // row first matrix
-  Vec3f E[3];             // row first eigen-vectors
-  Matrix3f::Scalar s[3];  // three eigen values
+  Matrix3f M;            // row first matrix
+  Vec3f E[3];            // row first eigen-vectors
+  Matrix3f::Scalar s[3]; // three eigen values
   getCovariance(vertices, prev_vertices, tri_indices, primitive_indices,
                 num_primitives, M);
   eigen(M, s, E);
@@ -559,27 +561,27 @@ RSS BVFitter<RSS>::fit(unsigned int* primitive_indices,
   return bv;
 }
 
-kIOS BVFitter<kIOS>::fit(unsigned int* primitive_indices,
+kIOS BVFitter<kIOS>::fit(unsigned int *primitive_indices,
                          unsigned int num_primitives) {
   kIOS bv;
 
-  Matrix3f M;  // row first matrix
-  Vec3f E[3];  // row first eigen-vectors
+  Matrix3f M; // row first matrix
+  Vec3f E[3]; // row first eigen-vectors
   Matrix3f::Scalar s[3];
 
   getCovariance(vertices, prev_vertices, tri_indices, primitive_indices,
                 num_primitives, M);
   eigen(M, s, E);
 
-  Matrix3f& axes = bv.obb.axes;
+  Matrix3f &axes = bv.obb.axes;
   axisFromEigen(E, s, axes);
 
   // get centers and extensions
   getExtentAndCenter(vertices, prev_vertices, tri_indices, primitive_indices,
                      num_primitives, axes, bv.obb.To, bv.obb.extent);
 
-  const Vec3f& center = bv.obb.To;
-  const Vec3f& extent = bv.obb.extent;
+  const Vec3f &center = bv.obb.To;
+  const Vec3f &extent = bv.obb.extent;
   FCL_REAL r0 = maximumDistance(vertices, prev_vertices, tri_indices,
                                 primitive_indices, num_primitives, center);
 
@@ -640,12 +642,13 @@ kIOS BVFitter<kIOS>::fit(unsigned int* primitive_indices,
   return bv;
 }
 
-AABB BVFitter<AABB>::fit(unsigned int* primitive_indices,
+AABB BVFitter<AABB>::fit(unsigned int *primitive_indices,
                          unsigned int num_primitives) {
   AABB bv;
-  if (num_primitives == 0) return bv;
+  if (num_primitives == 0)
+    return bv;
 
-  if (type == BVH_MODEL_TRIANGLES)  /// The primitive is triangle
+  if (type == BVH_MODEL_TRIANGLES) /// The primitive is triangle
   {
     Triangle t0 = tri_indices[primitive_indices[0]];
     bv = AABB(vertices[t0[0]]);
@@ -656,7 +659,7 @@ AABB BVFitter<AABB>::fit(unsigned int* primitive_indices,
       bv += vertices[t[1]];
       bv += vertices[t[2]];
 
-      if (prev_vertices)  /// can fitting both current and previous frame
+      if (prev_vertices) /// can fitting both current and previous frame
       {
         bv += prev_vertices[t[0]];
         bv += prev_vertices[t[1]];
@@ -664,13 +667,13 @@ AABB BVFitter<AABB>::fit(unsigned int* primitive_indices,
       }
     }
     return bv;
-  } else if (type == BVH_MODEL_POINTCLOUD)  /// The primitive is point
+  } else if (type == BVH_MODEL_POINTCLOUD) /// The primitive is point
   {
     bv = AABB(vertices[primitive_indices[0]]);
     for (unsigned int i = 0; i < num_primitives; ++i) {
       bv += vertices[primitive_indices[i]];
 
-      if (prev_vertices)  /// can fitting both current and previous frame
+      if (prev_vertices) /// can fitting both current and previous frame
       {
         bv += prev_vertices[primitive_indices[i]];
       }
@@ -679,6 +682,6 @@ AABB BVFitter<AABB>::fit(unsigned int* primitive_indices,
   return bv;
 }
 
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp

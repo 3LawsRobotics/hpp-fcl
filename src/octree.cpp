@@ -52,28 +52,28 @@ struct Neighbors {
   void hasNeighboordPlusY() { value |= 0x8; }
   void hasNeighboordMinusZ() { value |= 0x10; }
   void hasNeighboordPlusZ() { value |= 0x20; }
-};  // struct neighbors
+}; // struct neighbors
 
-void computeNeighbors(const std::vector<boost::array<FCL_REAL, 6> >& boxes,
-                      std::vector<Neighbors>& neighbors) {
-  typedef std::vector<boost::array<FCL_REAL, 6> > VectorArray6;
-  FCL_REAL fixedSize = -1;
-  FCL_REAL e(1e-8);
+void computeNeighbors(const std::vector<boost::array<FCL_REAL, 6>> &boxes,
+                      std::vector<Neighbors> &neighbors) {
+  typedef std::vector<boost::array<FCL_REAL, 6>> VectorArray6;
+  FCL_REAL fixedSize = FCL_REAL(-1);
+  FCL_REAL e(1e-8f);
   for (std::size_t i = 0; i < boxes.size(); ++i) {
-    const boost::array<FCL_REAL, 6>& box(boxes[i]);
-    Neighbors& n(neighbors[i]);
+    const boost::array<FCL_REAL, 6> &box(boxes[i]);
+    Neighbors &n(neighbors[i]);
     FCL_REAL x(box[0]);
     FCL_REAL y(box[1]);
     FCL_REAL z(box[2]);
     FCL_REAL s(box[3]);
-    if (fixedSize == -1)
+    if (fixedSize == FCL_REAL(-1))
       fixedSize = s;
     else
       assert(s == fixedSize);
 
     for (VectorArray6::const_iterator it = boxes.begin(); it != boxes.end();
          ++it) {
-      const boost::array<FCL_REAL, 6>& otherBox = *it;
+      const boost::array<FCL_REAL, 6> &otherBox = *it;
       FCL_REAL xo(otherBox[0]);
       FCL_REAL yo(otherBox[1]);
       FCL_REAL zo(otherBox[2]);
@@ -102,10 +102,10 @@ void computeNeighbors(const std::vector<boost::array<FCL_REAL, 6> >& boxes,
   }
 }
 
-}  // namespace internal
+} // namespace internal
 
-void OcTree::exportAsObjFile(const std::string& filename) const {
-  std::vector<boost::array<FCL_REAL, 6> > boxes(this->toBoxes());
+void OcTree::exportAsObjFile(const std::string &filename) const {
+  std::vector<boost::array<FCL_REAL, 6>> boxes(this->toBoxes());
   std::vector<internal::Neighbors> neighbors(boxes.size());
   internal::computeNeighbors(boxes, neighbors);
   // compute list of vertices and faces
@@ -118,22 +118,30 @@ void OcTree::exportAsObjFile(const std::string& filename) const {
   std::vector<Array4> faces;
 
   for (std::size_t i = 0; i < boxes.size(); ++i) {
-    const boost::array<FCL_REAL, 6>& box(boxes[i]);
-    internal::Neighbors& n(neighbors[i]);
+    const boost::array<FCL_REAL, 6> &box(boxes[i]);
+    internal::Neighbors &n(neighbors[i]);
 
     FCL_REAL x(box[0]);
     FCL_REAL y(box[1]);
     FCL_REAL z(box[2]);
     FCL_REAL size(box[3]);
 
-    vertices.push_back(Vec3f(x - .5 * size, y - .5 * size, z - .5 * size));
-    vertices.push_back(Vec3f(x + .5 * size, y - .5 * size, z - .5 * size));
-    vertices.push_back(Vec3f(x - .5 * size, y + .5 * size, z - .5 * size));
-    vertices.push_back(Vec3f(x + .5 * size, y + .5 * size, z - .5 * size));
-    vertices.push_back(Vec3f(x - .5 * size, y - .5 * size, z + .5 * size));
-    vertices.push_back(Vec3f(x + .5 * size, y - .5 * size, z + .5 * size));
-    vertices.push_back(Vec3f(x - .5 * size, y + .5 * size, z + .5 * size));
-    vertices.push_back(Vec3f(x + .5 * size, y + .5 * size, z + .5 * size));
+    vertices.push_back(Vec3f(x - FCL_REAL(.5) * size, y - FCL_REAL(.5) * size,
+                             z - FCL_REAL(.5) * size));
+    vertices.push_back(Vec3f(x + FCL_REAL(.5) * size, y - FCL_REAL(.5) * size,
+                             z - FCL_REAL(.5) * size));
+    vertices.push_back(Vec3f(x - FCL_REAL(.5) * size, y + FCL_REAL(.5) * size,
+                             z - FCL_REAL(.5) * size));
+    vertices.push_back(Vec3f(x + FCL_REAL(.5) * size, y + FCL_REAL(.5) * size,
+                             z - FCL_REAL(.5) * size));
+    vertices.push_back(Vec3f(x - FCL_REAL(.5) * size, y - FCL_REAL(.5) * size,
+                             z + FCL_REAL(.5) * size));
+    vertices.push_back(Vec3f(x + FCL_REAL(.5) * size, y - FCL_REAL(.5) * size,
+                             z + FCL_REAL(.5) * size));
+    vertices.push_back(Vec3f(x - FCL_REAL(.5) * size, y + FCL_REAL(.5) * size,
+                             z + FCL_REAL(.5) * size));
+    vertices.push_back(Vec3f(x + FCL_REAL(.5) * size, y + FCL_REAL(.5) * size,
+                             z + FCL_REAL(.5) * size));
 
     // Add face only if box has no neighbor with the same face
     if (!n.minusX()) {
@@ -171,20 +179,20 @@ void OcTree::exportAsObjFile(const std::string& filename) const {
   os << "# list of vertices\n";
   for (VectorVec3f::const_iterator it = vertices.begin(); it != vertices.end();
        ++it) {
-    const Vec3f& v = *it;
+    const Vec3f &v = *it;
     os << "v " << v[0] << " " << v[1] << " " << v[2] << '\n';
   }
   os << "\n# list of faces\n";
   for (VectorArray4::const_iterator it = faces.begin(); it != faces.end();
        ++it) {
-    const Array4& f = *it;
+    const Array4 &f = *it;
     os << "f " << f[0] << " " << f[1] << " " << f[2] << " " << f[3] << '\n';
   }
 }
 
-OcTreePtr_t makeOctree(
-    const Eigen::Matrix<FCL_REAL, Eigen::Dynamic, 3>& point_cloud,
-    const FCL_REAL resolution) {
+OcTreePtr_t
+makeOctree(const Eigen::Matrix<FCL_REAL, Eigen::Dynamic, 3> &point_cloud,
+           const FCL_REAL resolution) {
   typedef Eigen::Matrix<FCL_REAL, Eigen::Dynamic, 3> InputType;
   typedef InputType::ConstRowXpr RowType;
 
@@ -199,5 +207,5 @@ OcTreePtr_t makeOctree(
 
   return OcTreePtr_t(new OcTree(octree));
 }
-}  // namespace fcl
-}  // namespace hpp
+} // namespace fcl
+} // namespace hpp

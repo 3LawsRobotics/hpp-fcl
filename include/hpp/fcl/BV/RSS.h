@@ -38,8 +38,8 @@
 #ifndef HPP_FCL_RSS_H
 #define HPP_FCL_RSS_H
 
-#include <hpp/fcl/data_types.h>
 #include <boost/math/constants/constants.hpp>
+#include <hpp/fcl/data_types.h>
 
 namespace hpp {
 namespace fcl {
@@ -68,50 +68,50 @@ struct HPP_FCL_DLLAPI RSS {
   FCL_REAL radius;
 
   ///  @brief Default constructor with default values
-  RSS() : axes(Matrix3f::Zero()), Tr(Vec3f::Zero()), radius(-1) {
+  RSS() : axes(Matrix3f::Zero()), Tr(Vec3f::Zero()), radius(FCL_REAL(-1)) {
     length[0] = 0;
     length[1] = 0;
   }
 
   /// @brief Equality operator
-  bool operator==(const RSS& other) const {
+  bool operator==(const RSS &other) const {
     return axes == other.axes && Tr == other.Tr &&
            length[0] == other.length[0] && length[1] == other.length[1] &&
            radius == other.radius;
   }
 
   /// @brief Difference operator
-  bool operator!=(const RSS& other) const { return !(*this == other); }
+  bool operator!=(const RSS &other) const { return !(*this == other); }
 
   /// @brief Check whether the RSS contains a point
-  bool contain(const Vec3f& p) const;
+  bool contain(const Vec3f &p) const;
 
   /// @brief Check collision between two RSS
-  bool overlap(const RSS& other) const;
+  bool overlap(const RSS &other) const;
 
   /// Not implemented
-  bool overlap(const RSS& other, const CollisionRequest&,
-               FCL_REAL& sqrDistLowerBound) const {
-    sqrDistLowerBound = sqrt(-1);
+  bool overlap(const RSS &other, const CollisionRequest &,
+               FCL_REAL &sqrDistLowerBound) const {
+    sqrDistLowerBound = sqrt(FCL_REAL(-1));
     return overlap(other);
   }
 
   /// @brief the distance between two RSS; P and Q, if not NULL, return the
   /// nearest points
-  FCL_REAL distance(const RSS& other, Vec3f* P = NULL, Vec3f* Q = NULL) const;
+  FCL_REAL distance(const RSS &other, Vec3f *P = NULL, Vec3f *Q = NULL) const;
 
   /// @brief A simple way to merge the RSS and a point, not compact.
   /// @todo This function may have some bug.
-  RSS& operator+=(const Vec3f& p);
+  RSS &operator+=(const Vec3f &p);
 
   /// @brief Merge the RSS and another RSS
-  inline RSS& operator+=(const RSS& other) {
+  inline RSS &operator+=(const RSS &other) {
     *this = *this + other;
     return *this;
   }
 
   /// @brief Return the merged RSS of current RSS and the other one
-  RSS operator+(const RSS& other) const;
+  RSS operator+(const RSS &other) const;
 
   /// @brief Size of the RSS (used in BV_Splitter to order two RSSs)
   inline FCL_REAL size() const {
@@ -120,7 +120,7 @@ struct HPP_FCL_DLLAPI RSS {
   }
 
   /// @brief The RSS center
-  inline const Vec3f& center() const { return Tr; }
+  inline const Vec3f &center() const { return Tr; }
 
   /// @brief Width of the RSS
   inline FCL_REAL width() const { return length[0] + 2 * radius; }
@@ -141,7 +141,7 @@ struct HPP_FCL_DLLAPI RSS {
   /// @brief Check collision between two RSS and return the overlap part.
   /// For RSS, we return nothing, as the overlap part of two RSSs usually is not
   /// a RSS.
-  bool overlap(const RSS& other, RSS& /*overlap_part*/) const {
+  bool overlap(const RSS &other, RSS & /*overlap_part*/) const {
     return overlap(other);
   }
 };
@@ -151,23 +151,23 @@ struct HPP_FCL_DLLAPI RSS {
 /// not the RSS. But the direction P - Q is the correct direction for cloest
 /// points Notice that P and Q are both in the local frame of the first RSS (not
 /// global frame and not even the local frame of object 1)
-HPP_FCL_DLLAPI FCL_REAL distance(const Matrix3f& R0, const Vec3f& T0,
-                                 const RSS& b1, const RSS& b2, Vec3f* P = NULL,
-                                 Vec3f* Q = NULL);
+HPP_FCL_DLLAPI FCL_REAL distance(const Matrix3f &R0, const Vec3f &T0,
+                                 const RSS &b1, const RSS &b2, Vec3f *P = NULL,
+                                 Vec3f *Q = NULL);
 
 /// @brief Check collision between two RSSs, b1 is in configuration (R0, T0) and
 /// b2 is in identity.
-HPP_FCL_DLLAPI bool overlap(const Matrix3f& R0, const Vec3f& T0, const RSS& b1,
-                            const RSS& b2);
+HPP_FCL_DLLAPI bool overlap(const Matrix3f &R0, const Vec3f &T0, const RSS &b1,
+                            const RSS &b2);
 
 /// @brief Check collision between two RSSs, b1 is in configuration (R0, T0) and
 /// b2 is in identity.
-HPP_FCL_DLLAPI bool overlap(const Matrix3f& R0, const Vec3f& T0, const RSS& b1,
-                            const RSS& b2, const CollisionRequest& request,
-                            FCL_REAL& sqrDistLowerBound);
+HPP_FCL_DLLAPI bool overlap(const Matrix3f &R0, const Vec3f &T0, const RSS &b1,
+                            const RSS &b2, const CollisionRequest &request,
+                            FCL_REAL &sqrDistLowerBound);
 
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp
 
 #endif

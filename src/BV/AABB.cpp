@@ -37,8 +37,8 @@
 
 #include <hpp/fcl/BV/AABB.h>
 
-#include <limits>
 #include <hpp/fcl/collision_data.h>
+#include <limits>
 
 namespace hpp {
 namespace fcl {
@@ -47,8 +47,8 @@ AABB::AABB()
     : min_(Vec3f::Constant((std::numeric_limits<FCL_REAL>::max)())),
       max_(Vec3f::Constant(-(std::numeric_limits<FCL_REAL>::max)())) {}
 
-bool AABB::overlap(const AABB& other, const CollisionRequest& request,
-                   FCL_REAL& sqrDistLowerBound) const {
+bool AABB::overlap(const AABB &other, const CollisionRequest &request,
+                   FCL_REAL &sqrDistLowerBound) const {
   const FCL_REAL break_distance_squared =
       request.break_distance * request.break_distance;
 
@@ -58,7 +58,8 @@ bool AABB::overlap(const AABB& other, const CollisionRequest& request,
           .max(FCL_REAL(0))
           .matrix()
           .squaredNorm();
-  if (sqrDistLowerBound > break_distance_squared) return false;
+  if (sqrDistLowerBound > break_distance_squared)
+    return false;
 
   sqrDistLowerBound =
       (other.min_ - max_ - Vec3f::Constant(request.security_margin))
@@ -66,18 +67,19 @@ bool AABB::overlap(const AABB& other, const CollisionRequest& request,
           .max(FCL_REAL(0))
           .matrix()
           .squaredNorm();
-  if (sqrDistLowerBound > break_distance_squared) return false;
+  if (sqrDistLowerBound > break_distance_squared)
+    return false;
 
   return true;
 }
 
-FCL_REAL AABB::distance(const AABB& other, Vec3f* P, Vec3f* Q) const {
+FCL_REAL AABB::distance(const AABB &other, Vec3f *P, Vec3f *Q) const {
   FCL_REAL result = 0;
   for (Eigen::DenseIndex i = 0; i < 3; ++i) {
-    const FCL_REAL& amin = min_[i];
-    const FCL_REAL& amax = max_[i];
-    const FCL_REAL& bmin = other.min_[i];
-    const FCL_REAL& bmax = other.max_[i];
+    const FCL_REAL &amin = min_[i];
+    const FCL_REAL &amax = max_[i];
+    const FCL_REAL &bmin = other.min_[i];
+    const FCL_REAL &bmax = other.max_[i];
 
     if (amin > bmax) {
       FCL_REAL delta = bmax - amin;
@@ -96,11 +98,11 @@ FCL_REAL AABB::distance(const AABB& other, Vec3f* P, Vec3f* Q) const {
     } else {
       if (P && Q) {
         if (bmin >= amin) {
-          FCL_REAL t = 0.5 * (amax + bmin);
+          FCL_REAL t = FCL_REAL(0.5) * (amax + bmin);
           (*P)[i] = t;
           (*Q)[i] = t;
         } else {
-          FCL_REAL t = 0.5 * (amin + bmax);
+          FCL_REAL t = FCL_REAL(0.5) * (amin + bmax);
           (*P)[i] = t;
           (*Q)[i] = t;
         }
@@ -111,13 +113,13 @@ FCL_REAL AABB::distance(const AABB& other, Vec3f* P, Vec3f* Q) const {
   return std::sqrt(result);
 }
 
-FCL_REAL AABB::distance(const AABB& other) const {
+FCL_REAL AABB::distance(const AABB &other) const {
   FCL_REAL result = 0;
   for (Eigen::DenseIndex i = 0; i < 3; ++i) {
-    const FCL_REAL& amin = min_[i];
-    const FCL_REAL& amax = max_[i];
-    const FCL_REAL& bmin = other.min_[i];
-    const FCL_REAL& bmax = other.max_[i];
+    const FCL_REAL &amin = min_[i];
+    const FCL_REAL &amax = max_[i];
+    const FCL_REAL &bmin = other.min_[i];
+    const FCL_REAL &bmax = other.max_[i];
 
     if (amin > bmax) {
       FCL_REAL delta = bmax - amin;
@@ -131,19 +133,19 @@ FCL_REAL AABB::distance(const AABB& other) const {
   return std::sqrt(result);
 }
 
-bool overlap(const Matrix3f& R0, const Vec3f& T0, const AABB& b1,
-             const AABB& b2) {
+bool overlap(const Matrix3f &R0, const Vec3f &T0, const AABB &b1,
+             const AABB &b2) {
   AABB bb1(translate(rotate(b1, R0), T0));
   return bb1.overlap(b2);
 }
 
-bool overlap(const Matrix3f& R0, const Vec3f& T0, const AABB& b1,
-             const AABB& b2, const CollisionRequest& request,
-             FCL_REAL& sqrDistLowerBound) {
+bool overlap(const Matrix3f &R0, const Vec3f &T0, const AABB &b1,
+             const AABB &b2, const CollisionRequest &request,
+             FCL_REAL &sqrDistLowerBound) {
   AABB bb1(translate(rotate(b1, R0), T0));
   return bb1.overlap(b2, request, sqrDistLowerBound);
 }
 
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp

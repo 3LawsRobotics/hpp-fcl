@@ -44,10 +44,10 @@ namespace fcl {
 
 namespace details {
 template <typename BV>
-BVHModel<BV>* BVHExtract(const BVHModel<BV>& model, const Transform3f& pose,
-                         const AABB& _aabb) {
+BVHModel<BV> *BVHExtract(const BVHModel<BV> &model, const Transform3f &pose,
+                         const AABB &_aabb) {
   assert(model.getModelType() == BVH_MODEL_TRIANGLES);
-  const Matrix3f& q = pose.getRotation();
+  const Matrix3f &q = pose.getRotation();
   AABB aabb = translate(_aabb, -pose.getTranslation());
 
   Transform3f box_pose;
@@ -63,7 +63,7 @@ BVHModel<BV>* BVHExtract(const BVHModel<BV>& model, const Transform3f& pose,
   std::vector<bool> keep_tri(model.num_tris, false);
   unsigned int ntri = 0;
   for (unsigned int i = 0; i < model.num_tris; ++i) {
-    const Triangle& t = model.tri_indices[i];
+    const Triangle &t = model.tri_indices[i];
 
     bool keep_this_tri =
         keep_vertex[t[0]] || keep_vertex[t[1]] || keep_vertex[t[2]];
@@ -75,9 +75,9 @@ BVHModel<BV>* BVHExtract(const BVHModel<BV>& model, const Transform3f& pose,
           break;
         }
       }
-      const Vec3f& p0 = model.vertices[t[0]];
-      const Vec3f& p1 = model.vertices[t[1]];
-      const Vec3f& p2 = model.vertices[t[2]];
+      const Vec3f &p0 = model.vertices[t[0]];
+      const Vec3f &p1 = model.vertices[t[1]];
+      const Vec3f &p2 = model.vertices[t[2]];
       Vec3f c1, c2, normal;
       FCL_REAL distance;
       if (!keep_this_tri &&
@@ -93,9 +93,10 @@ BVHModel<BV>* BVHExtract(const BVHModel<BV>& model, const Transform3f& pose,
     }
   }
 
-  if (ntri == 0) return NULL;
+  if (ntri == 0)
+    return NULL;
 
-  BVHModel<BV>* new_model(new BVHModel<BV>());
+  BVHModel<BV> *new_model(new BVHModel<BV>());
   new_model->beginModel(ntri, std::min(ntri * 3, model.num_vertices));
   std::vector<unsigned int> idxConversion(model.num_vertices);
   assert(new_model->num_vertices == 0);
@@ -122,61 +123,61 @@ BVHModel<BV>* BVHExtract(const BVHModel<BV>& model, const Transform3f& pose,
   }
   return new_model;
 }
-}  // namespace details
+} // namespace details
 
 template <>
-BVHModel<OBB>* BVHExtract(const BVHModel<OBB>& model, const Transform3f& pose,
-                          const AABB& aabb) {
+BVHModel<OBB> *BVHExtract(const BVHModel<OBB> &model, const Transform3f &pose,
+                          const AABB &aabb) {
   return details::BVHExtract(model, pose, aabb);
 }
 template <>
-BVHModel<AABB>* BVHExtract(const BVHModel<AABB>& model, const Transform3f& pose,
-                           const AABB& aabb) {
+BVHModel<AABB> *BVHExtract(const BVHModel<AABB> &model, const Transform3f &pose,
+                           const AABB &aabb) {
   return details::BVHExtract(model, pose, aabb);
 }
 template <>
-BVHModel<RSS>* BVHExtract(const BVHModel<RSS>& model, const Transform3f& pose,
-                          const AABB& aabb) {
+BVHModel<RSS> *BVHExtract(const BVHModel<RSS> &model, const Transform3f &pose,
+                          const AABB &aabb) {
   return details::BVHExtract(model, pose, aabb);
 }
 template <>
-BVHModel<kIOS>* BVHExtract(const BVHModel<kIOS>& model, const Transform3f& pose,
-                           const AABB& aabb) {
+BVHModel<kIOS> *BVHExtract(const BVHModel<kIOS> &model, const Transform3f &pose,
+                           const AABB &aabb) {
   return details::BVHExtract(model, pose, aabb);
 }
 template <>
-BVHModel<OBBRSS>* BVHExtract(const BVHModel<OBBRSS>& model,
-                             const Transform3f& pose, const AABB& aabb) {
+BVHModel<OBBRSS> *BVHExtract(const BVHModel<OBBRSS> &model,
+                             const Transform3f &pose, const AABB &aabb) {
   return details::BVHExtract(model, pose, aabb);
 }
 template <>
-BVHModel<KDOP<16> >* BVHExtract(const BVHModel<KDOP<16> >& model,
-                                const Transform3f& pose, const AABB& aabb) {
+BVHModel<KDOP<16>> *BVHExtract(const BVHModel<KDOP<16>> &model,
+                               const Transform3f &pose, const AABB &aabb) {
   return details::BVHExtract(model, pose, aabb);
 }
 template <>
-BVHModel<KDOP<18> >* BVHExtract(const BVHModel<KDOP<18> >& model,
-                                const Transform3f& pose, const AABB& aabb) {
+BVHModel<KDOP<18>> *BVHExtract(const BVHModel<KDOP<18>> &model,
+                               const Transform3f &pose, const AABB &aabb) {
   return details::BVHExtract(model, pose, aabb);
 }
 template <>
-BVHModel<KDOP<24> >* BVHExtract(const BVHModel<KDOP<24> >& model,
-                                const Transform3f& pose, const AABB& aabb) {
+BVHModel<KDOP<24>> *BVHExtract(const BVHModel<KDOP<24>> &model,
+                               const Transform3f &pose, const AABB &aabb) {
   return details::BVHExtract(model, pose, aabb);
 }
 
-void getCovariance(Vec3f* ps, Vec3f* ps2, Triangle* ts, unsigned int* indices,
-                   unsigned int n, Matrix3f& M) {
+void getCovariance(Vec3f *ps, Vec3f *ps2, Triangle *ts, unsigned int *indices,
+                   unsigned int n, Matrix3f &M) {
   Vec3f S1(Vec3f::Zero());
   Vec3f S2[3] = {Vec3f::Zero(), Vec3f::Zero(), Vec3f::Zero()};
 
   if (ts) {
     for (unsigned int i = 0; i < n; ++i) {
-      const Triangle& t = (indices) ? ts[indices[i]] : ts[i];
+      const Triangle &t = (indices) ? ts[indices[i]] : ts[i];
 
-      const Vec3f& p1 = ps[t[0]];
-      const Vec3f& p2 = ps[t[1]];
-      const Vec3f& p3 = ps[t[2]];
+      const Vec3f &p1 = ps[t[0]];
+      const Vec3f &p2 = ps[t[1]];
+      const Vec3f &p3 = ps[t[2]];
 
       S1[0] += (p1[0] + p2[0] + p3[0]);
       S1[1] += (p1[1] + p2[1] + p3[1]);
@@ -189,9 +190,9 @@ void getCovariance(Vec3f* ps, Vec3f* ps2, Triangle* ts, unsigned int* indices,
       S2[1][2] += (p1[1] * p1[2] + p2[1] * p2[2] + p3[1] * p3[2]);
 
       if (ps2) {
-        const Vec3f& p1 = ps2[t[0]];
-        const Vec3f& p2 = ps2[t[1]];
-        const Vec3f& p3 = ps2[t[2]];
+        const Vec3f &p1 = ps2[t[0]];
+        const Vec3f &p2 = ps2[t[1]];
+        const Vec3f &p3 = ps2[t[2]];
 
         S1[0] += (p1[0] + p2[0] + p3[0]);
         S1[1] += (p1[1] + p2[1] + p3[1]);
@@ -207,7 +208,7 @@ void getCovariance(Vec3f* ps, Vec3f* ps2, Triangle* ts, unsigned int* indices,
     }
   } else {
     for (unsigned int i = 0; i < n; ++i) {
-      const Vec3f& p = (indices) ? ps[indices[i]] : ps[i];
+      const Vec3f &p = (indices) ? ps[indices[i]] : ps[i];
       S1 += p;
       S2[0][0] += (p[0] * p[0]);
       S2[1][1] += (p[1] * p[1]);
@@ -216,9 +217,9 @@ void getCovariance(Vec3f* ps, Vec3f* ps2, Triangle* ts, unsigned int* indices,
       S2[0][2] += (p[0] * p[2]);
       S2[1][2] += (p[1] * p[2]);
 
-      if (ps2)  // another frame
+      if (ps2) // another frame
       {
-        const Vec3f& p = (indices) ? ps2[indices[i]] : ps2[i];
+        const Vec3f &p = (indices) ? ps2[indices[i]] : ps2[i];
         S1 += p;
         S2[0][0] += (p[0] * p[0]);
         S2[1][1] += (p[1] * p[1]);
@@ -246,12 +247,13 @@ void getCovariance(Vec3f* ps, Vec3f* ps2, Triangle* ts, unsigned int* indices,
 /** @brief Compute the RSS bounding volume parameters: radius, rectangle size
  * and the origin. The bounding volume axes are known.
  */
-void getRadiusAndOriginAndRectangleSize(Vec3f* ps, Vec3f* ps2, Triangle* ts,
-                                        unsigned int* indices, unsigned int n,
-                                        const Matrix3f& axes, Vec3f& origin,
-                                        FCL_REAL l[2], FCL_REAL& r) {
+void getRadiusAndOriginAndRectangleSize(Vec3f *ps, Vec3f *ps2, Triangle *ts,
+                                        unsigned int *indices, unsigned int n,
+                                        const Matrix3f &axes, Vec3f &origin,
+                                        FCL_REAL l[2], FCL_REAL &r) {
   bool indirect_index = true;
-  if (!indices) indirect_index = false;
+  if (!indices)
+    indirect_index = false;
 
   unsigned int size_P = ((ps2) ? 2 : 1) * ((ts) ? 3 : 1) * n;
 
@@ -262,11 +264,11 @@ void getRadiusAndOriginAndRectangleSize(Vec3f* ps, Vec3f* ps2, Triangle* ts,
   if (ts) {
     for (unsigned int i = 0; i < n; ++i) {
       unsigned int index = indirect_index ? indices[i] : i;
-      const Triangle& t = ts[index];
+      const Triangle &t = ts[index];
 
       for (Triangle::index_type j = 0; j < 3; ++j) {
         Triangle::index_type point_id = t[j];
-        const Vec3f& p = ps[point_id];
+        const Vec3f &p = ps[point_id];
         Vec3f v(p[0], p[1], p[2]);
         P[P_id][0] = axes.col(0).dot(v);
         P[P_id][1] = axes.col(1).dot(v);
@@ -277,7 +279,7 @@ void getRadiusAndOriginAndRectangleSize(Vec3f* ps, Vec3f* ps2, Triangle* ts,
       if (ps2) {
         for (Triangle::index_type j = 0; j < 3; ++j) {
           Triangle::index_type point_id = t[j];
-          const Vec3f& p = ps2[point_id];
+          const Vec3f &p = ps2[point_id];
           // FIXME Is this right ?????
           Vec3f v(p[0], p[1], p[2]);
           P[P_id][0] = axes.col(0).dot(v);
@@ -291,7 +293,7 @@ void getRadiusAndOriginAndRectangleSize(Vec3f* ps, Vec3f* ps2, Triangle* ts,
     for (unsigned int i = 0; i < n; ++i) {
       unsigned int index = indirect_index ? indices[i] : i;
 
-      const Vec3f& p = ps[index];
+      const Vec3f &p = ps[index];
       Vec3f v(p[0], p[1], p[2]);
       P[P_id][0] = axes.col(0).dot(v);
       P[P_id][1] = axes.col(1).dot(v);
@@ -299,7 +301,7 @@ void getRadiusAndOriginAndRectangleSize(Vec3f* ps, Vec3f* ps2, Triangle* ts,
       P_id++;
 
       if (ps2) {
-        const Vec3f& v = ps2[index];
+        const Vec3f &v = ps2[index];
         P[P_id][0] = axes.col(0).dot(v);
         P[P_id][1] = axes.col(1).dot(v);
         P[P_id][2] = axes.col(2).dot(v);
@@ -322,9 +324,9 @@ void getRadiusAndOriginAndRectangleSize(Vec3f* ps, Vec3f* ps2, Triangle* ts,
       maxz = z_value;
   }
 
-  r = (FCL_REAL)0.5 * (maxz - minz);
+  r = (FCL_REAL)FCL_REAL(0.5) * (maxz - minz);
   radsqr = r * r;
-  cz = (FCL_REAL)0.5 * (maxz + minz);
+  cz = (FCL_REAL)FCL_REAL(0.5) * (maxz + minz);
 
   // compute an initial norm of rectangle along x direction
 
@@ -357,11 +359,13 @@ void getRadiusAndOriginAndRectangleSize(Vec3f* ps, Vec3f* ps2, Triangle* ts,
     if (P[i][0] < minx) {
       dz = P[i][2] - cz;
       x = P[i][0] + std::sqrt(std::max<FCL_REAL>(radsqr - dz * dz, 0));
-      if (x < minx) minx = x;
+      if (x < minx)
+        minx = x;
     } else if (P[i][0] > maxx) {
       dz = P[i][2] - cz;
       x = P[i][0] - std::sqrt(std::max<FCL_REAL>(radsqr - dz * dz, 0));
-      if (x > maxx) maxx = x;
+      if (x > maxx)
+        maxx = x;
     }
   }
 
@@ -394,18 +398,20 @@ void getRadiusAndOriginAndRectangleSize(Vec3f* ps, Vec3f* ps2, Triangle* ts,
     if (P[i][1] < miny) {
       dz = P[i][2] - cz;
       y = P[i][1] + std::sqrt(std::max<FCL_REAL>(radsqr - dz * dz, 0));
-      if (y < miny) miny = y;
+      if (y < miny)
+        miny = y;
     } else if (P[i][1] > maxy) {
       dz = P[i][2] - cz;
       y = P[i][1] - std::sqrt(std::max<FCL_REAL>(radsqr - dz * dz, 0));
-      if (y > maxy) maxy = y;
+      if (y > maxy)
+        maxy = y;
     }
   }
 
   // corners may have some points which are not covered - grow lengths if
   // necessary quite conservative (can be improved)
   FCL_REAL dx, dy, u, t;
-  FCL_REAL a = std::sqrt((FCL_REAL)0.5);
+  FCL_REAL a = std::sqrt((FCL_REAL)FCL_REAL(0.5));
   for (unsigned int i = 0; i < size_P; ++i) {
     if (P[i][0] > maxx) {
       if (P[i][1] > maxy) {
@@ -469,12 +475,13 @@ void getRadiusAndOriginAndRectangleSize(Vec3f* ps, Vec3f* ps2, Triangle* ts,
 /** @brief Compute the bounding volume extent and center for a set or subset of
  * points. The bounding volume axes are known.
  */
-static inline void getExtentAndCenter_pointcloud(Vec3f* ps, Vec3f* ps2,
-                                                 unsigned int* indices,
-                                                 unsigned int n, Matrix3f& axes,
-                                                 Vec3f& center, Vec3f& extent) {
+static inline void getExtentAndCenter_pointcloud(Vec3f *ps, Vec3f *ps2,
+                                                 unsigned int *indices,
+                                                 unsigned int n, Matrix3f &axes,
+                                                 Vec3f &center, Vec3f &extent) {
   bool indirect_index = true;
-  if (!indices) indirect_index = false;
+  if (!indices)
+    indirect_index = false;
 
   FCL_REAL real_max = (std::numeric_limits<FCL_REAL>::max)();
 
@@ -484,21 +491,25 @@ static inline void getExtentAndCenter_pointcloud(Vec3f* ps, Vec3f* ps2,
   for (unsigned int i = 0; i < n; ++i) {
     unsigned int index = indirect_index ? indices[i] : i;
 
-    const Vec3f& p = ps[index];
+    const Vec3f &p = ps[index];
     Vec3f proj(axes.transpose() * p);
 
     for (int j = 0; j < 3; ++j) {
-      if (proj[j] > max_coord[j]) max_coord[j] = proj[j];
-      if (proj[j] < min_coord[j]) min_coord[j] = proj[j];
+      if (proj[j] > max_coord[j])
+        max_coord[j] = proj[j];
+      if (proj[j] < min_coord[j])
+        min_coord[j] = proj[j];
     }
 
     if (ps2) {
-      const Vec3f& v = ps2[index];
+      const Vec3f &v = ps2[index];
       proj.noalias() = axes.transpose() * v;
 
       for (int j = 0; j < 3; ++j) {
-        if (proj[j] > max_coord[j]) max_coord[j] = proj[j];
-        if (proj[j] < min_coord[j]) min_coord[j] = proj[j];
+        if (proj[j] > max_coord[j])
+          max_coord[j] = proj[j];
+        if (proj[j] < min_coord[j])
+          min_coord[j] = proj[j];
       }
     }
   }
@@ -511,12 +522,13 @@ static inline void getExtentAndCenter_pointcloud(Vec3f* ps, Vec3f* ps2,
 /** @brief Compute the bounding volume extent and center for a set or subset of
  * points. The bounding volume axes are known.
  */
-static inline void getExtentAndCenter_mesh(Vec3f* ps, Vec3f* ps2, Triangle* ts,
-                                           unsigned int* indices,
-                                           unsigned int n, Matrix3f& axes,
-                                           Vec3f& center, Vec3f& extent) {
+static inline void getExtentAndCenter_mesh(Vec3f *ps, Vec3f *ps2, Triangle *ts,
+                                           unsigned int *indices,
+                                           unsigned int n, Matrix3f &axes,
+                                           Vec3f &center, Vec3f &extent) {
   bool indirect_index = true;
-  if (!indices) indirect_index = false;
+  if (!indices)
+    indirect_index = false;
 
   FCL_REAL real_max = (std::numeric_limits<FCL_REAL>::max)();
 
@@ -525,28 +537,32 @@ static inline void getExtentAndCenter_mesh(Vec3f* ps, Vec3f* ps2, Triangle* ts,
 
   for (unsigned int i = 0; i < n; ++i) {
     unsigned int index = indirect_index ? indices[i] : i;
-    const Triangle& t = ts[index];
+    const Triangle &t = ts[index];
 
     for (Triangle::index_type j = 0; j < 3; ++j) {
       Triangle::index_type point_id = t[j];
-      const Vec3f& p = ps[point_id];
+      const Vec3f &p = ps[point_id];
       Vec3f proj(axes.transpose() * p);
 
       for (int k = 0; k < 3; ++k) {
-        if (proj[k] > max_coord[k]) max_coord[k] = proj[k];
-        if (proj[k] < min_coord[k]) min_coord[k] = proj[k];
+        if (proj[k] > max_coord[k])
+          max_coord[k] = proj[k];
+        if (proj[k] < min_coord[k])
+          min_coord[k] = proj[k];
       }
     }
 
     if (ps2) {
       for (Triangle::index_type j = 0; j < 3; ++j) {
         Triangle::index_type point_id = t[j];
-        const Vec3f& p = ps2[point_id];
+        const Vec3f &p = ps2[point_id];
         Vec3f proj(axes.transpose() * p);
 
         for (int k = 0; k < 3; ++k) {
-          if (proj[k] > max_coord[k]) max_coord[k] = proj[k];
-          if (proj[k] < min_coord[k]) min_coord[k] = proj[k];
+          if (proj[k] > max_coord[k])
+            max_coord[k] = proj[k];
+          if (proj[k] < min_coord[k])
+            min_coord[k] = proj[k];
         }
       }
     }
@@ -559,17 +575,17 @@ static inline void getExtentAndCenter_mesh(Vec3f* ps, Vec3f* ps2, Triangle* ts,
   extent.noalias() = (max_coord - min_coord) / 2;
 }
 
-void getExtentAndCenter(Vec3f* ps, Vec3f* ps2, Triangle* ts,
-                        unsigned int* indices, unsigned int n, Matrix3f& axes,
-                        Vec3f& center, Vec3f& extent) {
+void getExtentAndCenter(Vec3f *ps, Vec3f *ps2, Triangle *ts,
+                        unsigned int *indices, unsigned int n, Matrix3f &axes,
+                        Vec3f &center, Vec3f &extent) {
   if (ts)
     getExtentAndCenter_mesh(ps, ps2, ts, indices, n, axes, center, extent);
   else
     getExtentAndCenter_pointcloud(ps, ps2, indices, n, axes, center, extent);
 }
 
-void circumCircleComputation(const Vec3f& a, const Vec3f& b, const Vec3f& c,
-                             Vec3f& center, FCL_REAL& radius) {
+void circumCircleComputation(const Vec3f &a, const Vec3f &b, const Vec3f &c,
+                             Vec3f &center, FCL_REAL &radius) {
   Vec3f e1 = a - c;
   Vec3f e2 = b - c;
   FCL_REAL e1_len2 = e1.squaredNorm();
@@ -577,38 +593,43 @@ void circumCircleComputation(const Vec3f& a, const Vec3f& b, const Vec3f& c,
   Vec3f e3 = e1.cross(e2);
   FCL_REAL e3_len2 = e3.squaredNorm();
   radius = e1_len2 * e2_len2 * (e1 - e2).squaredNorm() / e3_len2;
-  radius = std::sqrt(radius) * 0.5;
+  radius = std::sqrt(radius) * FCL_REAL(0.5);
 
-  center = (e2 * e1_len2 - e1 * e2_len2).cross(e3) * (0.5 * 1 / e3_len2) + c;
+  center =
+      (e2 * e1_len2 - e1 * e2_len2).cross(e3) * (FCL_REAL(0.5) * 1 / e3_len2) +
+      c;
 }
 
-static inline FCL_REAL maximumDistance_mesh(Vec3f* ps, Vec3f* ps2, Triangle* ts,
-                                            unsigned int* indices,
+static inline FCL_REAL maximumDistance_mesh(Vec3f *ps, Vec3f *ps2, Triangle *ts,
+                                            unsigned int *indices,
                                             unsigned int n,
-                                            const Vec3f& query) {
+                                            const Vec3f &query) {
   bool indirect_index = true;
-  if (!indices) indirect_index = false;
+  if (!indices)
+    indirect_index = false;
 
   FCL_REAL maxD = 0;
   for (unsigned int i = 0; i < n; ++i) {
     unsigned int index = indirect_index ? indices[i] : i;
-    const Triangle& t = ts[index];
+    const Triangle &t = ts[index];
 
     for (Triangle::index_type j = 0; j < 3; ++j) {
       Triangle::index_type point_id = t[j];
-      const Vec3f& p = ps[point_id];
+      const Vec3f &p = ps[point_id];
 
       FCL_REAL d = (p - query).squaredNorm();
-      if (d > maxD) maxD = d;
+      if (d > maxD)
+        maxD = d;
     }
 
     if (ps2) {
       for (Triangle::index_type j = 0; j < 3; ++j) {
         Triangle::index_type point_id = t[j];
-        const Vec3f& p = ps2[point_id];
+        const Vec3f &p = ps2[point_id];
 
         FCL_REAL d = (p - query).squaredNorm();
-        if (d > maxD) maxD = d;
+        if (d > maxD)
+          maxD = d;
       }
     }
   }
@@ -616,40 +637,43 @@ static inline FCL_REAL maximumDistance_mesh(Vec3f* ps, Vec3f* ps2, Triangle* ts,
   return std::sqrt(maxD);
 }
 
-static inline FCL_REAL maximumDistance_pointcloud(Vec3f* ps, Vec3f* ps2,
-                                                  unsigned int* indices,
+static inline FCL_REAL maximumDistance_pointcloud(Vec3f *ps, Vec3f *ps2,
+                                                  unsigned int *indices,
                                                   unsigned int n,
-                                                  const Vec3f& query) {
+                                                  const Vec3f &query) {
   bool indirect_index = true;
-  if (!indices) indirect_index = false;
+  if (!indices)
+    indirect_index = false;
 
   FCL_REAL maxD = 0;
   for (unsigned int i = 0; i < n; ++i) {
     unsigned int index = indirect_index ? indices[i] : i;
 
-    const Vec3f& p = ps[index];
+    const Vec3f &p = ps[index];
     FCL_REAL d = (p - query).squaredNorm();
-    if (d > maxD) maxD = d;
+    if (d > maxD)
+      maxD = d;
 
     if (ps2) {
-      const Vec3f& v = ps2[index];
+      const Vec3f &v = ps2[index];
       FCL_REAL d = (v - query).squaredNorm();
-      if (d > maxD) maxD = d;
+      if (d > maxD)
+        maxD = d;
     }
   }
 
   return std::sqrt(maxD);
 }
 
-FCL_REAL maximumDistance(Vec3f* ps, Vec3f* ps2, Triangle* ts,
-                         unsigned int* indices, unsigned int n,
-                         const Vec3f& query) {
+FCL_REAL maximumDistance(Vec3f *ps, Vec3f *ps2, Triangle *ts,
+                         unsigned int *indices, unsigned int n,
+                         const Vec3f &query) {
   if (ts)
     return maximumDistance_mesh(ps, ps2, ts, indices, n, query);
   else
     return maximumDistance_pointcloud(ps, ps2, indices, n, query);
 }
 
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp

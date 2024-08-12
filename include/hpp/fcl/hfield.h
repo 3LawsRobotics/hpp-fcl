@@ -37,10 +37,10 @@
 #ifndef HPP_FCL_HEIGHT_FIELD_H
 #define HPP_FCL_HEIGHT_FIELD_H
 
-#include <hpp/fcl/fwd.hh>
-#include <hpp/fcl/collision_object.h>
 #include <hpp/fcl/BV/BV_node.h>
 #include <hpp/fcl/BVH/BVH_internal.h>
+#include <hpp/fcl/collision_object.h>
+#include <hpp/fcl/fwd.hh>
 
 #include <vector>
 
@@ -64,22 +64,18 @@ struct HPP_FCL_DLLAPI HFNodeBase {
 
   /// @brief Default constructor
   HFNodeBase()
-      : first_child(0),
-        x_id(-1),
-        x_size(0),
-        y_id(-1),
-        y_size(0),
-        max_height(std::numeric_limits<FCL_REAL>::lowest()) {}
+      : first_child(0), x_id(FCL_REAL(-1)), x_size(0), y_id(FCL_REAL(-1)),
+        y_size(0), max_height(std::numeric_limits<FCL_REAL>::lowest()) {}
 
   /// @brief Comparison operator
-  bool operator==(const HFNodeBase& other) const {
+  bool operator==(const HFNodeBase &other) const {
     return first_child == other.first_child && x_id == other.x_id &&
            x_size == other.x_size && y_id == other.y_id &&
            y_size == other.y_size && max_height == other.max_height;
   }
 
   /// @brief Difference operator
-  bool operator!=(const HFNodeBase& other) const { return !(*this == other); }
+  bool operator!=(const HFNodeBase &other) const { return !(*this == other); }
 
   /// @brief Whether current node is a leaf node (i.e. contains a primitive
   /// index)
@@ -101,33 +97,32 @@ struct HPP_FCL_DLLAPI HFNodeBase {
   }
 };
 
-template <typename BV>
-struct HPP_FCL_DLLAPI HFNode : public HFNodeBase {
+template <typename BV> struct HPP_FCL_DLLAPI HFNode : public HFNodeBase {
   typedef HFNodeBase Base;
 
   /// @brief bounding volume storing the geometry
   BV bv;
 
   /// @brief Equality operator
-  bool operator==(const HFNode& other) const {
+  bool operator==(const HFNode &other) const {
     return Base::operator==(other) && bv == other.bv;
   }
 
   /// @brief Difference operator
-  bool operator!=(const HFNode& other) const { return !(*this == other); }
+  bool operator!=(const HFNode &other) const { return !(*this == other); }
 
   /// @brief Check whether two BVNode collide
-  bool overlap(const HFNode& other) const { return bv.overlap(other.bv); }
+  bool overlap(const HFNode &other) const { return bv.overlap(other.bv); }
   /// @brief Check whether two BVNode collide
-  bool overlap(const HFNode& other, const CollisionRequest& request,
-               FCL_REAL& sqrDistLowerBound) const {
+  bool overlap(const HFNode &other, const CollisionRequest &request,
+               FCL_REAL &sqrDistLowerBound) const {
     return bv.overlap(other.bv, request, sqrDistLowerBound);
   }
 
   /// @brief Compute the distance between two BVNode. P1 and P2, if not NULL and
   /// the underlying BV supports distance, return the nearest points.
-  FCL_REAL distance(const HFNode& other, Vec3f* P1 = NULL,
-                    Vec3f* P2 = NULL) const {
+  FCL_REAL distance(const HFNode &other, Vec3f *P1 = NULL,
+                    Vec3f *P2 = NULL) const {
     return bv.distance(other.bv, P1, P2);
   }
 
@@ -135,7 +130,7 @@ struct HPP_FCL_DLLAPI HFNode : public HFNodeBase {
   Vec3f getCenter() const { return bv.center(); }
 
   /// @brief Access to the orientation of the BV
-  const Matrix3f& getOrientation() const {
+  const Matrix3f &getOrientation() const {
     static const Matrix3f id3 = Matrix3f::Identity();
     return id3;
   }
@@ -149,9 +144,8 @@ struct HPP_FCL_DLLAPI HFNode : public HFNodeBase {
 
 namespace details {
 
-template <typename BV>
-struct UpdateBoundingVolume {
-  static void run(const Vec3f& pointA, const Vec3f& pointB, BV& bv) {
+template <typename BV> struct UpdateBoundingVolume {
+  static void run(const Vec3f &pointA, const Vec3f &pointB, BV &bv) {
     AABB bv_aabb(pointA, pointB);
     //      AABB bv_aabb;
     //      bv_aabb.update(pointA,pointB);
@@ -159,16 +153,15 @@ struct UpdateBoundingVolume {
   }
 };
 
-template <>
-struct UpdateBoundingVolume<AABB> {
-  static void run(const Vec3f& pointA, const Vec3f& pointB, AABB& bv) {
+template <> struct UpdateBoundingVolume<AABB> {
+  static void run(const Vec3f &pointA, const Vec3f &pointB, AABB &bv) {
     AABB bv_aabb(pointA, pointB);
     convertBV(bv_aabb, bv);
     //      bv.update(pointA,pointB);
   }
 };
 
-}  // namespace details
+} // namespace details
 
 /// @brief Data structure depicting a height field given by the base grid
 /// dimensions and the elevation along the grid. \tparam BV one of the bounding
@@ -180,7 +173,7 @@ struct UpdateBoundingVolume<AABB> {
 /// correspond to the following coordinates [± x_dim/2; ± y_dim/2].
 template <typename BV>
 class HPP_FCL_DLLAPI HeightField : public CollisionGeometry {
- public:
+public:
   typedef CollisionGeometry Base;
 
   typedef HFNode<BV> Node;
@@ -188,8 +181,7 @@ class HPP_FCL_DLLAPI HeightField : public CollisionGeometry {
 
   /// @brief Constructing an empty HeightField
   HeightField()
-      : CollisionGeometry(),
-        min_height((std::numeric_limits<FCL_REAL>::min)()),
+      : CollisionGeometry(), min_height((std::numeric_limits<FCL_REAL>::min)()),
         max_height((std::numeric_limits<FCL_REAL>::max)()) {}
 
   /// @brief Constructing an HeightField from its base dimensions and the set of
@@ -204,7 +196,7 @@ class HPP_FCL_DLLAPI HeightField : public CollisionGeometry {
   /// \param[in] min_height Minimal height of the height field
   ///
   HeightField(const FCL_REAL x_dim, const FCL_REAL y_dim,
-              const MatrixXf& heights, const FCL_REAL min_height = (FCL_REAL)0)
+              const MatrixXf &heights, const FCL_REAL min_height = (FCL_REAL)0)
       : CollisionGeometry() {
     init(x_dim, y_dim, heights, min_height);
   }
@@ -213,25 +205,19 @@ class HPP_FCL_DLLAPI HeightField : public CollisionGeometry {
   ///
   /// \param[in] other to copy.
   ///
-  HeightField(const HeightField& other)
-      : CollisionGeometry(other),
-        x_dim(other.x_dim),
-        y_dim(other.y_dim),
-        heights(other.heights),
-        min_height(other.min_height),
-        max_height(other.max_height),
-        x_grid(other.x_grid),
-        y_grid(other.y_grid),
-        bvs(other.bvs),
-        num_bvs(other.num_bvs) {}
+  HeightField(const HeightField &other)
+      : CollisionGeometry(other), x_dim(other.x_dim), y_dim(other.y_dim),
+        heights(other.heights), min_height(other.min_height),
+        max_height(other.max_height), x_grid(other.x_grid),
+        y_grid(other.y_grid), bvs(other.bvs), num_bvs(other.num_bvs) {}
 
   /// @brief Returns a const reference of the grid along the X direction.
-  const VecXf& getXGrid() const { return x_grid; }
+  const VecXf &getXGrid() const { return x_grid; }
   /// @brief Returns a const reference of the grid along the Y direction.
-  const VecXf& getYGrid() const { return y_grid; }
+  const VecXf &getYGrid() const { return y_grid; }
 
   /// @brief Returns a const reference of the heights
-  const MatrixXf& getHeights() const { return heights; }
+  const MatrixXf &getHeights() const { return heights; }
 
   /// @brief Returns the dimension of the Height Field along the X direction.
   FCL_REAL getXDim() const { return x_dim; }
@@ -243,7 +229,7 @@ class HPP_FCL_DLLAPI HeightField : public CollisionGeometry {
   /// @brief Returns the maximal height value of the Height Field.
   FCL_REAL getMaxHeight() const { return max_height; }
 
-  virtual HeightField<BV>* clone() const { return new HeightField(*this); }
+  virtual HeightField<BV> *clone() const { return new HeightField(*this); }
 
   /// @brief deconstruction, delete mesh data related.
   virtual ~HeightField() {}
@@ -256,13 +242,13 @@ class HPP_FCL_DLLAPI HeightField : public CollisionGeometry {
                   max_height);
     const AABB aabb_(A, B);
 
-    aabb_radius = (A - B).norm() / 2.;
+    aabb_radius = (A - B).norm() / FCL_REAL(2.);
     aabb_local = aabb_;
     aabb_center = aabb_.center();
   }
 
   /// @brief Update Height Field height
-  void updateHeights(const MatrixXf& new_heights) {
+  void updateHeights(const MatrixXf &new_heights) {
     if (new_heights.rows() != heights.rows() ||
         new_heights.cols() != heights.cols())
       HPP_FCL_THROW_PRETTY(
@@ -279,8 +265,8 @@ class HPP_FCL_DLLAPI HeightField : public CollisionGeometry {
     assert(this->max_height == heights.maxCoeff());
   }
 
- protected:
-  void init(const FCL_REAL x_dim, const FCL_REAL y_dim, const MatrixXf& heights,
+protected:
+  void init(const FCL_REAL x_dim, const FCL_REAL y_dim, const MatrixXf &heights,
             const FCL_REAL min_height) {
     this->x_dim = x_dim;
     this->y_dim = y_dim;
@@ -292,8 +278,10 @@ class HPP_FCL_DLLAPI HeightField : public CollisionGeometry {
     assert(NX >= 2 && "The number of columns is too small.");
     assert(NY >= 2 && "The number of rows is too small.");
 
-    x_grid = VecXf::LinSpaced(NX, -0.5 * x_dim, 0.5 * x_dim);
-    y_grid = VecXf::LinSpaced(NY, 0.5 * y_dim, -0.5 * y_dim);
+    x_grid =
+        VecXf::LinSpaced(NX, -FCL_REAL(0.5) * x_dim, FCL_REAL(0.5) * x_dim);
+    y_grid =
+        VecXf::LinSpaced(NY, FCL_REAL(0.5) * y_dim, -FCL_REAL(0.5) * y_dim);
 
     // Allocate BVS
     const size_t num_tot_bvs =
@@ -314,7 +302,7 @@ class HPP_FCL_DLLAPI HeightField : public CollisionGeometry {
 
   Matrix3f computeMomentofInertia() const { return Matrix3f::Zero(); }
 
- protected:
+protected:
   /// @brief Dimensions in meters along X and Y directions
   FCL_REAL x_dim, y_dim;
 
@@ -347,7 +335,7 @@ class HPP_FCL_DLLAPI HeightField : public CollisionGeometry {
   }
 
   FCL_REAL recursiveUpdateHeight(const size_t bv_id) {
-    HFNode<BV>& bv_node = bvs[bv_id];
+    HFNode<BV> &bv_node = bvs[bv_id];
 
     FCL_REAL max_height;
     if (bv_node.isLeaf()) {
@@ -381,10 +369,10 @@ class HPP_FCL_DLLAPI HeightField : public CollisionGeometry {
            "x_size or y_size are not of correct value");
     assert(bv_id < bvs.size() && "bv_id exceeds the vector dimension");
 
-    HFNode<BV>& bv_node = bvs[bv_id];
+    HFNode<BV> &bv_node = bvs[bv_id];
     FCL_REAL max_height;
     if (x_size == 1 &&
-        y_size == 1)  // don't build any BV for the current child node
+        y_size == 1) // don't build any BV for the current child node
     {
       max_height = heights.block<2, 2>(y_id, x_id).maxCoeff();
     } else {
@@ -392,20 +380,22 @@ class HPP_FCL_DLLAPI HeightField : public CollisionGeometry {
       num_bvs += 2;
 
       FCL_REAL max_left_height = min_height, max_right_height = min_height;
-      if (x_size >= y_size)  // splitting along the X axis
+      if (x_size >= y_size) // splitting along the X axis
       {
         Eigen::DenseIndex x_size_half = x_size / 2;
-        if (x_size == 1) x_size_half = 1;
+        if (x_size == 1)
+          x_size_half = 1;
         max_left_height = recursiveBuildTree(bv_node.leftChild(), x_id,
                                              x_size_half, y_id, y_size);
 
         max_right_height =
             recursiveBuildTree(bv_node.rightChild(), x_id + x_size_half,
                                x_size - x_size_half, y_id, y_size);
-      } else  // splitting along the Y axis
+      } else // splitting along the Y axis
       {
         Eigen::DenseIndex y_size_half = y_size / 2;
-        if (y_size == 1) y_size_half = 1;
+        if (y_size == 1)
+          y_size_half = 1;
         max_left_height = recursiveBuildTree(bv_node.leftChild(), x_id, x_size,
                                              y_id, y_size_half);
 
@@ -435,16 +425,16 @@ class HPP_FCL_DLLAPI HeightField : public CollisionGeometry {
     return max_height;
   }
 
- public:
+public:
   /// @brief Access the bv giving the its index
-  const HFNode<BV>& getBV(unsigned int i) const {
+  const HFNode<BV> &getBV(unsigned int i) const {
     if (i >= num_bvs)
       HPP_FCL_THROW_PRETTY("Index out of bounds", std::invalid_argument);
     return bvs[i];
   }
 
   /// @brief Access the bv giving the its index
-  HFNode<BV>& getBV(unsigned int i) {
+  HFNode<BV> &getBV(unsigned int i) {
     if (i >= num_bvs)
       HPP_FCL_THROW_PRETTY("Index out of bounds", std::invalid_argument);
     return bvs[i];
@@ -453,11 +443,12 @@ class HPP_FCL_DLLAPI HeightField : public CollisionGeometry {
   /// @brief Get the BV type: default is unknown
   NODE_TYPE getNodeType() const { return BV_UNKNOWN; }
 
- private:
-  virtual bool isEqual(const CollisionGeometry& _other) const {
-    const HeightField* other_ptr = dynamic_cast<const HeightField*>(&_other);
-    if (other_ptr == nullptr) return false;
-    const HeightField& other = *other_ptr;
+private:
+  virtual bool isEqual(const CollisionGeometry &_other) const {
+    const HeightField *other_ptr = dynamic_cast<const HeightField *>(&_other);
+    if (other_ptr == nullptr)
+      return false;
+    const HeightField &other = *other_ptr;
 
     return x_dim == other.x_dim && y_dim == other.y_dim &&
            heights == other.heights && min_height == other.min_height &&
@@ -466,40 +457,32 @@ class HPP_FCL_DLLAPI HeightField : public CollisionGeometry {
            num_bvs == other.num_bvs;
   }
 
- public:
+public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 /// @brief Specialization of getNodeType() for HeightField with different BV
 /// types
-template <>
-NODE_TYPE HeightField<AABB>::getNodeType() const;
+template <> NODE_TYPE HeightField<AABB>::getNodeType() const;
 
-template <>
-NODE_TYPE HeightField<OBB>::getNodeType() const;
+template <> NODE_TYPE HeightField<OBB>::getNodeType() const;
 
-template <>
-NODE_TYPE HeightField<RSS>::getNodeType() const;
+template <> NODE_TYPE HeightField<RSS>::getNodeType() const;
 
-template <>
-NODE_TYPE HeightField<kIOS>::getNodeType() const;
+template <> NODE_TYPE HeightField<kIOS>::getNodeType() const;
 
-template <>
-NODE_TYPE HeightField<OBBRSS>::getNodeType() const;
+template <> NODE_TYPE HeightField<OBBRSS>::getNodeType() const;
 
-template <>
-NODE_TYPE HeightField<KDOP<16> >::getNodeType() const;
+template <> NODE_TYPE HeightField<KDOP<16>>::getNodeType() const;
 
-template <>
-NODE_TYPE HeightField<KDOP<18> >::getNodeType() const;
+template <> NODE_TYPE HeightField<KDOP<18>>::getNodeType() const;
 
-template <>
-NODE_TYPE HeightField<KDOP<24> >::getNodeType() const;
+template <> NODE_TYPE HeightField<KDOP<24>>::getNodeType() const;
 
 /// @}
 
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp
 
 #endif

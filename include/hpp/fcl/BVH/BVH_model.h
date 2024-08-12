@@ -39,10 +39,10 @@
 #ifndef HPP_FCL_BVH_MODEL_H
 #define HPP_FCL_BVH_MODEL_H
 
-#include <hpp/fcl/fwd.hh>
-#include <hpp/fcl/collision_object.h>
-#include <hpp/fcl/BVH/BVH_internal.h>
 #include <hpp/fcl/BV/BV_node.h>
+#include <hpp/fcl/BVH/BVH_internal.h>
+#include <hpp/fcl/collision_object.h>
+#include <hpp/fcl/fwd.hh>
 #include <vector>
 
 namespace hpp {
@@ -53,23 +53,21 @@ namespace fcl {
 
 class ConvexBase;
 
-template <typename BV>
-class BVFitter;
-template <typename BV>
-class BVSplitter;
+template <typename BV> class BVFitter;
+template <typename BV> class BVSplitter;
 
 /// @brief A base class describing the bounding hierarchy of a mesh model or a
 /// point cloud model (which is viewed as a degraded version of mesh)
 class HPP_FCL_DLLAPI BVHModelBase : public CollisionGeometry {
- public:
+public:
   /// @brief Geometry point data
-  Vec3f* vertices;
+  Vec3f *vertices;
 
   /// @brief Geometry triangle index data, will be NULL for point clouds
-  Triangle* tri_indices;
+  Triangle *tri_indices;
 
   /// @brief Geometry point data in previous frame
-  Vec3f* prev_vertices;
+  Vec3f *prev_vertices;
 
   /// @brief Number of triangles
   unsigned int num_tris;
@@ -97,7 +95,7 @@ class HPP_FCL_DLLAPI BVHModelBase : public CollisionGeometry {
   BVHModelBase();
 
   /// @brief copy from another BVH
-  BVHModelBase(const BVHModelBase& other);
+  BVHModelBase(const BVHModelBase &other);
 
   /// @brief deconstruction, delete mesh data related.
   virtual ~BVHModelBase() {
@@ -116,23 +114,23 @@ class HPP_FCL_DLLAPI BVHModelBase : public CollisionGeometry {
   int beginModel(unsigned int num_tris = 0, unsigned int num_vertices = 0);
 
   /// @brief Add one point in the new BVH model
-  int addVertex(const Vec3f& p);
+  int addVertex(const Vec3f &p);
 
   /// @brief Add points in the new BVH model
-  int addVertices(const Matrixx3f& points);
+  int addVertices(const Matrixx3f &points);
 
   /// @brief Add triangles in the new BVH model
-  int addTriangles(const Matrixx3i& triangles);
+  int addTriangles(const Matrixx3i &triangles);
 
   /// @brief Add one triangle in the new BVH model
-  int addTriangle(const Vec3f& p1, const Vec3f& p2, const Vec3f& p3);
+  int addTriangle(const Vec3f &p1, const Vec3f &p2, const Vec3f &p3);
 
   /// @brief Add a set of triangles in the new BVH model
-  int addSubModel(const std::vector<Vec3f>& ps,
-                  const std::vector<Triangle>& ts);
+  int addSubModel(const std::vector<Vec3f> &ps,
+                  const std::vector<Triangle> &ts);
 
   /// @brief Add a set of points in the new BVH model
-  int addSubModel(const std::vector<Vec3f>& ps);
+  int addSubModel(const std::vector<Vec3f> &ps);
 
   /// @brief End BVH model construction, will build the bounding volume
   /// hierarchy
@@ -143,13 +141,13 @@ class HPP_FCL_DLLAPI BVHModelBase : public CollisionGeometry {
   int beginReplaceModel();
 
   /// @brief Replace one point in the old BVH model
-  int replaceVertex(const Vec3f& p);
+  int replaceVertex(const Vec3f &p);
 
   /// @brief Replace one triangle in the old BVH model
-  int replaceTriangle(const Vec3f& p1, const Vec3f& p2, const Vec3f& p3);
+  int replaceTriangle(const Vec3f &p1, const Vec3f &p2, const Vec3f &p3);
 
   /// @brief Replace a set of points in the old BVH model
-  int replaceSubModel(const std::vector<Vec3f>& ps);
+  int replaceSubModel(const std::vector<Vec3f> &ps);
 
   /// @brief End BVH model replacement, will also refit or rebuild the bounding
   /// volume hierarchy
@@ -161,13 +159,13 @@ class HPP_FCL_DLLAPI BVHModelBase : public CollisionGeometry {
   int beginUpdateModel();
 
   /// @brief Update one point in the old BVH model
-  int updateVertex(const Vec3f& p);
+  int updateVertex(const Vec3f &p);
 
   /// @brief Update one triangle in the old BVH model
-  int updateTriangle(const Vec3f& p1, const Vec3f& p2, const Vec3f& p3);
+  int updateTriangle(const Vec3f &p1, const Vec3f &p2, const Vec3f &p3);
 
   /// @brief Update a set of points in the old BVH model
-  int updateSubModel(const std::vector<Vec3f>& ps);
+  int updateSubModel(const std::vector<Vec3f> &ps);
 
   /// @brief End BVH model update, will also refit or rebuild the bounding
   /// volume hierarchy
@@ -190,7 +188,7 @@ class HPP_FCL_DLLAPI BVHModelBase : public CollisionGeometry {
   ///          many points in the convex hull as in the original object. This is
   ///          neither necessary (duplicated vertices get merged) nor sufficient
   ///          (think of a U with 4 vertices and 3 edges).
-  bool buildConvexHull(bool keepTriangle, const char* qhullCommand = NULL);
+  bool buildConvexHull(bool keepTriangle, const char *qhullCommand = NULL);
 
   virtual int memUsage(const bool msg = false) const = 0;
 
@@ -204,7 +202,7 @@ class HPP_FCL_DLLAPI BVHModelBase : public CollisionGeometry {
     FCL_REAL vol = 0;
     Vec3f com(0, 0, 0);
     for (unsigned int i = 0; i < num_tris; ++i) {
-      const Triangle& tri = tri_indices[i];
+      const Triangle &tri = tri_indices[i];
       FCL_REAL d_six_vol =
           (vertices[tri[0]].cross(vertices[tri[1]])).dot(vertices[tri[2]]);
       vol += d_six_vol;
@@ -218,7 +216,7 @@ class HPP_FCL_DLLAPI BVHModelBase : public CollisionGeometry {
   FCL_REAL computeVolume() const {
     FCL_REAL vol = 0;
     for (unsigned int i = 0; i < num_tris; ++i) {
-      const Triangle& tri = tri_indices[i];
+      const Triangle &tri = tri_indices[i];
       FCL_REAL d_six_vol =
           (vertices[tri[0]].cross(vertices[tri[1]])).dot(vertices[tri[2]]);
       vol += d_six_vol;
@@ -231,14 +229,15 @@ class HPP_FCL_DLLAPI BVHModelBase : public CollisionGeometry {
     Matrix3f C = Matrix3f::Zero();
 
     Matrix3f C_canonical;
-    C_canonical << 1 / 60.0, 1 / 120.0, 1 / 120.0, 1 / 120.0, 1 / 60.0,
-        1 / 120.0, 1 / 120.0, 1 / 120.0, 1 / 60.0;
+    C_canonical << 1 / FCL_REAL(60.0), 1 / FCL_REAL(120.0), 1 / FCL_REAL(120.0),
+        1 / FCL_REAL(120.0), 1 / FCL_REAL(60.0), 1 / FCL_REAL(120.0),
+        1 / FCL_REAL(120.0), 1 / FCL_REAL(120.0), 1 / FCL_REAL(60.0);
 
     for (unsigned int i = 0; i < num_tris; ++i) {
-      const Triangle& tri = tri_indices[i];
-      const Vec3f& v1 = vertices[tri[0]];
-      const Vec3f& v2 = vertices[tri[1]];
-      const Vec3f& v3 = vertices[tri[2]];
+      const Triangle &tri = tri_indices[i];
+      const Vec3f &v1 = vertices[tri[0]];
+      const Vec3f &v2 = vertices[tri[1]];
+      const Vec3f &v3 = vertices[tri[2]];
       Matrix3f A;
       A << v1.transpose(), v2.transpose(), v3.transpose();
       C += A.derived().transpose() * C_canonical * A * (v1.cross(v2)).dot(v3);
@@ -247,7 +246,7 @@ class HPP_FCL_DLLAPI BVHModelBase : public CollisionGeometry {
     return C.trace() * Matrix3f::Identity() - C;
   }
 
- protected:
+protected:
   virtual void deleteBVs() = 0;
   virtual bool allocateBVs() = 0;
 
@@ -259,26 +258,25 @@ class HPP_FCL_DLLAPI BVHModelBase : public CollisionGeometry {
 
   unsigned int num_tris_allocated;
   unsigned int num_vertices_allocated;
-  unsigned int num_vertex_updated;  /// for ccd vertex update
+  unsigned int num_vertex_updated; /// for ccd vertex update
 
- protected:
+protected:
   /// \brief Comparison operators
-  virtual bool isEqual(const CollisionGeometry& other) const;
+  virtual bool isEqual(const CollisionGeometry &other) const;
 };
 
 /// @brief A class describing the bounding hierarchy of a mesh model or a point
 /// cloud model (which is viewed as a degraded version of mesh) \tparam BV one
 /// of the bounding volume class in \ref Bounding_Volume.
-template <typename BV>
-class HPP_FCL_DLLAPI BVHModel : public BVHModelBase {
+template <typename BV> class HPP_FCL_DLLAPI BVHModel : public BVHModelBase {
   typedef BVHModelBase Base;
 
- public:
+public:
   /// @brief Split rule to split one BV node into two children
-  shared_ptr<BVSplitter<BV> > bv_splitter;
+  shared_ptr<BVSplitter<BV>> bv_splitter;
 
   /// @brief Fitting rule to fit a BV node to a set of geometry primitives
-  shared_ptr<BVFitter<BV> > bv_fitter;
+  shared_ptr<BVFitter<BV>> bv_fitter;
 
   /// @brief Default constructor to build an empty BVH
   BVHModel();
@@ -287,10 +285,10 @@ class HPP_FCL_DLLAPI BVHModel : public BVHModelBase {
   ///
   /// \param[in] other BVHModel to copy.
   ///
-  BVHModel(const BVHModel& other);
+  BVHModel(const BVHModel &other);
 
   /// @brief Clone *this into a new BVHModel
-  virtual BVHModel<BV>* clone() const { return new BVHModel(*this); }
+  virtual BVHModel<BV> *clone() const { return new BVHModel(*this); }
 
   /// @brief deconstruction, delete mesh data related.
   ~BVHModel() {
@@ -302,13 +300,13 @@ class HPP_FCL_DLLAPI BVHModel : public BVHModelBase {
   /// (in future), so we must provide some flexibility here
 
   /// @brief Access the bv giving the its index
-  const BVNode<BV>& getBV(unsigned int i) const {
+  const BVNode<BV> &getBV(unsigned int i) const {
     assert(i < num_bvs);
     return bvs[i];
   }
 
   /// @brief Access the bv giving the its index
-  BVNode<BV>& getBV(unsigned int i) {
+  BVNode<BV> &getBV(unsigned int i) {
     assert(i < num_bvs);
     return bvs[i];
   }
@@ -331,15 +329,15 @@ class HPP_FCL_DLLAPI BVHModel : public BVHModelBase {
     makeParentRelativeRecurse(0, I, Vec3f::Zero());
   }
 
- protected:
+protected:
   void deleteBVs();
   bool allocateBVs();
 
   unsigned int num_bvs_allocated;
-  unsigned int* primitive_indices;
+  unsigned int *primitive_indices;
 
   /// @brief Bounding volume hierarchy
-  BVNode<BV>* bvs;
+  BVNode<BV> *bvs;
 
   /// @brief Number of BV nodes in bounding volume hierarchy
   unsigned int num_bvs;
@@ -368,8 +366,8 @@ class HPP_FCL_DLLAPI BVHModel : public BVHModelBase {
   /// @ recursively compute each bv's transform related to its parent. For
   /// default BV, only the translation works. For oriented BV (OBB, RSS,
   /// OBBRSS), special implementation is provided.
-  void makeParentRelativeRecurse(int bv_id, Matrix3f& parent_axes,
-                                 const Vec3f& parent_c) {
+  void makeParentRelativeRecurse(int bv_id, Matrix3f &parent_axes,
+                                 const Vec3f &parent_c) {
     if (!bvs[bv_id].isLeaf()) {
       makeParentRelativeRecurse(bvs[bv_id].first_child, parent_axes,
                                 bvs[bv_id].getCenter());
@@ -381,14 +379,16 @@ class HPP_FCL_DLLAPI BVHModel : public BVHModelBase {
     bvs[bv_id].bv = translate(bvs[bv_id].bv, -parent_c);
   }
 
- private:
-  virtual bool isEqual(const CollisionGeometry& _other) const {
-    const BVHModel* other_ptr = dynamic_cast<const BVHModel*>(&_other);
-    if (other_ptr == nullptr) return false;
-    const BVHModel& other = *other_ptr;
+private:
+  virtual bool isEqual(const CollisionGeometry &_other) const {
+    const BVHModel *other_ptr = dynamic_cast<const BVHModel *>(&_other);
+    if (other_ptr == nullptr)
+      return false;
+    const BVHModel &other = *other_ptr;
 
     bool res = Base::isEqual(other);
-    if (!res) return false;
+    if (!res)
+      return false;
 
     // unsigned int other_num_primitives = 0;
     // if(other.primitive_indices)
@@ -433,10 +433,12 @@ class HPP_FCL_DLLAPI BVHModel : public BVHModelBase {
     //        return false;
     //    }
 
-    if (num_bvs != other.num_bvs) return false;
+    if (num_bvs != other.num_bvs)
+      return false;
 
     for (unsigned int k = 0; k < num_bvs; ++k) {
-      if (bvs[k] != other.bvs[k]) return false;
+      if (bvs[k] != other.bvs[k])
+        return false;
     }
 
     return true;
@@ -446,45 +448,37 @@ class HPP_FCL_DLLAPI BVHModel : public BVHModelBase {
 /// @}
 
 template <>
-void BVHModel<OBB>::makeParentRelativeRecurse(int bv_id, Matrix3f& parent_axes,
-                                              const Vec3f& parent_c);
+void BVHModel<OBB>::makeParentRelativeRecurse(int bv_id, Matrix3f &parent_axes,
+                                              const Vec3f &parent_c);
 
 template <>
-void BVHModel<RSS>::makeParentRelativeRecurse(int bv_id, Matrix3f& parent_axes,
-                                              const Vec3f& parent_c);
+void BVHModel<RSS>::makeParentRelativeRecurse(int bv_id, Matrix3f &parent_axes,
+                                              const Vec3f &parent_c);
 
 template <>
 void BVHModel<OBBRSS>::makeParentRelativeRecurse(int bv_id,
-                                                 Matrix3f& parent_axes,
-                                                 const Vec3f& parent_c);
+                                                 Matrix3f &parent_axes,
+                                                 const Vec3f &parent_c);
 
 /// @brief Specialization of getNodeType() for BVHModel with different BV types
-template <>
-NODE_TYPE BVHModel<AABB>::getNodeType() const;
+template <> NODE_TYPE BVHModel<AABB>::getNodeType() const;
 
-template <>
-NODE_TYPE BVHModel<OBB>::getNodeType() const;
+template <> NODE_TYPE BVHModel<OBB>::getNodeType() const;
 
-template <>
-NODE_TYPE BVHModel<RSS>::getNodeType() const;
+template <> NODE_TYPE BVHModel<RSS>::getNodeType() const;
 
-template <>
-NODE_TYPE BVHModel<kIOS>::getNodeType() const;
+template <> NODE_TYPE BVHModel<kIOS>::getNodeType() const;
 
-template <>
-NODE_TYPE BVHModel<OBBRSS>::getNodeType() const;
+template <> NODE_TYPE BVHModel<OBBRSS>::getNodeType() const;
 
-template <>
-NODE_TYPE BVHModel<KDOP<16> >::getNodeType() const;
+template <> NODE_TYPE BVHModel<KDOP<16>>::getNodeType() const;
 
-template <>
-NODE_TYPE BVHModel<KDOP<18> >::getNodeType() const;
+template <> NODE_TYPE BVHModel<KDOP<18>>::getNodeType() const;
 
-template <>
-NODE_TYPE BVHModel<KDOP<24> >::getNodeType() const;
+template <> NODE_TYPE BVHModel<KDOP<24>>::getNodeType() const;
 
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp
 
 #endif

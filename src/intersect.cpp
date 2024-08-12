@@ -35,18 +35,18 @@
 
 /** \author Jia Pan */
 
+#include <cmath>
 #include <hpp/fcl/internal/intersect.h>
+#include <hpp/fcl/internal/tools.h>
 #include <iostream>
 #include <limits>
 #include <vector>
-#include <cmath>
-#include <hpp/fcl/internal/tools.h>
 
 namespace hpp {
 namespace fcl {
 
-bool Intersect::buildTrianglePlane(const Vec3f& v1, const Vec3f& v2,
-                                   const Vec3f& v3, Vec3f* n, FCL_REAL* t) {
+bool Intersect::buildTrianglePlane(const Vec3f &v1, const Vec3f &v2,
+                                   const Vec3f &v3, Vec3f *n, FCL_REAL *t) {
   Vec3f n_ = (v2 - v1).cross(v3 - v1);
   FCL_REAL norm2 = n_.squaredNorm();
   if (norm2 > 0) {
@@ -57,9 +57,9 @@ bool Intersect::buildTrianglePlane(const Vec3f& v1, const Vec3f& v2,
   return false;
 }
 
-void TriangleDistance::segPoints(const Vec3f& P, const Vec3f& A, const Vec3f& Q,
-                                 const Vec3f& B, Vec3f& VEC, Vec3f& X,
-                                 Vec3f& Y) {
+void TriangleDistance::segPoints(const Vec3f &P, const Vec3f &A, const Vec3f &Q,
+                                 const Vec3f &B, Vec3f &VEC, Vec3f &X,
+                                 Vec3f &Y) {
   Vec3f T;
   FCL_REAL A_dot_A, B_dot_B, A_dot_B, A_dot_T, B_dot_T;
   Vec3f TMP;
@@ -147,14 +147,14 @@ void TriangleDistance::segPoints(const Vec3f& P, const Vec3f& A, const Vec3f& Q,
       X = P + A * t;
       VEC = A.cross(B);
       if (VEC.dot(T) < 0) {
-        VEC = VEC * (-1);
+        VEC = VEC * (FCL_REAL(-1));
       }
     }
   }
 }
 
 FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f S[3], const Vec3f T[3],
-                                          Vec3f& P, Vec3f& Q) {
+                                          Vec3f &P, Vec3f &Q) {
   // Compute vectors along the 6 sides
 
   Vec3f Sv[3];
@@ -181,7 +181,7 @@ FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f S[3], const Vec3f T[3],
   FCL_REAL mindd;
   int shown_disjoint = 0;
 
-  mindd = (S[0] - T[0]).squaredNorm() + 1;  // Set first minimum safely high
+  mindd = (S[0] - T[0]).squaredNorm() + 1; // Set first minimum safely high
 
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 3; ++j) {
@@ -205,13 +205,17 @@ FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f S[3], const Vec3f T[3],
         Z = T[(j + 2) % 3] - Q;
         FCL_REAL b = Z.dot(VEC);
 
-        if ((a <= 0) && (b >= 0)) return dd;
+        if ((a <= 0) && (b >= 0))
+          return dd;
 
         FCL_REAL p = V.dot(VEC);
 
-        if (a < 0) a = 0;
-        if (b > 0) b = 0;
-        if ((p - a + b) > 0) shown_disjoint = 1;
+        if (a < 0)
+          a = 0;
+        if (b > 0)
+          b = 0;
+        if ((p - a + b) > 0)
+          shown_disjoint = 1;
       }
     }
   }
@@ -220,7 +224,7 @@ FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f S[3], const Vec3f T[3],
   // either:
   // 1. one of the closest points is a vertex, and the
   //    other point is interior to a face.
-  // 2. the triangles are overlapping.
+  // FCL_REAL(2.) the triangles are overlapping.
   // 3. an edge of one triangle is parallel to the other's face. If
   //    cases 1 and 2 are not true, then the closest points from the 9
   //    edge pairs checks above can be taken as closest points for the
@@ -235,12 +239,12 @@ FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f S[3], const Vec3f T[3],
   Vec3f Sn;
   FCL_REAL Snl;
 
-  Sn = Sv[0].cross(Sv[1]);  // Compute normal to S triangle
-  Snl = Sn.dot(Sn);         // Compute square of length of normal
+  Sn = Sv[0].cross(Sv[1]); // Compute normal to S triangle
+  Snl = Sn.dot(Sn);        // Compute square of length of normal
 
   // If cross product is long enough,
 
-  if (Snl > 1e-15) {
+  if (Snl > 1e-15f) {
     // Get projection lengths of T points
 
     Vec3f Tp;
@@ -257,19 +261,21 @@ FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f S[3], const Vec3f T[3],
     // If Sn is a separating direction,
     // find point with smallest projection
 
-    int point = -1;
+    int point = FCL_REAL(-1);
     if ((Tp[0] > 0) && (Tp[1] > 0) && (Tp[2] > 0)) {
       if (Tp[0] < Tp[1])
         point = 0;
       else
         point = 1;
-      if (Tp[2] < Tp[point]) point = 2;
+      if (Tp[2] < Tp[point])
+        point = 2;
     } else if ((Tp[0] < 0) && (Tp[1] < 0) && (Tp[2] < 0)) {
       if (Tp[0] > Tp[1])
         point = 0;
       else
         point = 1;
-      if (Tp[2] > Tp[point]) point = 2;
+      if (Tp[2] > Tp[point])
+        point = 2;
     }
 
     // If Sn is a separating direction,
@@ -306,7 +312,7 @@ FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f S[3], const Vec3f T[3],
   Tn = Tv[0].cross(Tv[1]);
   Tnl = Tn.dot(Tn);
 
-  if (Tnl > 1e-15) {
+  if (Tnl > 1e-15f) {
     Vec3f Sp;
 
     V = T[0] - S[0];
@@ -318,19 +324,21 @@ FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f S[3], const Vec3f T[3],
     V = T[0] - S[2];
     Sp[2] = V.dot(Tn);
 
-    int point = -1;
+    int point = FCL_REAL(-1);
     if ((Sp[0] > 0) && (Sp[1] > 0) && (Sp[2] > 0)) {
       if (Sp[0] < Sp[1])
         point = 0;
       else
         point = 1;
-      if (Sp[2] < Sp[point]) point = 2;
+      if (Sp[2] < Sp[point])
+        point = 2;
     } else if ((Sp[0] < 0) && (Sp[1] < 0) && (Sp[2] < 0)) {
       if (Sp[0] > Sp[1])
         point = 0;
       else
         point = 1;
-      if (Sp[2] > Sp[point]) point = 2;
+      if (Sp[2] > Sp[point])
+        point = 2;
     }
 
     if (point >= 0) {
@@ -367,10 +375,10 @@ FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f S[3], const Vec3f T[3],
     return 0;
 }
 
-FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f& S1, const Vec3f& S2,
-                                          const Vec3f& S3, const Vec3f& T1,
-                                          const Vec3f& T2, const Vec3f& T3,
-                                          Vec3f& P, Vec3f& Q) {
+FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f &S1, const Vec3f &S2,
+                                          const Vec3f &S3, const Vec3f &T1,
+                                          const Vec3f &T2, const Vec3f &T3,
+                                          Vec3f &P, Vec3f &Q) {
   Vec3f S[3];
   Vec3f T[3];
   S[0] = S1;
@@ -384,8 +392,8 @@ FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f& S1, const Vec3f& S2,
 }
 
 FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f S[3], const Vec3f T[3],
-                                          const Matrix3f& R, const Vec3f& Tl,
-                                          Vec3f& P, Vec3f& Q) {
+                                          const Matrix3f &R, const Vec3f &Tl,
+                                          Vec3f &P, Vec3f &Q) {
   Vec3f T_transformed[3];
   T_transformed[0] = R * T[0] + Tl;
   T_transformed[1] = R * T[1] + Tl;
@@ -395,8 +403,8 @@ FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f S[3], const Vec3f T[3],
 }
 
 FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f S[3], const Vec3f T[3],
-                                          const Transform3f& tf, Vec3f& P,
-                                          Vec3f& Q) {
+                                          const Transform3f &tf, Vec3f &P,
+                                          Vec3f &Q) {
   Vec3f T_transformed[3];
   T_transformed[0] = tf.transform(T[0]);
   T_transformed[1] = tf.transform(T[1]);
@@ -405,11 +413,11 @@ FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f S[3], const Vec3f T[3],
   return sqrTriDistance(S, T_transformed, P, Q);
 }
 
-FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f& S1, const Vec3f& S2,
-                                          const Vec3f& S3, const Vec3f& T1,
-                                          const Vec3f& T2, const Vec3f& T3,
-                                          const Matrix3f& R, const Vec3f& Tl,
-                                          Vec3f& P, Vec3f& Q) {
+FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f &S1, const Vec3f &S2,
+                                          const Vec3f &S3, const Vec3f &T1,
+                                          const Vec3f &T2, const Vec3f &T3,
+                                          const Matrix3f &R, const Vec3f &Tl,
+                                          Vec3f &P, Vec3f &Q) {
   Vec3f T1_transformed = R * T1 + Tl;
   Vec3f T2_transformed = R * T2 + Tl;
   Vec3f T3_transformed = R * T3 + Tl;
@@ -417,11 +425,11 @@ FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f& S1, const Vec3f& S2,
                         T3_transformed, P, Q);
 }
 
-FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f& S1, const Vec3f& S2,
-                                          const Vec3f& S3, const Vec3f& T1,
-                                          const Vec3f& T2, const Vec3f& T3,
-                                          const Transform3f& tf, Vec3f& P,
-                                          Vec3f& Q) {
+FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f &S1, const Vec3f &S2,
+                                          const Vec3f &S3, const Vec3f &T1,
+                                          const Vec3f &T2, const Vec3f &T3,
+                                          const Transform3f &tf, Vec3f &P,
+                                          Vec3f &Q) {
   Vec3f T1_transformed = tf.transform(T1);
   Vec3f T2_transformed = tf.transform(T2);
   Vec3f T3_transformed = tf.transform(T3);
@@ -429,8 +437,8 @@ FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f& S1, const Vec3f& S2,
                         T3_transformed, P, Q);
 }
 
-Project::ProjectResult Project::projectLine(const Vec3f& a, const Vec3f& b,
-                                            const Vec3f& p) {
+Project::ProjectResult Project::projectLine(const Vec3f &a, const Vec3f &b,
+                                            const Vec3f &p) {
   ProjectResult res;
 
   const Vec3f d = b - a;
@@ -455,23 +463,23 @@ Project::ProjectResult Project::projectLine(const Vec3f& a, const Vec3f& b,
   return res;
 }
 
-Project::ProjectResult Project::projectTriangle(const Vec3f& a, const Vec3f& b,
-                                                const Vec3f& c,
-                                                const Vec3f& p) {
+Project::ProjectResult Project::projectTriangle(const Vec3f &a, const Vec3f &b,
+                                                const Vec3f &c,
+                                                const Vec3f &p) {
   ProjectResult res;
 
   static const size_t nexti[3] = {1, 2, 0};
-  const Vec3f* vt[] = {&a, &b, &c};
+  const Vec3f *vt[] = {&a, &b, &c};
   const Vec3f dl[] = {a - b, b - c, c - a};
-  const Vec3f& n = dl[0].cross(dl[1]);
+  const Vec3f &n = dl[0].cross(dl[1]);
   const FCL_REAL l = n.squaredNorm();
 
   if (l > 0) {
-    FCL_REAL mindist = -1;
+    FCL_REAL mindist = FCL_REAL(-1);
     for (size_t i = 0; i < 3; ++i) {
       if ((*vt[i] - p).dot(dl[i].cross(n)) >
-          0)  // origin is to the outside part of the triangle edge, then the
-              // optimal can only be on the edge
+          0) // origin is to the outside part of the triangle edge, then the
+             // optimal can only be on the edge
       {
         size_t j = nexti[i];
         ProjectResult res_line = projectLine(*vt[i], *vt[j], p);
@@ -488,13 +496,13 @@ Project::ProjectResult Project::projectTriangle(const Vec3f& a, const Vec3f& b,
       }
     }
 
-    if (mindist < 0)  // the origin project is within the triangle
+    if (mindist < 0) // the origin project is within the triangle
     {
       FCL_REAL d = (a - p).dot(n);
       FCL_REAL s = sqrt(l);
       Vec3f p_to_project = n * (d / l);
       mindist = p_to_project.squaredNorm();
-      res.encode = 7;  // m = 0x111
+      res.encode = 7; // m = 0x111
       res.parameterization[0] = dl[1].cross(b - p - p_to_project).norm() / s;
       res.parameterization[1] = dl[2].cross(c - p - p_to_project).norm() / s;
       res.parameterization[2] =
@@ -507,31 +515,29 @@ Project::ProjectResult Project::projectTriangle(const Vec3f& a, const Vec3f& b,
   return res;
 }
 
-Project::ProjectResult Project::projectTetrahedra(const Vec3f& a,
-                                                  const Vec3f& b,
-                                                  const Vec3f& c,
-                                                  const Vec3f& d,
-                                                  const Vec3f& p) {
+Project::ProjectResult
+Project::projectTetrahedra(const Vec3f &a, const Vec3f &b, const Vec3f &c,
+                           const Vec3f &d, const Vec3f &p) {
   ProjectResult res;
 
   static const size_t nexti[] = {1, 2, 0};
-  const Vec3f* vt[] = {&a, &b, &c, &d};
+  const Vec3f *vt[] = {&a, &b, &c, &d};
   const Vec3f dl[3] = {a - d, b - d, c - d};
   FCL_REAL vl = triple(dl[0], dl[1], dl[2]);
   bool ng = (vl * (a - p).dot((b - c).cross(a - b))) <= 0;
   if (ng &&
-      std::abs(vl) > 0)  // abs(vl) == 0, the tetrahedron is degenerated; if ng
-                         // is false, then the last vertex in the tetrahedron
-                         // does not grow toward the origin (in fact origin is
-                         // on the other side of the abc face)
+      std::abs(vl) > 0) // abs(vl) == 0, the tetrahedron is degenerated; if ng
+                        // is false, then the last vertex in the tetrahedron
+                        // does not grow toward the origin (in fact origin is
+                        // on the other side of the abc face)
   {
-    FCL_REAL mindist = -1;
+    FCL_REAL mindist = FCL_REAL(-1);
 
     for (size_t i = 0; i < 3; ++i) {
       size_t j = nexti[i];
       FCL_REAL s = vl * (d - p).dot(dl[i].cross(dl[j]));
-      if (s > 0)  // the origin is to the outside part of a triangle face, then
-                  // the optimal can only be on the triangle face
+      if (s > 0) // the origin is to the outside part of a triangle face, then
+                 // the optimal can only be on the triangle face
       {
         ProjectResult res_triangle = projectTriangle(*vt[i], *vt[j], d, p);
         if (mindist < 0 || res_triangle.sqr_distance < mindist) {
@@ -567,8 +573,8 @@ Project::ProjectResult Project::projectTetrahedra(const Vec3f& a,
   return res;
 }
 
-Project::ProjectResult Project::projectLineOrigin(const Vec3f& a,
-                                                  const Vec3f& b) {
+Project::ProjectResult Project::projectLineOrigin(const Vec3f &a,
+                                                  const Vec3f &b) {
   ProjectResult res;
 
   const Vec3f d = b - a;
@@ -593,23 +599,22 @@ Project::ProjectResult Project::projectLineOrigin(const Vec3f& a,
   return res;
 }
 
-Project::ProjectResult Project::projectTriangleOrigin(const Vec3f& a,
-                                                      const Vec3f& b,
-                                                      const Vec3f& c) {
+Project::ProjectResult
+Project::projectTriangleOrigin(const Vec3f &a, const Vec3f &b, const Vec3f &c) {
   ProjectResult res;
 
   static const size_t nexti[3] = {1, 2, 0};
-  const Vec3f* vt[] = {&a, &b, &c};
+  const Vec3f *vt[] = {&a, &b, &c};
   const Vec3f dl[] = {a - b, b - c, c - a};
-  const Vec3f& n = dl[0].cross(dl[1]);
+  const Vec3f &n = dl[0].cross(dl[1]);
   const FCL_REAL l = n.squaredNorm();
 
   if (l > 0) {
-    FCL_REAL mindist = -1;
+    FCL_REAL mindist = FCL_REAL(-1);
     for (size_t i = 0; i < 3; ++i) {
       if (vt[i]->dot(dl[i].cross(n)) >
-          0)  // origin is to the outside part of the triangle edge, then the
-              // optimal can only be on the edge
+          0) // origin is to the outside part of the triangle edge, then the
+             // optimal can only be on the edge
       {
         size_t j = nexti[i];
         ProjectResult res_line = projectLineOrigin(*vt[i], *vt[j]);
@@ -626,13 +631,13 @@ Project::ProjectResult Project::projectTriangleOrigin(const Vec3f& a,
       }
     }
 
-    if (mindist < 0)  // the origin project is within the triangle
+    if (mindist < 0) // the origin project is within the triangle
     {
       FCL_REAL d = a.dot(n);
       FCL_REAL s = sqrt(l);
       Vec3f o_to_project = n * (d / l);
       mindist = o_to_project.squaredNorm();
-      res.encode = 7;  // m = 0x111
+      res.encode = 7; // m = 0x111
       res.parameterization[0] = dl[1].cross(b - o_to_project).norm() / s;
       res.parameterization[1] = dl[2].cross(c - o_to_project).norm() / s;
       res.parameterization[2] =
@@ -645,30 +650,30 @@ Project::ProjectResult Project::projectTriangleOrigin(const Vec3f& a,
   return res;
 }
 
-Project::ProjectResult Project::projectTetrahedraOrigin(const Vec3f& a,
-                                                        const Vec3f& b,
-                                                        const Vec3f& c,
-                                                        const Vec3f& d) {
+Project::ProjectResult Project::projectTetrahedraOrigin(const Vec3f &a,
+                                                        const Vec3f &b,
+                                                        const Vec3f &c,
+                                                        const Vec3f &d) {
   ProjectResult res;
 
   static const size_t nexti[] = {1, 2, 0};
-  const Vec3f* vt[] = {&a, &b, &c, &d};
+  const Vec3f *vt[] = {&a, &b, &c, &d};
   const Vec3f dl[3] = {a - d, b - d, c - d};
   FCL_REAL vl = triple(dl[0], dl[1], dl[2]);
   bool ng = (vl * a.dot((b - c).cross(a - b))) <= 0;
   if (ng &&
-      std::abs(vl) > 0)  // abs(vl) == 0, the tetrahedron is degenerated; if ng
-                         // is false, then the last vertex in the tetrahedron
-                         // does not grow toward the origin (in fact origin is
-                         // on the other side of the abc face)
+      std::abs(vl) > 0) // abs(vl) == 0, the tetrahedron is degenerated; if ng
+                        // is false, then the last vertex in the tetrahedron
+                        // does not grow toward the origin (in fact origin is
+                        // on the other side of the abc face)
   {
-    FCL_REAL mindist = -1;
+    FCL_REAL mindist = FCL_REAL(-1);
 
     for (size_t i = 0; i < 3; ++i) {
       size_t j = nexti[i];
       FCL_REAL s = vl * d.dot(dl[i].cross(dl[j]));
-      if (s > 0)  // the origin is to the outside part of a triangle face, then
-                  // the optimal can only be on the triangle face
+      if (s > 0) // the origin is to the outside part of a triangle face, then
+                 // the optimal can only be on the triangle face
       {
         ProjectResult res_triangle = projectTriangleOrigin(*vt[i], *vt[j], d);
         if (mindist < 0 || res_triangle.sqr_distance < mindist) {
@@ -704,6 +709,6 @@ Project::ProjectResult Project::projectTetrahedraOrigin(const Vec3f& a,
   return res;
 }
 
-}  // namespace fcl
+} // namespace fcl
 
-}  // namespace hpp
+} // namespace hpp
