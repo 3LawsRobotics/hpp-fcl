@@ -441,7 +441,7 @@ bool GJKSolver::shapeDistance<Sphere, Box>(const Sphere &s1,
                                            Vec3f &normal) const {
   bool collide =
       details::boxSphereDistance(s2, tf2, s1, tf1, dist, p2, p1, normal);
-  normal *= FCL_REAL(-1);
+  normal *= -1;
   return !collide;
 }
 

@@ -107,7 +107,7 @@ public:
   bool empty() const;
 
   /// @brief update one leaf node
-  void update(size_t leaf, int lookahead_level = FCL_REAL(-1));
+  void update(size_t leaf, int lookahead_level = -1);
 
   /// @brief update the tree when the bounding volume of a given leaf has
   /// changed
@@ -223,7 +223,7 @@ private:
 
   /// @brief Delete all internal nodes and return all leaves nodes with given
   /// depth from root
-  void fetchLeaves(size_t root, Node *&leaves, int depth = FCL_REAL(-1));
+  void fetchLeaves(size_t root, Node *&leaves, int depth = -1);
 
   size_t indexOf(size_t node);
 

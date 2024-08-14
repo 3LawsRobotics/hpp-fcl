@@ -16,15 +16,15 @@
 
 #include <boost/filesystem.hpp>
 
-#include <hpp/fcl/internal/traversal_node_setup.h>
-#include <hpp/fcl/internal/traversal_node_bvhs.h>
 #include "../src/collision_node.h"
 #include <hpp/fcl/internal/BV_splitter.h>
+#include <hpp/fcl/internal/traversal_node_bvhs.h>
+#include <hpp/fcl/internal/traversal_node_setup.h>
 
-#include "utility.h"
 #include "fcl_resources/config.h"
+#include "utility.h"
 
-#define RUN_CASE(BV, tf, models, split) \
+#define RUN_CASE(BV, tf, models, split)                                        \
   run<BV>(tf, models, split, #BV " - " #split ":\t")
 
 using namespace hpp::fcl;
@@ -33,54 +33,49 @@ bool verbose = false;
 FCL_REAL DELTA = 0.001;
 
 template <typename BV>
-void makeModel(const std::vector<Vec3f>& vertices,
-               const std::vector<Triangle>& triangles,
-               SplitMethodType split_method, BVHModel<BV>& model);
+void makeModel(const std::vector<Vec3f> &vertices,
+               const std::vector<Triangle> &triangles,
+               SplitMethodType split_method, BVHModel<BV> &model);
 
 template <typename BV, typename TraversalNode>
-double distance(const std::vector<Transform3f>& tf, const BVHModel<BV>& m1,
-                const BVHModel<BV>& m2, bool verbose);
+FCL_REAL distance(const std::vector<Transform3f> &tf, const BVHModel<BV> &m1,
+                  const BVHModel<BV> &m2, bool verbose);
 
 template <typename BV, typename TraversalNode>
-double collide(const std::vector<Transform3f>& tf, const BVHModel<BV>& m1,
-               const BVHModel<BV>& m2, bool verbose);
+FCL_REAL collide(const std::vector<Transform3f> &tf, const BVHModel<BV> &m1,
+                 const BVHModel<BV> &m2, bool verbose);
 
 template <typename BV>
-double run(const std::vector<Transform3f>& tf,
-           const BVHModel<BV> (&models)[2][3], int split_method,
-           const char* sm_name);
+FCL_REAL run(const std::vector<Transform3f> &tf,
+             const BVHModel<BV> (&models)[2][3], int split_method,
+             const char *sm_name);
 
-template <typename BV>
-struct traits {};
+template <typename BV> struct traits {};
 
-template <>
-struct traits<RSS> {
+template <> struct traits<RSS> {
   typedef MeshCollisionTraversalNodeRSS CollisionTraversalNode;
   typedef MeshDistanceTraversalNodeRSS DistanceTraversalNode;
 };
 
-template <>
-struct traits<kIOS> {
+template <> struct traits<kIOS> {
   typedef MeshCollisionTraversalNodekIOS CollisionTraversalNode;
   typedef MeshDistanceTraversalNodekIOS DistanceTraversalNode;
 };
 
-template <>
-struct traits<OBB> {
+template <> struct traits<OBB> {
   typedef MeshCollisionTraversalNodeOBB CollisionTraversalNode;
   // typedef MeshDistanceTraversalNodeOBB  DistanceTraversalNode;
 };
 
-template <>
-struct traits<OBBRSS> {
+template <> struct traits<OBBRSS> {
   typedef MeshCollisionTraversalNodeOBBRSS CollisionTraversalNode;
   typedef MeshDistanceTraversalNodeOBBRSS DistanceTraversalNode;
 };
 
 template <typename BV>
-void makeModel(const std::vector<Vec3f>& vertices,
-               const std::vector<Triangle>& triangles,
-               SplitMethodType split_method, BVHModel<BV>& model) {
+void makeModel(const std::vector<Vec3f> &vertices,
+               const std::vector<Triangle> &triangles,
+               SplitMethodType split_method, BVHModel<BV> &model) {
   model.bv_splitter.reset(new BVSplitter<BV>(split_method));
   model.bv_splitter.reset(new BVSplitter<BV>(split_method));
 
@@ -90,8 +85,8 @@ void makeModel(const std::vector<Vec3f>& vertices,
 }
 
 template <typename BV, typename TraversalNode>
-double distance(const std::vector<Transform3f>& tf, const BVHModel<BV>& m1,
-                const BVHModel<BV>& m2, bool verbose) {
+FCL_REAL distance(const std::vector<Transform3f> &tf, const BVHModel<BV> &m1,
+                  const BVHModel<BV> &m2, bool verbose) {
   Transform3f pose2;
 
   DistanceResult local_result;
@@ -114,8 +109,8 @@ double distance(const std::vector<Transform3f>& tf, const BVHModel<BV>& m1,
 }
 
 template <typename BV, typename TraversalNode>
-double collide(const std::vector<Transform3f>& tf, const BVHModel<BV>& m1,
-               const BVHModel<BV>& m2, bool verbose) {
+FCL_REAL collide(const std::vector<Transform3f> &tf, const BVHModel<BV> &m1,
+                 const BVHModel<BV> &m2, bool verbose) {
   Transform3f pose2;
 
   CollisionResult local_result;
@@ -141,12 +136,12 @@ double collide(const std::vector<Transform3f>& tf, const BVHModel<BV>& m1,
 }
 
 template <typename BV>
-double run(const std::vector<Transform3f>& tf,
-           const BVHModel<BV> (&models)[2][3], int split_method,
-           const char* prefix) {
-  double col = collide<BV, typename traits<BV>::CollisionTraversalNode>(
+FCL_REAL run(const std::vector<Transform3f> &tf,
+             const BVHModel<BV> (&models)[2][3], int split_method,
+             const char *prefix) {
+  FCL_REAL col = collide<BV, typename traits<BV>::CollisionTraversalNode>(
       tf, models[0][split_method], models[1][split_method], verbose);
-  double dist = distance<BV, typename traits<BV>::DistanceTraversalNode>(
+  FCL_REAL dist = distance<BV, typename traits<BV>::DistanceTraversalNode>(
       tf, models[0][split_method], models[1][split_method], verbose);
 
   std::cout << prefix << " (" << col << ", " << dist << ")\n";
@@ -154,18 +149,18 @@ double run(const std::vector<Transform3f>& tf,
 }
 
 template <>
-double run<OBB>(const std::vector<Transform3f>& tf,
-                const BVHModel<OBB> (&models)[2][3], int split_method,
-                const char* prefix) {
-  double col = collide<OBB, traits<OBB>::CollisionTraversalNode>(
+FCL_REAL run<OBB>(const std::vector<Transform3f> &tf,
+                  const BVHModel<OBB> (&models)[2][3], int split_method,
+                  const char *prefix) {
+  FCL_REAL col = collide<OBB, traits<OBB>::CollisionTraversalNode>(
       tf, models[0][split_method], models[1][split_method], verbose);
-  double dist = 0;
+  FCL_REAL dist = 0;
 
   std::cout << prefix << " (\t" << col << ", \tNaN)\n";
   return col + dist;
 }
 
-int main(int, char*[]) {
+int main(int, char *[]) {
   std::vector<Vec3f> p1, p2;
   std::vector<Triangle> t1, t2;
   boost::filesystem::path path(TEST_RESOURCES_DIR);
@@ -207,12 +202,12 @@ int main(int, char*[]) {
             ms_obbrss[1][SPLIT_METHOD_BV_CENTER]);
   makeModel(p2, t2, SPLIT_METHOD_MEDIAN, ms_obbrss[1][SPLIT_METHOD_MEDIAN]);
 
-  std::vector<Transform3f> transforms;  // t0
+  std::vector<Transform3f> transforms; // t0
   FCL_REAL extents[] = {-3000, -3000, -3000, 3000, 3000, 3000};
   std::size_t n = 10000;
 
   generateRandomTransforms(extents, transforms, n);
-  double total_time = 0;
+  FCL_REAL total_time = 0;
 
   total_time += RUN_CASE(RSS, transforms, ms_rss, SPLIT_METHOD_MEAN);
   total_time += RUN_CASE(RSS, transforms, ms_rss, SPLIT_METHOD_BV_CENTER);

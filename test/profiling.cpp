@@ -16,21 +16,21 @@
 
 #include <boost/filesystem.hpp>
 
-#include <hpp/fcl/fwd.hh>
-#include <hpp/fcl/collision.h>
-#include <hpp/fcl/BVH/BVH_model.h>
-#include <hpp/fcl/collision_utility.h>
-#include <hpp/fcl/shape/geometric_shapes.h>
-#include <hpp/fcl/collision_func_matrix.h>
-#include <hpp/fcl/narrowphase/narrowphase.h>
-#include <hpp/fcl/mesh_loader/assimp.h>
-#include "utility.h"
 #include "fcl_resources/config.h"
+#include "utility.h"
+#include <hpp/fcl/BVH/BVH_model.h>
+#include <hpp/fcl/collision.h>
+#include <hpp/fcl/collision_func_matrix.h>
+#include <hpp/fcl/collision_utility.h>
+#include <hpp/fcl/fwd.hh>
+#include <hpp/fcl/mesh_loader/assimp.h>
+#include <hpp/fcl/narrowphase/narrowphase.h>
+#include <hpp/fcl/shape/geometric_shapes.h>
 
 using namespace hpp::fcl;
 
 CollisionFunctionMatrix lookupTable;
-bool supportedPair(const CollisionGeometry* o1, const CollisionGeometry* o2) {
+bool supportedPair(const CollisionGeometry *o1, const CollisionGeometry *o2) {
   OBJECT_TYPE object_type1 = o1->getObjectType();
   OBJECT_TYPE object_type2 = o2->getObjectType();
   NODE_TYPE node_type1 = o1->getNodeType();
@@ -43,12 +43,12 @@ bool supportedPair(const CollisionGeometry* o1, const CollisionGeometry* o2) {
 }
 
 template <typename BV /*, SplitMethodType split_method*/>
-CollisionGeometryPtr_t objToGeom(const std::string& filename) {
+CollisionGeometryPtr_t objToGeom(const std::string &filename) {
   std::vector<Vec3f> pt;
   std::vector<Triangle> tri;
   loadOBJFile(filename.c_str(), pt, tri);
 
-  BVHModel<BV>* model(new BVHModel<BV>());
+  BVHModel<BV> *model(new BVHModel<BV>());
   // model->bv_splitter.reset(new BVSplitter<BV>(split_method));
 
   model->beginModel();
@@ -59,9 +59,9 @@ CollisionGeometryPtr_t objToGeom(const std::string& filename) {
 }
 
 template <typename BV /*, SplitMethodType split_method*/>
-CollisionGeometryPtr_t meshToGeom(const std::string& filename,
-                                  const Vec3f& scale = Vec3f(1, 1, 1)) {
-  shared_ptr<BVHModel<BV> > model(new BVHModel<BV>());
+CollisionGeometryPtr_t meshToGeom(const std::string &filename,
+                                  const Vec3f &scale = Vec3f(1, 1, 1)) {
+  shared_ptr<BVHModel<BV>> model(new BVHModel<BV>());
   loadPolyhedronFromResource(filename, scale, model);
   return model;
 }
@@ -70,21 +70,21 @@ struct Geometry {
   std::string type;
   CollisionGeometryPtr_t o;
 
-  Geometry(const std::string& t, CollisionGeometry* ob) : type(t), o(ob) {}
-  Geometry(const std::string& t, const CollisionGeometryPtr_t& ob)
+  Geometry(const std::string &t, CollisionGeometry *ob) : type(t), o(ob) {}
+  Geometry(const std::string &t, const CollisionGeometryPtr_t &ob)
       : type(t), o(ob) {}
 };
 
 struct Results {
   std::vector<CollisionResult> rs;
-  Eigen::VectorXd times;  // micro-seconds
+  Eigen::VectorXd times; // micro-seconds
 
   Results(size_t i) : rs(i), times((Eigen::DenseIndex)i) {}
 };
 
-void collide(const std::vector<Transform3f>& tf, const CollisionGeometry* o1,
-             const CollisionGeometry* o2, const CollisionRequest& request,
-             Results& results) {
+void collide(const std::vector<Transform3f> &tf, const CollisionGeometry *o1,
+             const CollisionGeometry *o2, const CollisionRequest &request,
+             Results &results) {
   Transform3f Id;
   BenchTimer timer;
   for (std::size_t i = 0; i < tf.size(); ++i) {
@@ -96,7 +96,7 @@ void collide(const std::vector<Transform3f>& tf, const CollisionGeometry* o1,
   }
 }
 
-const char* sep = ", ";
+const char *sep = ", ";
 
 void printResultHeaders() {
   std::cout << "Type 1" << sep << "Type 2" << sep << "mean time" << sep
@@ -104,15 +104,15 @@ void printResultHeaders() {
             << std::endl;
 }
 
-void printResults(const Geometry& g1, const Geometry& g2, const Results& rs) {
-  double mean = rs.times.mean();
-  double var = rs.times.cwiseAbs2().mean() - mean * mean;
+void printResults(const Geometry &g1, const Geometry &g2, const Results &rs) {
+  FCL_REAL mean = rs.times.mean();
+  FCL_REAL var = rs.times.cwiseAbs2().mean() - mean * mean;
   std::cout << g1.type << sep << g2.type << sep << mean << sep << std::sqrt(var)
             << sep << rs.times.minCoeff() << sep << rs.times.maxCoeff()
             << std::endl;
 }
 
-#ifndef NDEBUG  // if debug mode
+#ifndef NDEBUG // if debug mode
 size_t Ntransform = 1;
 #else
 size_t Ntransform = 100;
@@ -120,13 +120,14 @@ size_t Ntransform = 100;
 FCL_REAL limit = 20;
 bool verbose = false;
 
-#define OUT(x) \
-  if (verbose) std::cout << x << std::endl
-#define CHECK_PARAM_NB(NB, NAME) \
-  if (iarg + NB >= argc)         \
+#define OUT(x)                                                                 \
+  if (verbose)                                                                 \
+  std::cout << x << std::endl
+#define CHECK_PARAM_NB(NB, NAME)                                               \
+  if (iarg + NB >= argc)                                                       \
   throw std::invalid_argument(#NAME " requires " #NB " numbers")
-void handleParam(int& iarg, const int& argc, char** argv,
-                 CollisionRequest& request) {
+void handleParam(int &iarg, const int &argc, char **argv,
+                 CollisionRequest &request) {
   while (iarg < argc) {
     std::string a(argv[iarg]);
     if (a == "-nb_transform") {
@@ -150,12 +151,13 @@ void handleParam(int& iarg, const int& argc, char** argv,
     }
   }
 }
-#define CREATE_SHAPE_2(var, Name)                                  \
-  CHECK_PARAM_NB(2, Name);                                         \
-  var.reset(new Name(atof(argv[iarg + 1]), atof(argv[iarg + 2]))); \
+#define CREATE_SHAPE_2(var, Name)                                              \
+  CHECK_PARAM_NB(2, Name);                                                     \
+  var.reset(new Name(atof(argv[iarg + 1]), atof(argv[iarg + 2])));             \
   iarg += 3;
-Geometry makeGeomFromParam(int& iarg, const int& argc, char** argv) {
-  if (iarg >= argc) throw std::invalid_argument("An argument is required.");
+Geometry makeGeomFromParam(int &iarg, const int &argc, char **argv) {
+  if (iarg >= argc)
+    throw std::invalid_argument("An argument is required.");
   std::string a(argv[iarg]);
   std::string type;
   CollisionGeometryPtr_t o;
@@ -176,12 +178,12 @@ Geometry makeGeomFromParam(int& iarg, const int& argc, char** argv) {
                    << ">...");
     if (strcmp(argv[iarg + 1], "obb") == 0) {
       o = meshToGeom<OBB>(argv[iarg + 2]);
-      OUT("Mesh has " << dynamic_pointer_cast<BVHModel<OBB> >(o)->num_tris
+      OUT("Mesh has " << dynamic_pointer_cast<BVHModel<OBB>>(o)->num_tris
                       << " triangles");
       type = "mesh_obb";
     } else if (strcmp(argv[iarg + 1], "obbrss") == 0) {
       o = meshToGeom<OBBRSS>(argv[iarg + 2]);
-      OUT("Mesh has " << dynamic_pointer_cast<BVHModel<OBBRSS> >(o)->num_tris
+      OUT("Mesh has " << dynamic_pointer_cast<BVHModel<OBBRSS>>(o)->num_tris
                       << " triangles");
       type = "mesh_obbrss";
     } else
@@ -200,8 +202,9 @@ Geometry makeGeomFromParam(int& iarg, const int& argc, char** argv) {
       OUT("Mesh AABB is " << o->aabb_local.min_.transpose() << " ---- "
                           << o->aabb_local.max_.transpose() << " ...");
       o.reset(extract(o.get(), Transform3f(), aabb));
-      if (!o) throw std::invalid_argument("Failed to crop.");
-      OUT("Crop has " << dynamic_pointer_cast<BVHModel<OBB> >(o)->num_tris
+      if (!o)
+        throw std::invalid_argument("Failed to crop.");
+      OUT("Crop has " << dynamic_pointer_cast<BVHModel<OBB>>(o)->num_tris
                       << " triangles");
       iarg += 7;
     }
@@ -220,7 +223,7 @@ Geometry makeGeomFromParam(int& iarg, const int& argc, char** argv) {
   return Geometry(type, o);
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   std::vector<Transform3f> transforms;
 
   CollisionRequest request;
@@ -276,7 +279,8 @@ int main(int argc, char** argv) {
     // collision
     for (std::size_t i = 0; i < geoms.size(); ++i) {
       for (std::size_t j = i; j < geoms.size(); ++j) {
-        if (!supportedPair(geoms[i].o.get(), geoms[j].o.get())) continue;
+        if (!supportedPair(geoms[i].o.get(), geoms[j].o.get()))
+          continue;
         Results results(Ntransform);
         collide(transforms, geoms[i].o.get(), geoms[j].o.get(), request,
                 results);

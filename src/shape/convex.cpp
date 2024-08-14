@@ -67,8 +67,8 @@ ConvexBase *ConvexBase::convexHull(const Vec3f *pts, unsigned int num_points,
   typedef std::size_t index_type;
   typedef int size_type;
 
-  // Map index in pts to index in vertices. FCL_REAL(-1) means not used
-  std::vector<int> pts_to_vertices(num_points, FCL_REAL(-1));
+  // Map index in pts to index in vertices. -1 means not used
+  std::vector<int> pts_to_vertices(num_points, -1);
 
   // Initialize the vertices
   int nvertex = (qh.vertexCount());

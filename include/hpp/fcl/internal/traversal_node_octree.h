@@ -873,9 +873,7 @@ public:
     otsolver = NULL;
   }
 
-  FCL_REAL BVDistanceLowerBound(unsigned, unsigned) const {
-    return FCL_REAL(-1);
-  }
+  FCL_REAL BVDistanceLowerBound(unsigned, unsigned) const { return -1; }
 
   bool BVDistanceLowerBound(unsigned, unsigned, FCL_REAL &) const {
     return false;
@@ -903,9 +901,7 @@ public:
     otsolver = NULL;
   }
 
-  FCL_REAL BVDistanceLowerBound(unsigned int, unsigned int) const {
-    return FCL_REAL(-1);
-  }
+  FCL_REAL BVDistanceLowerBound(unsigned int, unsigned int) const { return -1; }
 
   void leafComputeDistance(unsigned int, unsigned int) const {
     otsolver->OcTreeShapeDistance(model2, *model1, tf2, tf1, request, *result);
@@ -929,9 +925,7 @@ public:
     otsolver = NULL;
   }
 
-  FCL_REAL BVDistanceLowerBound(unsigned int, unsigned int) const {
-    return FCL_REAL(-1);
-  }
+  FCL_REAL BVDistanceLowerBound(unsigned int, unsigned int) const { return -1; }
 
   void leafComputeDistance(unsigned int, unsigned int) const {
     otsolver->OcTreeShapeDistance(model1, *model2, tf1, tf2, request, *result);
@@ -955,9 +949,7 @@ public:
     otsolver = NULL;
   }
 
-  FCL_REAL BVDistanceLowerBound(unsigned int, unsigned int) const {
-    return FCL_REAL(-1);
-  }
+  FCL_REAL BVDistanceLowerBound(unsigned int, unsigned int) const { return -1; }
 
   void leafComputeDistance(unsigned int, unsigned int) const {
     otsolver->OcTreeMeshDistance(model2, model1, tf2, tf1, request, *result);
@@ -981,9 +973,7 @@ public:
     otsolver = NULL;
   }
 
-  FCL_REAL BVDistanceLowerBound(unsigned int, unsigned int) const {
-    return FCL_REAL(-1);
-  }
+  FCL_REAL BVDistanceLowerBound(unsigned int, unsigned int) const { return -1; }
 
   void leafComputeDistance(unsigned int, unsigned int) const {
     otsolver->OcTreeMeshDistance(model1, model2, tf1, tf2, request, *result);

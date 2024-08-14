@@ -120,7 +120,7 @@ public:
 
   /// @brief BV culling test in one BVTT node
   FCL_REAL BVDistanceLowerBound(unsigned int, unsigned int) const {
-    return FCL_REAL(-1); // should not be used
+    return -1; // should not be used
   }
 
   /// @brief Distance testing between leaves (two shapes)

@@ -2,9 +2,9 @@
 #include <boost/test/included/unit_test.hpp>
 
 #include <Eigen/Geometry>
+#include <hpp/fcl/internal/tools.h>
 #include <hpp/fcl/narrowphase/narrowphase.h>
 #include <hpp/fcl/shape/geometric_shapes.h>
-#include <hpp/fcl/internal/tools.h>
 
 #include "utility.h"
 
@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(box_box_collision) {
   // Compute collision
   CollisionRequest req;
   req.enable_cached_gjk_guess = true;
-  req.distance_upper_bound = 1e-6;
+  req.distance_upper_bound = FCL_REAL(1e-6);
   CollisionResult res;
   ComputeCollision collide_functor(&shape1, &shape2);
 

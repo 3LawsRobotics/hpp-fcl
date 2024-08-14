@@ -68,7 +68,7 @@ struct HPP_FCL_DLLAPI RSS {
   FCL_REAL radius;
 
   ///  @brief Default constructor with default values
-  RSS() : axes(Matrix3f::Zero()), Tr(Vec3f::Zero()), radius(FCL_REAL(-1)) {
+  RSS() : axes(Matrix3f::Zero()), Tr(Vec3f::Zero()), radius(-1) {
     length[0] = 0;
     length[1] = 0;
   }
@@ -92,7 +92,7 @@ struct HPP_FCL_DLLAPI RSS {
   /// Not implemented
   bool overlap(const RSS &other, const CollisionRequest &,
                FCL_REAL &sqrDistLowerBound) const {
-    sqrDistLowerBound = sqrt(FCL_REAL(-1));
+    sqrDistLowerBound = sqrt(-1);
     return overlap(other);
   }
 

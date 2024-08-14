@@ -60,8 +60,8 @@ FCL_REAL ShapeShapeDistance<Cone, Halfspace>(
                                   result.nearest_points[1], result.normal);
   result.o1 = o1;
   result.o2 = o2;
-  result.b1 = FCL_REAL(-1);
-  result.b2 = FCL_REAL(-1);
+  result.b1 = -1;
+  result.b2 = -1;
   return result.min_distance;
 }
 
@@ -77,8 +77,8 @@ FCL_REAL ShapeShapeDistance<Halfspace, Cone>(
                                   result.nearest_points[0], result.normal);
   result.o1 = o1;
   result.o2 = o2;
-  result.b1 = FCL_REAL(-1);
-  result.b2 = FCL_REAL(-1);
+  result.b1 = -1;
+  result.b2 = -1;
   result.normal = -result.normal;
   return result.min_distance;
 }

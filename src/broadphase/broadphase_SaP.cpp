@@ -307,17 +307,17 @@ void SaPCollisionManager::update_(SaPAABB *updated_aabb) {
   dummy.cached = current->obj->getAABB();
 
   for (int coord = 0; coord < 3; ++coord) {
-    int direction; // FCL_REAL(-1) reverse, 0 nochange, 1 forward
+    int direction; // -1 reverse, 0 nochange, 1 forward
     EndPoint *temp;
 
     if (current->lo->getVal((size_t)coord) > new_min[coord])
-      direction = FCL_REAL(-1);
+      direction = -1;
     else if (current->lo->getVal((size_t)coord) < new_min[coord])
       direction = 1;
     else
       direction = 0;
 
-    if (direction == FCL_REAL(-1)) {
+    if (direction == -1) {
       // first update the "lo" endpoint of the interval
       if (current->lo->prev[coord] != nullptr) {
         temp = current->lo;

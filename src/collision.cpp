@@ -56,7 +56,7 @@ void CollisionResult::swapObjects() {
        it != contacts.end(); ++it) {
     std::swap(it->o1, it->o2);
     std::swap(it->b1, it->b2);
-    it->normal *= FCL_REAL(-1);
+    it->normal *= -1;
   }
 }
 

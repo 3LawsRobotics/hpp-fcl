@@ -96,7 +96,7 @@ class HPP_FCL_DLLAPI CollisionGeometry {
 public:
   CollisionGeometry()
       : aabb_center(Vec3f::Constant((std::numeric_limits<FCL_REAL>::max)())),
-        aabb_radius(FCL_REAL(-1)), cost_density(1), threshold_occupied(1),
+        aabb_radius(-1), cost_density(1), threshold_occupied(1),
         threshold_free(0) {}
 
   /// \brief Copy constructor

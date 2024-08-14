@@ -57,7 +57,7 @@ struct Neighbors {
 void computeNeighbors(const std::vector<boost::array<FCL_REAL, 6>> &boxes,
                       std::vector<Neighbors> &neighbors) {
   typedef std::vector<boost::array<FCL_REAL, 6>> VectorArray6;
-  FCL_REAL fixedSize = FCL_REAL(-1);
+  FCL_REAL fixedSize = -1;
   FCL_REAL e(1e-8f);
   for (std::size_t i = 0; i < boxes.size(); ++i) {
     const boost::array<FCL_REAL, 6> &box(boxes[i]);
@@ -66,7 +66,7 @@ void computeNeighbors(const std::vector<boost::array<FCL_REAL, 6>> &boxes,
     FCL_REAL y(box[1]);
     FCL_REAL z(box[2]);
     FCL_REAL s(box[3]);
-    if (fixedSize == FCL_REAL(-1))
+    if (fixedSize == -1)
       fixedSize = s;
     else
       assert(s == fixedSize);

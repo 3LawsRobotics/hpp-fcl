@@ -37,13 +37,15 @@
 #define BOOST_TEST_MODULE FCL_GEOMETRIC_SHAPES
 #include <boost/test/included/unit_test.hpp>
 
-#define CHECK_CLOSE_TO_0(x, eps) BOOST_CHECK_CLOSE((x + 1.0), (1.0), (eps))
+#define CHECK_CLOSE_TO_0(x, eps)                                               \
+  BOOST_CHECK_CLOSE((x + hpp::fcl::FCL_REAL(1.0)), hpp::fcl::FCL_REAL(1.0),    \
+                    (eps))
 
 #include <cmath>
-#include <hpp/fcl/distance.h>
-#include <hpp/fcl/math/transform.h>
 #include <hpp/fcl/collision.h>
 #include <hpp/fcl/collision_object.h>
+#include <hpp/fcl/distance.h>
+#include <hpp/fcl/math/transform.h>
 #include <hpp/fcl/shape/geometric_shapes.h>
 
 #include "utility.h"
@@ -51,15 +53,17 @@
 BOOST_AUTO_TEST_CASE(distance_capsule_box) {
   using hpp::fcl::CollisionGeometryPtr_t;
   // Capsule of radius 2 and of height 4
-  CollisionGeometryPtr_t capsuleGeometry(new hpp::fcl::Capsule(2., 4.));
+  CollisionGeometryPtr_t capsuleGeometry(
+      new hpp::fcl::Capsule(hpp::fcl::FCL_REAL(2.), hpp::fcl::FCL_REAL(4.)));
   // Box of size 1 by 2 by 4
-  CollisionGeometryPtr_t boxGeometry(new hpp::fcl::Box(1., 2., 4.));
+  CollisionGeometryPtr_t boxGeometry(new hpp::fcl::Box(
+      hpp::fcl::FCL_REAL(1.), hpp::fcl::FCL_REAL(2.), hpp::fcl::FCL_REAL(4.)));
 
   // Enable computation of nearest points
   hpp::fcl::DistanceRequest distanceRequest(true, 0, 0);
   hpp::fcl::DistanceResult distanceResult;
 
-  hpp::fcl::Transform3f tf1(hpp::fcl::Vec3f(3., 0, 0));
+  hpp::fcl::Transform3f tf1(hpp::fcl::Vec3f(hpp::fcl::FCL_REAL(3.), 0, 0));
   hpp::fcl::Transform3f tf2;
   hpp::fcl::CollisionObject capsule(capsuleGeometry, tf1);
   hpp::fcl::CollisionObject box(boxGeometry, tf2);
@@ -70,14 +74,16 @@ BOOST_AUTO_TEST_CASE(distance_capsule_box) {
   hpp::fcl::Vec3f o1(distanceResult.nearest_points[0]);
   // Nearest point on box
   hpp::fcl::Vec3f o2(distanceResult.nearest_points[1]);
-  BOOST_CHECK_CLOSE(distanceResult.min_distance, 0.5, 1e-1);
-  BOOST_CHECK_CLOSE(o1[0], 1.0, 1e-1);
-  CHECK_CLOSE_TO_0(o1[1], 1e-1);
-  BOOST_CHECK_CLOSE(o2[0], 0.5, 1e-1);
-  CHECK_CLOSE_TO_0(o2[1], 1e-1);
+  BOOST_CHECK_CLOSE(distanceResult.min_distance, hpp::fcl::FCL_REAL(0.5),
+                    hpp::fcl::FCL_REAL(1e-1));
+  BOOST_CHECK_CLOSE(o1[0], hpp::fcl::FCL_REAL(1.0), hpp::fcl::FCL_REAL(1e-1));
+  CHECK_CLOSE_TO_0(o1[1], hpp::fcl::FCL_REAL(1e-1));
+  BOOST_CHECK_CLOSE(o2[0], hpp::fcl::FCL_REAL(0.5), hpp::fcl::FCL_REAL(1e-1));
+  CHECK_CLOSE_TO_0(o2[1], hpp::fcl::FCL_REAL(1e-1));
 
   // Move capsule above box
-  tf1 = hpp::fcl::Transform3f(hpp::fcl::Vec3f(0., 0., 8.));
+  tf1 = hpp::fcl::Transform3f(hpp::fcl::Vec3f(
+      hpp::fcl::FCL_REAL(0.), hpp::fcl::FCL_REAL(0.), hpp::fcl::FCL_REAL(8.)));
   capsule.setTransform(tf1);
 
   // test distance
@@ -86,18 +92,22 @@ BOOST_AUTO_TEST_CASE(distance_capsule_box) {
   o1 = distanceResult.nearest_points[0];
   o2 = distanceResult.nearest_points[1];
 
-  BOOST_CHECK_CLOSE(distanceResult.min_distance, 2.0, 1e-1);
-  CHECK_CLOSE_TO_0(o1[0], 1e-1);
-  CHECK_CLOSE_TO_0(o1[1], 1e-1);
-  BOOST_CHECK_CLOSE(o1[2], 4.0, 1e-1);
+  BOOST_CHECK_CLOSE(distanceResult.min_distance, hpp::fcl::FCL_REAL(2.0),
+                    hpp::fcl::FCL_REAL(1e-1));
+  CHECK_CLOSE_TO_0(o1[0], hpp::fcl::FCL_REAL(1e-1));
+  CHECK_CLOSE_TO_0(o1[1], hpp::fcl::FCL_REAL(1e-1));
+  BOOST_CHECK_CLOSE(o1[2], hpp::fcl::FCL_REAL(4.0), hpp::fcl::FCL_REAL(1e-1));
 
-  CHECK_CLOSE_TO_0(o2[0], 1e-1);
-  CHECK_CLOSE_TO_0(o2[1], 1e-1);
-  BOOST_CHECK_CLOSE(o2[2], 2.0, 1e-1);
+  CHECK_CLOSE_TO_0(o2[0], hpp::fcl::FCL_REAL(1e-1));
+  CHECK_CLOSE_TO_0(o2[1], hpp::fcl::FCL_REAL(1e-1));
+  BOOST_CHECK_CLOSE(o2[2], hpp::fcl::FCL_REAL(2.0), hpp::fcl::FCL_REAL(1e-1));
 
   // Rotate capsule around y axis by pi/2 and move it behind box
-  tf1.setTranslation(hpp::fcl::Vec3f(-10., 0., 0.));
-  tf1.setQuatRotation(hpp::fcl::makeQuat(sqrt(2) / 2, 0, sqrt(2) / 2, 0));
+  tf1.setTranslation(hpp::fcl::Vec3f(hpp::fcl::FCL_REAL(-10.),
+                                     hpp::fcl::FCL_REAL(0.),
+                                     hpp::fcl::FCL_REAL(0.)));
+  tf1.setQuatRotation(hpp::fcl::makeQuat(hpp::fcl::FCL_REAL(sqrt(2) / 2), 0,
+                                         hpp::fcl::FCL_REAL(sqrt(2) / 2), 0));
   capsule.setTransform(tf1);
 
   // test distance
@@ -106,11 +116,12 @@ BOOST_AUTO_TEST_CASE(distance_capsule_box) {
   o1 = distanceResult.nearest_points[0];
   o2 = distanceResult.nearest_points[1];
 
-  BOOST_CHECK_CLOSE(distanceResult.min_distance, 5.5, 1e-1);
-  BOOST_CHECK_CLOSE(o1[0], -6, 1e-2);
-  CHECK_CLOSE_TO_0(o1[1], 1e-1);
-  CHECK_CLOSE_TO_0(o1[2], 1e-1);
-  BOOST_CHECK_CLOSE(o2[0], -0.5, 1e-2);
-  CHECK_CLOSE_TO_0(o2[1], 1e-1);
-  CHECK_CLOSE_TO_0(o2[2], 1e-1);
+  BOOST_CHECK_CLOSE(distanceResult.min_distance, hpp::fcl::FCL_REAL(5.5),
+                    hpp::fcl::FCL_REAL(1e-1));
+  BOOST_CHECK_CLOSE(o1[0], hpp::fcl::FCL_REAL(-6), hpp::fcl::FCL_REAL(1e-2));
+  CHECK_CLOSE_TO_0(o1[1], hpp::fcl::FCL_REAL(1e-1));
+  CHECK_CLOSE_TO_0(o1[2], hpp::fcl::FCL_REAL(1e-1));
+  BOOST_CHECK_CLOSE(o2[0], hpp::fcl::FCL_REAL(-0.5), hpp::fcl::FCL_REAL(1e-2));
+  CHECK_CLOSE_TO_0(o2[1], hpp::fcl::FCL_REAL(1e-1));
+  CHECK_CLOSE_TO_0(o2[2], hpp::fcl::FCL_REAL(1e-1));
 }

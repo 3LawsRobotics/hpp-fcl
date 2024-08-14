@@ -38,41 +38,41 @@
 #define BOOST_TEST_MODULE FCL_BROADPHASE
 #include <boost/test/included/unit_test.hpp>
 
-#include <hpp/fcl/config.hh>
-#include <hpp/fcl/broadphase/broadphase.h>
-#include <hpp/fcl/shape/geometric_shape_to_BVH_model.h>
-#include <hpp/fcl/math/transform.h>
 #include "utility.h"
+#include <hpp/fcl/broadphase/broadphase.h>
+#include <hpp/fcl/config.hh>
+#include <hpp/fcl/math/transform.h>
+#include <hpp/fcl/shape/geometric_shape_to_BVH_model.h>
 
 #if USE_GOOGLEHASH
-#include <sparsehash/sparse_hash_map>
-#include <sparsehash/dense_hash_map>
 #include <hash_map>
+#include <sparsehash/dense_hash_map>
+#include <sparsehash/sparse_hash_map>
 #endif
 
 #include <boost/math/constants/constants.hpp>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 
 using namespace hpp::fcl;
 using namespace hpp::fcl::detail;
 
 /// @brief Generate environment with 3 * n objects for self distance, so we try
 /// to make sure none of them collide with each other.
-void generateSelfDistanceEnvironments(std::vector<CollisionObject*>& env,
-                                      double env_scale, std::size_t n);
+void generateSelfDistanceEnvironments(std::vector<CollisionObject *> &env,
+                                      FCL_REAL env_scale, std::size_t n);
 
 /// @brief Generate environment with 3 * n objects for self distance, but all in
 /// meshes.
-void generateSelfDistanceEnvironmentsMesh(std::vector<CollisionObject*>& env,
-                                          double env_scale, std::size_t n);
+void generateSelfDistanceEnvironmentsMesh(std::vector<CollisionObject *> &env,
+                                          FCL_REAL env_scale, std::size_t n);
 
 /// @brief test for broad phase distance
-void broad_phase_distance_test(double env_scale, std::size_t env_size,
+void broad_phase_distance_test(FCL_REAL env_scale, std::size_t env_size,
                                std::size_t query_size, bool use_mesh = false);
 
 /// @brief test for broad phase self distance
-void broad_phase_self_distance_test(double env_scale, std::size_t env_size,
+void broad_phase_self_distance_test(FCL_REAL env_scale, std::size_t env_size,
                                     bool use_mesh = false);
 
 FCL_REAL DELTA = 0.01;
@@ -81,15 +81,15 @@ FCL_REAL DELTA = 0.01;
 template <typename U, typename V>
 struct GoogleSparseHashTable
     : public google::sparse_hash_map<U, V, std::tr1::hash<size_t>,
-                                     std::equal_to<size_t> > {};
+                                     std::equal_to<size_t>> {};
 
 template <typename U, typename V>
 struct GoogleDenseHashTable
     : public google::dense_hash_map<U, V, std::tr1::hash<size_t>,
-                                    std::equal_to<size_t> > {
+                                    std::equal_to<size_t>> {
   GoogleDenseHashTable()
       : google::dense_hash_map<U, V, std::tr1::hash<size_t>,
-                               std::equal_to<size_t> >() {
+                               std::equal_to<size_t>>() {
     this->set_empty_key(NULL);
   }
 };
@@ -142,8 +142,8 @@ BOOST_AUTO_TEST_CASE(test_core_mesh_bf_broad_phase_self_distance_mesh) {
   broad_phase_self_distance_test(200, 5000, true);
 }
 
-void generateSelfDistanceEnvironments(std::vector<CollisionObject*>& env,
-                                      double env_scale, std::size_t n) {
+void generateSelfDistanceEnvironments(std::vector<CollisionObject *> &env,
+                                      FCL_REAL env_scale, std::size_t n) {
   int n_edge = static_cast<int>(std::floor(std::pow(n, 1 / 3.0)));
 
   FCL_REAL step_size = env_scale * 2 / n_edge;
@@ -156,7 +156,7 @@ void generateSelfDistanceEnvironments(std::vector<CollisionObject*>& env,
     int y = (i - n_edge * n_edge * x) % n_edge;
     int z = i - n_edge * n_edge * x - n_edge * y;
 
-    Box* box = new Box(single_size, single_size, single_size);
+    Box *box = new Box(single_size, single_size, single_size);
     env.push_back(new CollisionObject(
         shared_ptr<CollisionGeometry>(box),
         Transform3f(Vec3f(
@@ -171,7 +171,7 @@ void generateSelfDistanceEnvironments(std::vector<CollisionObject*>& env,
     int y = (i - n_edge * n_edge * x) % n_edge;
     int z = i - n_edge * n_edge * x - n_edge * y;
 
-    Sphere* sphere = new Sphere(single_size / 2);
+    Sphere *sphere = new Sphere(single_size / 2);
     env.push_back(new CollisionObject(
         shared_ptr<CollisionGeometry>(sphere),
         Transform3f(Vec3f(
@@ -186,7 +186,7 @@ void generateSelfDistanceEnvironments(std::vector<CollisionObject*>& env,
     int y = (i - n_edge * n_edge * x) % n_edge;
     int z = i - n_edge * n_edge * x - n_edge * y;
 
-    Cylinder* cylinder = new Cylinder(single_size / 2, single_size);
+    Cylinder *cylinder = new Cylinder(single_size / 2, single_size);
     env.push_back(new CollisionObject(
         shared_ptr<CollisionGeometry>(cylinder),
         Transform3f(Vec3f(
@@ -201,7 +201,7 @@ void generateSelfDistanceEnvironments(std::vector<CollisionObject*>& env,
     int y = (i - n_edge * n_edge * x) % n_edge;
     int z = i - n_edge * n_edge * x - n_edge * y;
 
-    Cone* cone = new Cone(single_size / 2, single_size);
+    Cone *cone = new Cone(single_size / 2, single_size);
     env.push_back(new CollisionObject(
         shared_ptr<CollisionGeometry>(cone),
         Transform3f(Vec3f(
@@ -212,8 +212,8 @@ void generateSelfDistanceEnvironments(std::vector<CollisionObject*>& env,
   }
 }
 
-void generateSelfDistanceEnvironmentsMesh(std::vector<CollisionObject*>& env,
-                                          double env_scale, std::size_t n) {
+void generateSelfDistanceEnvironmentsMesh(std::vector<CollisionObject *> &env,
+                                          FCL_REAL env_scale, std::size_t n) {
   int n_edge = static_cast<int>(std::floor(std::pow(n, 1 / 3.0)));
 
   FCL_REAL step_size = env_scale * 2 / n_edge;
@@ -227,7 +227,7 @@ void generateSelfDistanceEnvironmentsMesh(std::vector<CollisionObject*>& env,
     int z = i - n_edge * n_edge * x - n_edge * y;
 
     Box box(single_size, single_size, single_size);
-    BVHModel<OBBRSS>* model = new BVHModel<OBBRSS>();
+    BVHModel<OBBRSS> *model = new BVHModel<OBBRSS>();
     generateBVHModel(*model, box, Transform3f());
     env.push_back(new CollisionObject(
         shared_ptr<CollisionGeometry>(model),
@@ -244,7 +244,7 @@ void generateSelfDistanceEnvironmentsMesh(std::vector<CollisionObject*>& env,
     int z = i - n_edge * n_edge * x - n_edge * y;
 
     Sphere sphere(single_size / 2);
-    BVHModel<OBBRSS>* model = new BVHModel<OBBRSS>();
+    BVHModel<OBBRSS> *model = new BVHModel<OBBRSS>();
     generateBVHModel(*model, sphere, Transform3f(), 16, 16);
     env.push_back(new CollisionObject(
         shared_ptr<CollisionGeometry>(model),
@@ -261,7 +261,7 @@ void generateSelfDistanceEnvironmentsMesh(std::vector<CollisionObject*>& env,
     int z = i - n_edge * n_edge * x - n_edge * y;
 
     Cylinder cylinder(single_size / 2, single_size);
-    BVHModel<OBBRSS>* model = new BVHModel<OBBRSS>();
+    BVHModel<OBBRSS> *model = new BVHModel<OBBRSS>();
     generateBVHModel(*model, cylinder, Transform3f(), 16, 16);
     env.push_back(new CollisionObject(
         shared_ptr<CollisionGeometry>(model),
@@ -278,7 +278,7 @@ void generateSelfDistanceEnvironmentsMesh(std::vector<CollisionObject*>& env,
     int z = i - n_edge * n_edge * x - n_edge * y;
 
     Cone cone(single_size / 2, single_size);
-    BVHModel<OBBRSS>* model = new BVHModel<OBBRSS>();
+    BVHModel<OBBRSS> *model = new BVHModel<OBBRSS>();
     generateBVHModel(*model, cone, Transform3f(), 16, 16);
     env.push_back(new CollisionObject(
         shared_ptr<CollisionGeometry>(model),
@@ -290,18 +290,18 @@ void generateSelfDistanceEnvironmentsMesh(std::vector<CollisionObject*>& env,
   }
 }
 
-void broad_phase_self_distance_test(double env_scale, std::size_t env_size,
+void broad_phase_self_distance_test(FCL_REAL env_scale, std::size_t env_size,
                                     bool use_mesh) {
   std::vector<TStruct> ts;
   std::vector<BenchTimer> timers;
 
-  std::vector<CollisionObject*> env;
+  std::vector<CollisionObject *> env;
   if (use_mesh)
     generateSelfDistanceEnvironmentsMesh(env, env_scale, env_size);
   else
     generateSelfDistanceEnvironments(env, env_scale, env_size);
 
-  std::vector<BroadPhaseCollisionManager*> managers;
+  std::vector<BroadPhaseCollisionManager *> managers;
 
   managers.push_back(new NaiveCollisionManager());
   managers.push_back(new SSaPCollisionManager());
@@ -316,29 +316,29 @@ void broad_phase_self_distance_test(double env_scale, std::size_t env_size,
   // managers.push_back(new SpatialHashingCollisionManager<>(cell_size,
   // lower_limit, upper_limit));
   managers.push_back(new SpatialHashingCollisionManager<
-                     SparseHashTable<AABB, CollisionObject*, SpatialHash> >(
+                     SparseHashTable<AABB, CollisionObject *, SpatialHash>>(
       cell_size, lower_limit, upper_limit));
 #if USE_GOOGLEHASH
   managers.push_back(
       new SpatialHashingCollisionManager<SparseHashTable<
-          AABB, CollisionObject*, SpatialHash, GoogleSparseHashTable> >(
+          AABB, CollisionObject *, SpatialHash, GoogleSparseHashTable>>(
           cell_size, lower_limit, upper_limit));
   managers.push_back(
       new SpatialHashingCollisionManager<SparseHashTable<
-          AABB, CollisionObject*, SpatialHash, GoogleDenseHashTable> >(
+          AABB, CollisionObject *, SpatialHash, GoogleDenseHashTable>>(
           cell_size, lower_limit, upper_limit));
 #endif
   managers.push_back(new DynamicAABBTreeCollisionManager());
   managers.push_back(new DynamicAABBTreeArrayCollisionManager());
 
   {
-    DynamicAABBTreeCollisionManager* m = new DynamicAABBTreeCollisionManager();
+    DynamicAABBTreeCollisionManager *m = new DynamicAABBTreeCollisionManager();
     m->tree_init_level = 2;
     managers.push_back(m);
   }
 
   {
-    DynamicAABBTreeArrayCollisionManager* m =
+    DynamicAABBTreeArrayCollisionManager *m =
         new DynamicAABBTreeArrayCollisionManager();
     m->tree_init_level = 2;
     managers.push_back(m);
@@ -380,9 +380,11 @@ void broad_phase_self_distance_test(double env_scale, std::size_t env_size,
                         fabs(self_callbacks[0].data.result.min_distance) <
                     DELTA);
 
-  for (size_t i = 0; i < env.size(); ++i) delete env[i];
+  for (size_t i = 0; i < env.size(); ++i)
+    delete env[i];
 
-  for (size_t i = 0; i < managers.size(); ++i) delete managers[i];
+  for (size_t i = 0; i < managers.size(); ++i)
+    delete managers[i];
 
   std::cout.setf(std::ios_base::left, std::ios_base::adjustfield);
   int w = 7;
@@ -411,25 +413,26 @@ void broad_phase_self_distance_test(double env_scale, std::size_t env_size,
   std::cout << std::endl;
 }
 
-void broad_phase_distance_test(double env_scale, std::size_t env_size,
+void broad_phase_distance_test(FCL_REAL env_scale, std::size_t env_size,
                                std::size_t query_size, bool use_mesh) {
   std::vector<TStruct> ts;
   std::vector<BenchTimer> timers;
 
-  std::vector<CollisionObject*> env;
+  std::vector<CollisionObject *> env;
   if (use_mesh)
     generateEnvironmentsMesh(env, env_scale, env_size);
   else
     generateEnvironments(env, env_scale, env_size);
 
-  std::vector<CollisionObject*> query;
+  std::vector<CollisionObject *> query;
 
-  BroadPhaseCollisionManager* manager = new NaiveCollisionManager();
-  for (std::size_t i = 0; i < env.size(); ++i) manager->registerObject(env[i]);
+  BroadPhaseCollisionManager *manager = new NaiveCollisionManager();
+  for (std::size_t i = 0; i < env.size(); ++i)
+    manager->registerObject(env[i]);
   manager->setup();
 
   while (1) {
-    std::vector<CollisionObject*> candidates;
+    std::vector<CollisionObject *> candidates;
     if (use_mesh)
       generateEnvironmentsMesh(candidates, env_scale, query_size);
     else
@@ -442,15 +445,17 @@ void broad_phase_distance_test(double env_scale, std::size_t env_size,
         query.push_back(candidates[i]);
       else
         delete candidates[i];
-      if (query.size() == query_size) break;
+      if (query.size() == query_size)
+        break;
     }
 
-    if (query.size() == query_size) break;
+    if (query.size() == query_size)
+      break;
   }
 
   delete manager;
 
-  std::vector<BroadPhaseCollisionManager*> managers;
+  std::vector<BroadPhaseCollisionManager *> managers;
 
   managers.push_back(new NaiveCollisionManager());
   managers.push_back(new SSaPCollisionManager());
@@ -466,29 +471,29 @@ void broad_phase_distance_test(double env_scale, std::size_t env_size,
   // managers.push_back(new SpatialHashingCollisionManager<>(cell_size,
   // lower_limit, upper_limit));
   managers.push_back(new SpatialHashingCollisionManager<
-                     SparseHashTable<AABB, CollisionObject*, SpatialHash> >(
+                     SparseHashTable<AABB, CollisionObject *, SpatialHash>>(
       cell_size, lower_limit, upper_limit));
 #if USE_GOOGLEHASH
   managers.push_back(
       new SpatialHashingCollisionManager<SparseHashTable<
-          AABB, CollisionObject*, SpatialHash, GoogleSparseHashTable> >(
+          AABB, CollisionObject *, SpatialHash, GoogleSparseHashTable>>(
           cell_size, lower_limit, upper_limit));
   managers.push_back(
       new SpatialHashingCollisionManager<SparseHashTable<
-          AABB, CollisionObject*, SpatialHash, GoogleDenseHashTable> >(
+          AABB, CollisionObject *, SpatialHash, GoogleDenseHashTable>>(
           cell_size, lower_limit, upper_limit));
 #endif
   managers.push_back(new DynamicAABBTreeCollisionManager());
   managers.push_back(new DynamicAABBTreeArrayCollisionManager());
 
   {
-    DynamicAABBTreeCollisionManager* m = new DynamicAABBTreeCollisionManager();
+    DynamicAABBTreeCollisionManager *m = new DynamicAABBTreeCollisionManager();
     m->tree_init_level = 2;
     managers.push_back(m);
   }
 
   {
-    DynamicAABBTreeArrayCollisionManager* m =
+    DynamicAABBTreeArrayCollisionManager *m =
         new DynamicAABBTreeArrayCollisionManager();
     m->tree_init_level = 2;
     managers.push_back(m);
@@ -532,7 +537,7 @@ void broad_phase_distance_test(double env_scale, std::size_t env_size,
       BOOST_CHECK(test);
 
       if (!test) {
-        const BroadPhaseCollisionManager& self = *managers[j];
+        const BroadPhaseCollisionManager &self = *managers[j];
         std::cout << "j: " << typeid(self).name() << std::endl;
         std::cout << "query_callbacks[0].data.result.min_distance: "
                   << query_callbacks[0].data.result.min_distance << std::endl;
@@ -542,10 +547,13 @@ void broad_phase_distance_test(double env_scale, std::size_t env_size,
     }
   }
 
-  for (std::size_t i = 0; i < env.size(); ++i) delete env[i];
-  for (std::size_t i = 0; i < query.size(); ++i) delete query[i];
+  for (std::size_t i = 0; i < env.size(); ++i)
+    delete env[i];
+  for (std::size_t i = 0; i < query.size(); ++i)
+    delete query[i];
 
-  for (size_t i = 0; i < managers.size(); ++i) delete managers[i];
+  for (size_t i = 0; i < managers.size(); ++i)
+    delete managers[i];
 
   std::cout.setf(std::ios_base::left, std::ios_base::adjustfield);
   int w = 7;
@@ -565,7 +573,8 @@ void broad_phase_distance_test(double env_scale, std::size_t env_size,
   std::cout << "distance time" << std::endl;
   for (size_t i = 0; i < ts.size(); ++i) {
     FCL_REAL tmp = 0;
-    for (size_t j = 2; j < ts[i].records.size(); ++j) tmp += ts[i].records[j];
+    for (size_t j = 2; j < ts[i].records.size(); ++j)
+      tmp += ts[i].records[j];
     std::cout << std::setw(w) << tmp << " ";
   }
   std::cout << std::endl;

@@ -51,7 +51,7 @@ HierarchyTree<BV>::HierarchyTree(int bu_threshold_, int topdown_level_) {
   root_node = nullptr;
   n_leaves = 0;
   free_node = nullptr;
-  max_lookahead_level = FCL_REAL(-1);
+  max_lookahead_level = -1;
   opath = 0;
   bu_threshold = bu_threshold_;
   topdown_level = topdown_level_;
@@ -105,7 +105,7 @@ template <typename BV> void HierarchyTree<BV>::clear() {
   n_leaves = 0;
   delete free_node;
   free_node = nullptr;
-  max_lookahead_level = FCL_REAL(-1);
+  max_lookahead_level = -1;
   opath = 0;
 }
 
@@ -133,7 +133,7 @@ void HierarchyTree<BV>::update(Node *leaf, int lookahead_level) {
       for (int i = 0; (i < lookahead_level) && sub_root->parent; ++i)
         sub_root = sub_root->parent;
     } else
-      // By default, lookahead_level = FCL_REAL(-1), and we reset the `sub_root`
+      // By default, lookahead_level = -1, and we reset the `sub_root`
       // variable to the root of the entire tree.
       sub_root = root_node;
   }
@@ -417,7 +417,7 @@ HierarchyTree<BV>::topdown_1(const NodeVecIterator lbeg,
         vol += (*it)->bv;
       }
       split_p /= static_cast<FCL_REAL>(num_leaves);
-      int best_axis = FCL_REAL(-1);
+      int best_axis = -1;
       long bestmidp = num_leaves;
       int splitcount[3][2] = {{0, 0}, {0, 0}, {0, 0}};
       for (it = lbeg; it < lend; ++it) {
@@ -470,7 +470,7 @@ void HierarchyTree<BV>::init_0(std::vector<Node *> &leaves) {
   clear();
   root_node = topdown(leaves.begin(), leaves.end());
   n_leaves = leaves.size();
-  max_lookahead_level = FCL_REAL(-1);
+  max_lookahead_level = -1;
   opath = 0;
 }
 
@@ -496,7 +496,7 @@ void HierarchyTree<BV>::init_1(std::vector<Node *> &leaves) {
 
   refit();
   n_leaves = leaves.size();
-  max_lookahead_level = FCL_REAL(-1);
+  max_lookahead_level = -1;
   opath = 0;
 }
 
@@ -522,7 +522,7 @@ void HierarchyTree<BV>::init_2(std::vector<Node *> &leaves) {
 
   refit();
   n_leaves = leaves.size();
-  max_lookahead_level = FCL_REAL(-1);
+  max_lookahead_level = -1;
   opath = 0;
 }
 
@@ -547,7 +547,7 @@ void HierarchyTree<BV>::init_3(std::vector<Node *> &leaves) {
 
   refit();
   n_leaves = leaves.size();
-  max_lookahead_level = FCL_REAL(-1);
+  max_lookahead_level = -1;
   opath = 0;
 }
 

@@ -36,30 +36,29 @@
 /** \author Jeongseok Lee */
 
 #define BOOST_TEST_MODULE FCL_BVH_MODELS
-#include <boost/test/included/unit_test.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 #include "fcl_resources/config.h"
 
-#include <hpp/fcl/collision.h>
+#include "utility.h"
 #include <hpp/fcl/BVH/BVH_model.h>
 #include <hpp/fcl/BVH/BVH_utility.h>
+#include <hpp/fcl/collision.h>
 #include <hpp/fcl/math/transform.h>
-#include <hpp/fcl/shape/geometric_shapes.h>
-#include <hpp/fcl/shape/geometric_shape_to_BVH_model.h>
 #include <hpp/fcl/mesh_loader/assimp.h>
 #include <hpp/fcl/mesh_loader/loader.h>
-#include "utility.h"
+#include <hpp/fcl/shape/geometric_shape_to_BVH_model.h>
+#include <hpp/fcl/shape/geometric_shapes.h>
 #include <iostream>
 
 using namespace hpp::fcl;
 
-template <typename BV>
-void testBVHModelPointCloud() {
+template <typename BV> void testBVHModelPointCloud() {
   Box box(Vec3f::Ones());
-  double a = box.halfSide[0];
-  double b = box.halfSide[1];
-  double c = box.halfSide[2];
+  FCL_REAL a = box.halfSide[0];
+  FCL_REAL b = box.halfSide[1];
+  FCL_REAL c = box.halfSide[2];
   std::vector<Vec3f> points(8);
   points[0] << a, -b, c;
   points[1] << a, b, c;
@@ -71,7 +70,7 @@ void testBVHModelPointCloud() {
   points[7] << -a, -b, -c;
 
   {
-    shared_ptr<BVHModel<BV> > model(new BVHModel<BV>);
+    shared_ptr<BVHModel<BV>> model(new BVHModel<BV>);
 
     if (model->getNodeType() != BV_AABB && model->getNodeType() != BV_KDOP16 &&
         model->getNodeType() != BV_KDOP18 &&
@@ -103,7 +102,7 @@ void testBVHModelPointCloud() {
   }
 
   {
-    shared_ptr<BVHModel<BV> > model(new BVHModel<BV>);
+    shared_ptr<BVHModel<BV>> model(new BVHModel<BV>);
 
     if (model->getNodeType() != BV_AABB && model->getNodeType() != BV_KDOP16 &&
         model->getNodeType() != BV_KDOP18 &&
@@ -136,15 +135,14 @@ void testBVHModelPointCloud() {
   }
 }
 
-template <typename BV>
-void testBVHModelTriangles() {
-  shared_ptr<BVHModel<BV> > model(new BVHModel<BV>);
+template <typename BV> void testBVHModelTriangles() {
+  shared_ptr<BVHModel<BV>> model(new BVHModel<BV>);
   Box box(Vec3f::Ones());
   AABB aabb(Vec3f(-1, 0, -1), Vec3f(1, 1, 1));
 
-  double a = box.halfSide[0];
-  double b = box.halfSide[1];
-  double c = box.halfSide[2];
+  FCL_REAL a = box.halfSide[0];
+  FCL_REAL b = box.halfSide[1];
+  FCL_REAL c = box.halfSide[2];
   std::vector<Vec3f> points(8);
   std::vector<Triangle> tri_indices(12);
   points[0] << a, -b, c;
@@ -191,7 +189,7 @@ void testBVHModelTriangles() {
   BOOST_CHECK_EQUAL(model->build_state, BVH_BUILD_STATE_PROCESSED);
 
   Transform3f pose;
-  shared_ptr<BVHModel<BV> > cropped(BVHExtract(*model, pose, aabb));
+  shared_ptr<BVHModel<BV>> cropped(BVHExtract(*model, pose, aabb));
   BOOST_REQUIRE(cropped);
   BOOST_CHECK(cropped->build_state == BVH_BUILD_STATE_PROCESSED);
   BOOST_CHECK_EQUAL(cropped->num_vertices, model->num_vertices - 6);
@@ -218,22 +216,22 @@ void testBVHModelTriangles() {
   cropped.reset(BVHExtract(*model, pose, aabb));
   BOOST_CHECK(!cropped);
 
-  aabb = AABB(Vec3f(-0.1, -0.1, -0.1), Vec3f(0.1, 0.1, 0.1));
-  pose.setTranslation(Vec3f(-0.5, -0.5, 0));
+  aabb = AABB(Vec3f(-FCL_REAL(0.1), -FCL_REAL(0.1), -FCL_REAL(0.1)),
+              Vec3f(FCL_REAL(0.1), FCL_REAL(0.1), FCL_REAL(0.1)));
+  pose.setTranslation(Vec3f(-FCL_REAL(0.5), -FCL_REAL(0.5), 0));
   cropped.reset(BVHExtract(*model, pose, aabb));
   BOOST_REQUIRE(cropped);
   BOOST_CHECK_EQUAL(cropped->num_tris, 2);
   BOOST_CHECK_EQUAL(cropped->num_vertices, 6);
 }
 
-template <typename BV>
-void testBVHModelSubModel() {
-  shared_ptr<BVHModel<BV> > model(new BVHModel<BV>);
+template <typename BV> void testBVHModelSubModel() {
+  shared_ptr<BVHModel<BV>> model(new BVHModel<BV>);
   Box box(Vec3f::Ones());
 
-  double a = box.halfSide[0];
-  double b = box.halfSide[1];
-  double c = box.halfSide[2];
+  FCL_REAL a = box.halfSide[0];
+  FCL_REAL b = box.halfSide[1];
+  FCL_REAL c = box.halfSide[2];
   std::vector<Vec3f> points(8);
   std::vector<Triangle> tri_indices(12);
   points[0] << a, -b, c;
@@ -276,8 +274,7 @@ void testBVHModelSubModel() {
   BOOST_CHECK_EQUAL(model->build_state, BVH_BUILD_STATE_PROCESSED);
 }
 
-template <typename BV>
-void testBVHModel() {
+template <typename BV> void testBVHModel() {
   testBVHModelTriangles<BV>();
   testBVHModelPointCloud<BV>();
   testBVHModelSubModel<BV>();
@@ -289,13 +286,12 @@ BOOST_AUTO_TEST_CASE(building_bvh_models) {
   testBVHModel<RSS>();
   testBVHModel<kIOS>();
   testBVHModel<OBBRSS>();
-  testBVHModel<KDOP<16> >();
-  testBVHModel<KDOP<18> >();
-  testBVHModel<KDOP<24> >();
+  testBVHModel<KDOP<16>>();
+  testBVHModel<KDOP<18>>();
+  testBVHModel<KDOP<24>>();
 }
 
-template <class BoundingVolume>
-void testLoadPolyhedron() {
+template <class BoundingVolume> void testLoadPolyhedron() {
   boost::filesystem::path path(TEST_RESOURCES_DIR);
   std::string env = (path / "env.obj").string(),
               rob = (path / "rob.obj").string();
@@ -322,8 +318,7 @@ void testLoadPolyhedron() {
   BOOST_CHECK_EQUAL(geom, geom2);
 }
 
-template <class BoundingVolume>
-void testLoadGerardBauzil() {
+template <class BoundingVolume> void testLoadGerardBauzil() {
   boost::filesystem::path path(TEST_RESOURCES_DIR);
   std::string env = (path / "staircases_koroibot_hr.dae").string();
 
@@ -335,7 +330,7 @@ void testLoadGerardBauzil() {
   scale.setConstant(1);
   loadPolyhedronFromResource(env, scale, P1);
   CollisionGeometryPtr_t cylinder(new Cylinder(.27, .27));
-  Transform3f pos(Vec3f(-1.33, 1.36, .14));
+  Transform3f pos(Vec3f(-FCL_REAL(1.33), FCL_REAL(1.36), FCL_REAL(.14)));
   CollisionObject obj(cylinder, pos);
   CollisionObject stairs(P1);
 
@@ -352,9 +347,9 @@ BOOST_AUTO_TEST_CASE(load_polyhedron) {
   testLoadPolyhedron<RSS>();
   testLoadPolyhedron<kIOS>();
   testLoadPolyhedron<OBBRSS>();
-  testLoadPolyhedron<KDOP<16> >();
-  testLoadPolyhedron<KDOP<18> >();
-  testLoadPolyhedron<KDOP<24> >();
+  testLoadPolyhedron<KDOP<16>>();
+  testLoadPolyhedron<KDOP<18>>();
+  testLoadPolyhedron<KDOP<24>>();
 }
 
 BOOST_AUTO_TEST_CASE(gerard_bauzil) {
@@ -373,7 +368,7 @@ BOOST_AUTO_TEST_CASE(load_illformated_mesh) {
 }
 
 BOOST_AUTO_TEST_CASE(test_convex) {
-  Box* box_ptr = new hpp::fcl::Box(1, 1, 1);
+  Box *box_ptr = new hpp::fcl::Box(1, 1, 1);
   CollisionGeometryPtr_t b1(box_ptr);
   BVHModel<OBBRSS> box_bvh_model = BVHModel<OBBRSS>();
   generateBVHModel(box_bvh_model, *box_ptr, Transform3f());

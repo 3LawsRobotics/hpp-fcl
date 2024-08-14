@@ -34,8 +34,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
 #include <chrono>
@@ -43,12 +43,12 @@
 #include <hpp/fcl/narrowphase/narrowphase.h>
 
 #include "../src/BV/OBB.h"
-#include <hpp/fcl/internal/shape_shape_func.h>
 #include "utility.h"
+#include <hpp/fcl/internal/shape_shape_func.h>
 
 using namespace hpp::fcl;
 
-void randomOBBs(Vec3f& a, Vec3f& b, FCL_REAL extentNorm) {
+void randomOBBs(Vec3f &a, Vec3f &b, FCL_REAL extentNorm) {
   // Extent norm is between 0 and extentNorm on each axis
   // a = (Vec3f::Ones()+Vec3f::Random()) * extentNorm / (2*sqrt(3));
   // b = (Vec3f::Ones()+Vec3f::Random()) * extentNorm / (2*sqrt(3));
@@ -57,7 +57,7 @@ void randomOBBs(Vec3f& a, Vec3f& b, FCL_REAL extentNorm) {
   b = extentNorm * Vec3f::Random().cwiseAbs().normalized();
 }
 
-void randomTransform(Matrix3f& B, Vec3f& T, const Vec3f& a, const Vec3f& b,
+void randomTransform(Matrix3f &B, Vec3f &T, const Vec3f &a, const Vec3f &b,
                      const FCL_REAL extentNorm) {
   // TODO Should we scale T to a and b norm ?
   (void)a;
@@ -80,7 +80,7 @@ void randomTransform(Matrix3f& B, Vec3f& T, const Vec3f& a, const Vec3f& b,
 #define MANUAL_PRODUCT 1
 
 #if MANUAL_PRODUCT
-#define PRODUCT(M33, v3) \
+#define PRODUCT(M33, v3)                                                       \
   (M33.col(0) * v3[0] + M33.col(1) * v3[1] + M33.col(2) * v3[2])
 #else
 #define PRODUCT(M33, v3) (M33 * v3)
@@ -89,22 +89,22 @@ void randomTransform(Matrix3f& B, Vec3f& T, const Vec3f& a, const Vec3f& b,
 typedef std::chrono::high_resolution_clock clock_type;
 typedef clock_type::duration duration_type;
 
-const char* sep = ",\t";
+const char *sep = ",\t";
 const FCL_REAL eps = 1.5e-7;
 
 const Eigen::IOFormat py_fmt(Eigen::FullPrecision, 0,
-                             ", ",   // Coeff separator
-                             ",\n",  // Row separator
-                             "(",    // row prefix
-                             ",)",   // row suffix
-                             "( ",   // mat prefix
-                             ", )"   // mat suffix
+                             ", ",  // Coeff separator
+                             ",\n", // Row separator
+                             "(",   // row prefix
+                             ",)",  // row suffix
+                             "( ",  // mat prefix
+                             ", )"  // mat suffix
 );
 
 namespace obbDisjoint_impls {
 /// @return true if OBB are disjoint.
-bool distance(const Matrix3f& B, const Vec3f& T, const Vec3f& a, const Vec3f& b,
-              FCL_REAL& distance) {
+bool distance(const Matrix3f &B, const Vec3f &T, const Vec3f &a, const Vec3f &b,
+              FCL_REAL &distance) {
   GJKSolver gjk;
   Box ba(2 * a), bb(2 * b);
   Transform3f tfa, tfb(B, T);
@@ -113,8 +113,8 @@ bool distance(const Matrix3f& B, const Vec3f& T, const Vec3f& a, const Vec3f& b,
   return gjk.shapeDistance(ba, tfa, bb, tfb, distance, p1, p2, normal);
 }
 
-inline FCL_REAL _computeDistanceForCase1(const Vec3f& T, const Vec3f& a,
-                                         const Vec3f& b, const Matrix3f& Bf) {
+inline FCL_REAL _computeDistanceForCase1(const Vec3f &T, const Vec3f &a,
+                                         const Vec3f &b, const Matrix3f &Bf) {
   Vec3f AABB_corner;
   /* This seems to be slower
  AABB_corner.noalias() = T.cwiseAbs () - a;
@@ -132,9 +132,9 @@ inline FCL_REAL _computeDistanceForCase1(const Vec3f& T, const Vec3f& a,
   return AABB_corner.array().max(FCL_REAL(0)).matrix().squaredNorm();
 }
 
-inline FCL_REAL _computeDistanceForCase2(const Matrix3f& B, const Vec3f& T,
-                                         const Vec3f& a, const Vec3f& b,
-                                         const Matrix3f& Bf) {
+inline FCL_REAL _computeDistanceForCase2(const Matrix3f &B, const Vec3f &T,
+                                         const Vec3f &a, const Vec3f &b,
+                                         const Matrix3f &Bf) {
   /*
   Vec3f AABB_corner(PRODUCT(B.transpose(), T).cwiseAbs() - b);
   AABB_corner.noalias() -= PRODUCT(Bf.transpose(), a);
@@ -143,11 +143,14 @@ inline FCL_REAL _computeDistanceForCase2(const Matrix3f& B, const Vec3f& T,
 #if MANUAL_PRODUCT
   FCL_REAL s, t = 0;
   s = std::abs(B.col(0).dot(T)) - Bf.col(0).dot(a) - b[0];
-  if (s > 0) t += s * s;
+  if (s > 0)
+    t += s * s;
   s = std::abs(B.col(1).dot(T)) - Bf.col(1).dot(a) - b[1];
-  if (s > 0) t += s * s;
+  if (s > 0)
+    t += s * s;
   s = std::abs(B.col(2).dot(T)) - Bf.col(2).dot(a) - b[2];
-  if (s > 0) t += s * s;
+  if (s > 0)
+    t += s * s;
   return t;
 #else
   Vec3f AABB_corner((B.transpose() * T).cwiseAbs() - Bf.transpose() * a - b);
@@ -156,21 +159,23 @@ inline FCL_REAL _computeDistanceForCase2(const Matrix3f& B, const Vec3f& T,
   // */
 }
 
-int separatingAxisId(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
-                     const Vec3f& b, const FCL_REAL& breakDistance2,
-                     FCL_REAL& squaredLowerBoundDistance) {
+int separatingAxisId(const Matrix3f &B, const Vec3f &T, const Vec3f &a,
+                     const Vec3f &b, const FCL_REAL &breakDistance2,
+                     FCL_REAL &squaredLowerBoundDistance) {
   int id = 0;
 
   Matrix3f Bf(B.cwiseAbs());
 
   // Corner of b axis aligned bounding box the closest to the origin
   squaredLowerBoundDistance = _computeDistanceForCase1(T, a, b, Bf);
-  if (squaredLowerBoundDistance > breakDistance2) return id;
+  if (squaredLowerBoundDistance > breakDistance2)
+    return id;
   ++id;
 
   // | B^T T| - b - Bf^T a
   squaredLowerBoundDistance = _computeDistanceForCase2(B, T, a, b, Bf);
-  if (squaredLowerBoundDistance > breakDistance2) return id;
+  if (squaredLowerBoundDistance > breakDistance2)
+    return id;
   ++id;
 
   int ja = 1, ka = 2, jb = 1, kb = 2;
@@ -212,18 +217,20 @@ int separatingAxisId(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
 }
 
 // ------------------------ 0 --------------------------------------
-bool withRuntimeLoop(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
-                     const Vec3f& b, const FCL_REAL& breakDistance2,
-                     FCL_REAL& squaredLowerBoundDistance) {
+bool withRuntimeLoop(const Matrix3f &B, const Vec3f &T, const Vec3f &a,
+                     const Vec3f &b, const FCL_REAL &breakDistance2,
+                     FCL_REAL &squaredLowerBoundDistance) {
   Matrix3f Bf(B.cwiseAbs());
 
   // Corner of b axis aligned bounding box the closest to the origin
   squaredLowerBoundDistance = _computeDistanceForCase1(T, a, b, Bf);
-  if (squaredLowerBoundDistance > breakDistance2) return true;
+  if (squaredLowerBoundDistance > breakDistance2)
+    return true;
 
   // | B^T T| - b - Bf^T a
   squaredLowerBoundDistance = _computeDistanceForCase2(B, T, a, b, Bf);
-  if (squaredLowerBoundDistance > breakDistance2) return true;
+  if (squaredLowerBoundDistance > breakDistance2)
+    return true;
 
   int ja = 1, ka = 2, jb = 1, kb = 2;
   for (int ia = 0; ia < 3; ++ia) {
@@ -263,10 +270,10 @@ bool withRuntimeLoop(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
 }
 
 // ------------------------ 1 --------------------------------------
-bool withManualLoopUnrolling_1(const Matrix3f& B, const Vec3f& T,
-                               const Vec3f& a, const Vec3f& b,
-                               const FCL_REAL& breakDistance2,
-                               FCL_REAL& squaredLowerBoundDistance) {
+bool withManualLoopUnrolling_1(const Matrix3f &B, const Vec3f &T,
+                               const Vec3f &a, const Vec3f &b,
+                               const FCL_REAL &breakDistance2,
+                               FCL_REAL &squaredLowerBoundDistance) {
   FCL_REAL t, s;
   FCL_REAL diff;
 
@@ -281,7 +288,8 @@ bool withManualLoopUnrolling_1(const Matrix3f& B, const Vec3f& T,
 
   // for (Vec3f::Index i=0; i<3; ++i) diff3 [i] = std::max (0, diff3 [i]);
   squaredLowerBoundDistance = diff3.squaredNorm();
-  if (squaredLowerBoundDistance > breakDistance2) return true;
+  if (squaredLowerBoundDistance > breakDistance2)
+    return true;
 
   AABB_corner = (B.transpose() * T).cwiseAbs() - Bf.transpose() * a;
   // diff3 = | B^T T| - b - Bf^T a
@@ -289,7 +297,8 @@ bool withManualLoopUnrolling_1(const Matrix3f& B, const Vec3f& T,
   diff3 = diff3.cwiseMax(Vec3f::Zero());
   squaredLowerBoundDistance = diff3.squaredNorm();
 
-  if (squaredLowerBoundDistance > breakDistance2) return true;
+  if (squaredLowerBoundDistance > breakDistance2)
+    return true;
 
   // A0 x B0
   s = T[2] * B(1, 0) - T[1] * B(2, 0);
@@ -453,18 +462,20 @@ bool withManualLoopUnrolling_1(const Matrix3f& B, const Vec3f& T,
 }
 
 // ------------------------ 2 --------------------------------------
-bool withManualLoopUnrolling_2(const Matrix3f& B, const Vec3f& T,
-                               const Vec3f& a, const Vec3f& b,
-                               const FCL_REAL& breakDistance2,
-                               FCL_REAL& squaredLowerBoundDistance) {
+bool withManualLoopUnrolling_2(const Matrix3f &B, const Vec3f &T,
+                               const Vec3f &a, const Vec3f &b,
+                               const FCL_REAL &breakDistance2,
+                               FCL_REAL &squaredLowerBoundDistance) {
   Matrix3f Bf(B.cwiseAbs());
 
   // Corner of b axis aligned bounding box the closest to the origin
   squaredLowerBoundDistance = _computeDistanceForCase1(T, a, b, Bf);
-  if (squaredLowerBoundDistance > breakDistance2) return true;
+  if (squaredLowerBoundDistance > breakDistance2)
+    return true;
 
   squaredLowerBoundDistance = _computeDistanceForCase2(B, T, a, b, Bf);
-  if (squaredLowerBoundDistance > breakDistance2) return true;
+  if (squaredLowerBoundDistance > breakDistance2)
+    return true;
 
   // A0 x B0
   FCL_REAL t, s;
@@ -633,10 +644,10 @@ bool withManualLoopUnrolling_2(const Matrix3f& B, const Vec3f& T,
 template <int ia, int ib, int ja = (ia + 1) % 3, int ka = (ia + 2) % 3,
           int jb = (ib + 1) % 3, int kb = (ib + 2) % 3>
 struct loop_case_1 {
-  static inline bool run(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
-                         const Vec3f& b, const Matrix3f& Bf,
-                         const FCL_REAL& breakDistance2,
-                         FCL_REAL& squaredLowerBoundDistance) {
+  static inline bool run(const Matrix3f &B, const Vec3f &T, const Vec3f &a,
+                         const Vec3f &b, const Matrix3f &Bf,
+                         const FCL_REAL &breakDistance2,
+                         FCL_REAL &squaredLowerBoundDistance) {
     const FCL_REAL s = T[ka] * B(ja, ib) - T[ja] * B(ka, ib);
 
     const FCL_REAL diff = fabs(s) - (a[ja] * Bf(ka, ib) + a[ka] * Bf(ja, ib) +
@@ -664,18 +675,20 @@ struct loop_case_1 {
   }
 };
 
-bool withTemplateLoopUnrolling_1(const Matrix3f& B, const Vec3f& T,
-                                 const Vec3f& a, const Vec3f& b,
-                                 const FCL_REAL& breakDistance2,
-                                 FCL_REAL& squaredLowerBoundDistance) {
+bool withTemplateLoopUnrolling_1(const Matrix3f &B, const Vec3f &T,
+                                 const Vec3f &a, const Vec3f &b,
+                                 const FCL_REAL &breakDistance2,
+                                 FCL_REAL &squaredLowerBoundDistance) {
   Matrix3f Bf(B.cwiseAbs());
 
   // Corner of b axis aligned bounding box the closest to the origin
   squaredLowerBoundDistance = _computeDistanceForCase1(T, a, b, Bf);
-  if (squaredLowerBoundDistance > breakDistance2) return true;
+  if (squaredLowerBoundDistance > breakDistance2)
+    return true;
 
   squaredLowerBoundDistance = _computeDistanceForCase2(B, T, a, b, Bf);
-  if (squaredLowerBoundDistance > breakDistance2) return true;
+  if (squaredLowerBoundDistance > breakDistance2)
+    return true;
 
   // Ai x Bj
   if (loop_case_1<0, 0>::run(B, T, a, b, Bf, breakDistance2,
@@ -713,10 +726,10 @@ bool withTemplateLoopUnrolling_1(const Matrix3f& B, const Vec3f& T,
 
 template <int ib, int jb = (ib + 1) % 3, int kb = (ib + 2) % 3>
 struct loop_case_2 {
-  static inline bool run(int ia, int ja, int ka, const Matrix3f& B,
-                         const Vec3f& T, const Vec3f& a, const Vec3f& b,
-                         const Matrix3f& Bf, const FCL_REAL& breakDistance2,
-                         FCL_REAL& squaredLowerBoundDistance) {
+  static inline bool run(int ia, int ja, int ka, const Matrix3f &B,
+                         const Vec3f &T, const Vec3f &a, const Vec3f &b,
+                         const Matrix3f &Bf, const FCL_REAL &breakDistance2,
+                         FCL_REAL &squaredLowerBoundDistance) {
     const FCL_REAL s = T[ka] * B(ja, ib) - T[ja] * B(ka, ib);
 
     const FCL_REAL diff = fabs(s) - (a[ja] * Bf(ka, ib) + a[ka] * Bf(ja, ib) +
@@ -744,18 +757,20 @@ struct loop_case_2 {
   }
 };
 
-bool withPartialTemplateLoopUnrolling_1(const Matrix3f& B, const Vec3f& T,
-                                        const Vec3f& a, const Vec3f& b,
-                                        const FCL_REAL& breakDistance2,
-                                        FCL_REAL& squaredLowerBoundDistance) {
+bool withPartialTemplateLoopUnrolling_1(const Matrix3f &B, const Vec3f &T,
+                                        const Vec3f &a, const Vec3f &b,
+                                        const FCL_REAL &breakDistance2,
+                                        FCL_REAL &squaredLowerBoundDistance) {
   Matrix3f Bf(B.cwiseAbs());
 
   // Corner of b axis aligned bounding box the closest to the origin
   squaredLowerBoundDistance = _computeDistanceForCase1(T, a, b, Bf);
-  if (squaredLowerBoundDistance > breakDistance2) return true;
+  if (squaredLowerBoundDistance > breakDistance2)
+    return true;
 
   squaredLowerBoundDistance = _computeDistanceForCase2(B, T, a, b, Bf);
-  if (squaredLowerBoundDistance > breakDistance2) return true;
+  if (squaredLowerBoundDistance > breakDistance2)
+    return true;
 
   // Ai x Bj
   int ja = 1, ka = 2;
@@ -777,9 +792,9 @@ bool withPartialTemplateLoopUnrolling_1(const Matrix3f& B, const Vec3f& T,
 }
 
 // ------------------------ 5 --------------------------------------
-bool originalWithLowerBound(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
-                            const Vec3f& b, const FCL_REAL& breakDistance2,
-                            FCL_REAL& squaredLowerBoundDistance) {
+bool originalWithLowerBound(const Matrix3f &B, const Vec3f &T, const Vec3f &a,
+                            const Vec3f &b, const FCL_REAL &breakDistance2,
+                            FCL_REAL &squaredLowerBoundDistance) {
   FCL_REAL t, s;
   FCL_REAL diff;
 
@@ -812,7 +827,8 @@ bool originalWithLowerBound(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
     squaredLowerBoundDistance += diff * diff;
   }
 
-  if (squaredLowerBoundDistance > breakDistance2) return true;
+  if (squaredLowerBoundDistance > breakDistance2)
+    return true;
 
   squaredLowerBoundDistance = 0;
 
@@ -843,7 +859,8 @@ bool originalWithLowerBound(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
     squaredLowerBoundDistance += diff * diff;
   }
 
-  if (squaredLowerBoundDistance > breakDistance2) return true;
+  if (squaredLowerBoundDistance > breakDistance2)
+    return true;
 
   // A0 x B0
   s = T[2] * B(1, 0) - T[1] * B(2, 0);
@@ -998,9 +1015,9 @@ bool originalWithLowerBound(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
 }
 
 // ------------------------ 6 --------------------------------------
-bool originalWithNoLowerBound(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
-                              const Vec3f& b, const FCL_REAL&,
-                              FCL_REAL& squaredLowerBoundDistance) {
+bool originalWithNoLowerBound(const Matrix3f &B, const Vec3f &T, const Vec3f &a,
+                              const Vec3f &b, const FCL_REAL &,
+                              FCL_REAL &squaredLowerBoundDistance) {
   FCL_REAL t, s;
   const FCL_REAL reps = 1e-6;
 
@@ -1015,7 +1032,8 @@ bool originalWithNoLowerBound(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
   t = ((T[0] < 0.0) ? -T[0] : T[0]);
 
   // if(t > (a[0] + Bf.dotX(b)))
-  if (t > (a[0] + Bf.row(0).dot(b))) return true;
+  if (t > (a[0] + Bf.row(0).dot(b)))
+    return true;
 
   // B1 x B2 = B0
   // s =  B.transposeDotX(T);
@@ -1023,19 +1041,22 @@ bool originalWithNoLowerBound(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
   t = ((s < 0.0) ? -s : s);
 
   // if(t > (b[0] + Bf.transposeDotX(a)))
-  if (t > (b[0] + Bf.col(0).dot(a))) return true;
+  if (t > (b[0] + Bf.col(0).dot(a)))
+    return true;
 
   // A2 x A0 = A1
   t = ((T[1] < 0.0) ? -T[1] : T[1]);
 
   // if(t > (a[1] + Bf.dotY(b)))
-  if (t > (a[1] + Bf.row(1).dot(b))) return true;
+  if (t > (a[1] + Bf.row(1).dot(b)))
+    return true;
 
   // A0 x A1 = A2
   t = ((T[2] < 0.0) ? -T[2] : T[2]);
 
   // if(t > (a[2] + Bf.dotZ(b)))
-  if (t > (a[2] + Bf.row(2).dot(b))) return true;
+  if (t > (a[2] + Bf.row(2).dot(b)))
+    return true;
 
   // B2 x B0 = B1
   // s = B.transposeDotY(T);
@@ -1043,7 +1064,8 @@ bool originalWithNoLowerBound(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
   t = ((s < 0.0) ? -s : s);
 
   // if(t > (b[1] + Bf.transposeDotY(a)))
-  if (t > (b[1] + Bf.col(1).dot(a))) return true;
+  if (t > (b[1] + Bf.col(1).dot(a)))
+    return true;
 
   // B0 x B1 = B2
   // s = B.transposeDotZ(T);
@@ -1051,7 +1073,8 @@ bool originalWithNoLowerBound(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
   t = ((s < 0.0) ? -s : s);
 
   // if(t > (b[2] + Bf.transposeDotZ(a)))
-  if (t > (b[2] + Bf.col(2).dot(a))) return true;
+  if (t > (b[2] + Bf.col(2).dot(a)))
+    return true;
 
   // A0 x B0
   s = T[2] * B(1, 0) - T[1] * B(2, 0);
@@ -1127,7 +1150,7 @@ bool originalWithNoLowerBound(const Matrix3f& B, const Vec3f& T, const Vec3f& a,
 
   return false;
 }
-}  // namespace obbDisjoint_impls
+} // namespace obbDisjoint_impls
 
 struct BenchmarkResult {
   /// The test ID:
@@ -1139,7 +1162,7 @@ struct BenchmarkResult {
   duration_type duration[NB_METHODS];
   bool failure;
 
-  static std::ostream& headers(std::ostream& os) {
+  static std::ostream &headers(std::ostream &os) {
     const std::string unit = " (us)";
     os << "separating axis" << sep << "distance lower bound" << sep
        << "distance" << sep << "failure" << sep << "Runtime Loop" << unit << sep
@@ -1150,12 +1173,12 @@ struct BenchmarkResult {
     return os;
   }
 
-  std::ostream& print(std::ostream& os) const {
+  std::ostream &print(std::ostream &os) const {
     os << ifId << sep << std::sqrt(squaredLowerBoundDistance) << sep << distance
        << sep << failure;
     for (int i = 0; i < NB_METHODS; ++i)
       os << sep
-         << static_cast<double>(
+         << static_cast<FCL_REAL>(
                 std::chrono::duration_cast<std::chrono::nanoseconds>(
                     duration[i])
                     .count()) *
@@ -1164,13 +1187,13 @@ struct BenchmarkResult {
   }
 };
 
-std::ostream& operator<<(std::ostream& os, const BenchmarkResult& br) {
+std::ostream &operator<<(std::ostream &os, const BenchmarkResult &br) {
   return br.print(os);
 }
 
-BenchmarkResult benchmark_obb_case(const Matrix3f& B, const Vec3f& T,
-                                   const Vec3f& a, const Vec3f& b,
-                                   const CollisionRequest& request,
+BenchmarkResult benchmark_obb_case(const Matrix3f &B, const Vec3f &T,
+                                   const Vec3f &a, const Vec3f &b,
+                                   const CollisionRequest &request,
                                    std::size_t N) {
   const FCL_REAL breakDistance(request.break_distance +
                                request.security_margin);
@@ -1274,7 +1297,7 @@ BenchmarkResult benchmark_obb_case(const Matrix3f& B, const Vec3f& T,
   return result;
 }
 
-std::size_t obb_overlap_and_lower_bound_distance(std::ostream* output) {
+std::size_t obb_overlap_and_lower_bound_distance(std::ostream *output) {
   std::size_t nbFailure = 0;
 
   // Create two OBBs axis
@@ -1283,7 +1306,7 @@ std::size_t obb_overlap_and_lower_bound_distance(std::ostream* output) {
   Vec3f T;
   CollisionRequest request;
 
-#ifndef NDEBUG  // if debug mode
+#ifndef NDEBUG // if debug mode
   static const size_t nbRandomOBB = 10;
   static const size_t nbTransformPerOBB = 10;
   static const size_t nbRunForTimeMeas = 10;
@@ -1294,7 +1317,8 @@ std::size_t obb_overlap_and_lower_bound_distance(std::ostream* output) {
 #endif
   static const FCL_REAL extentNorm = 1.;
 
-  if (output != NULL) *output << BenchmarkResult::headers << '\n';
+  if (output != NULL)
+    *output << BenchmarkResult::headers << '\n';
 
   BenchmarkResult result;
   for (std::size_t iobb = 0; iobb < nbRandomOBB; ++iobb) {
@@ -1302,15 +1326,17 @@ std::size_t obb_overlap_and_lower_bound_distance(std::ostream* output) {
     for (std::size_t itf = 0; itf < nbTransformPerOBB; ++itf) {
       randomTransform(B, T, a, b, extentNorm);
       result = benchmark_obb_case(B, T, a, b, request, nbRunForTimeMeas);
-      if (output != NULL) *output << result << '\n';
-      if (result.failure) nbFailure++;
+      if (output != NULL)
+        *output << result << '\n';
+      if (result.failure)
+        nbFailure++;
     }
   }
   return nbFailure;
 }
 
-int main(int argc, char** argv) {
-  std::ostream* output = NULL;
+int main(int argc, char **argv) {
+  std::ostream *output = NULL;
   if (argc > 1 && strcmp(argv[1], "--generate-output") == 0) {
     output = &std::cout;
   }
@@ -1324,6 +1350,7 @@ int main(int argc, char** argv) {
                "\n";
 
   std::size_t nbFailure = obb_overlap_and_lower_bound_distance(output);
-  if (nbFailure > INT_MAX) return INT_MAX;
+  if (nbFailure > INT_MAX)
+    return INT_MAX;
   return (int)nbFailure;
 }

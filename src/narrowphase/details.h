@@ -340,8 +340,8 @@ inline bool sphereTriangleIntersect(const Sphere &s, const Transform3f &tf1,
   FCL_REAL min_distance_sqr, distance_sqr;
 
   if (distance_from_plane < 0) {
-    distance_from_plane *= FCL_REAL(-1);
-    normal *= FCL_REAL(-1);
+    distance_from_plane *= -1;
+    normal *= -1;
   }
 
   if (projectInTriangle(P1, P2, P3, normal, center)) {
@@ -561,7 +561,7 @@ inline bool sphereTriangleDistance(const Sphere &sp, const Transform3f &tf,
     return true;
   } else {
     if (dist)
-      *dist = FCL_REAL(-1);
+      *dist = -1;
     return false;
   }
 }
@@ -648,7 +648,7 @@ static unsigned int intersectRectQuad2(FCL_REAL h[2], FCL_REAL p[8],
   FCL_REAL *r = ret;
   for (int dir = 0; dir <= 1; ++dir) {
     // direction notation: xy[0] = x axis, xy[1] = y axis
-    for (int sign = FCL_REAL(-1); sign <= 1; sign += 2) {
+    for (int sign = -1; sign <= 1; sign += 2) {
       // chop q along the line xy[dir] = sign*h[dir]
       FCL_REAL *pq = q;
       FCL_REAL *pr = r;
@@ -803,7 +803,7 @@ inline unsigned int boxBox2(const Vec3f &halfSide1, const Matrix3f &R1,
   // set to a vector relative to body 1. invert_normal is 1 if the sign of
   // the normal should be flipped.
 
-  int best_col_id = FCL_REAL(-1);
+  int best_col_id = -1;
   const Matrix3f *normalR = 0;
   FCL_REAL tmp = 0;
 
@@ -917,7 +917,7 @@ inline unsigned int boxBox2(const Vec3f &halfSide1, const Matrix3f &R1,
     s2 /= l;
     if (s2 * fudge_factor > s) {
       s = s2;
-      best_col_id = FCL_REAL(-1);
+      best_col_id = -1;
       normalC = n / l;
       invert_normal = (tmp < 0);
       code = 7;
@@ -937,7 +937,7 @@ inline unsigned int boxBox2(const Vec3f &halfSide1, const Matrix3f &R1,
     s2 /= l;
     if (s2 * fudge_factor > s) {
       s = s2;
-      best_col_id = FCL_REAL(-1);
+      best_col_id = -1;
       normalC = n / l;
       invert_normal = (tmp < 0);
       code = 8;
@@ -957,7 +957,7 @@ inline unsigned int boxBox2(const Vec3f &halfSide1, const Matrix3f &R1,
     s2 /= l;
     if (s2 * fudge_factor > s) {
       s = s2;
-      best_col_id = FCL_REAL(-1);
+      best_col_id = -1;
       normalC = n / l;
       invert_normal = (tmp < 0);
       code = 9;
@@ -978,7 +978,7 @@ inline unsigned int boxBox2(const Vec3f &halfSide1, const Matrix3f &R1,
     s2 /= l;
     if (s2 * fudge_factor > s) {
       s = s2;
-      best_col_id = FCL_REAL(-1);
+      best_col_id = -1;
       normalC = n / l;
       invert_normal = (tmp < 0);
       code = 10;
@@ -998,7 +998,7 @@ inline unsigned int boxBox2(const Vec3f &halfSide1, const Matrix3f &R1,
     s2 /= l;
     if (s2 * fudge_factor > s) {
       s = s2;
-      best_col_id = FCL_REAL(-1);
+      best_col_id = -1;
       normalC = n / l;
       invert_normal = (tmp < 0);
       code = 11;
@@ -1018,7 +1018,7 @@ inline unsigned int boxBox2(const Vec3f &halfSide1, const Matrix3f &R1,
     s2 /= l;
     if (s2 * fudge_factor > s) {
       s = s2;
-      best_col_id = FCL_REAL(-1);
+      best_col_id = -1;
       normalC = n / l;
       invert_normal = (tmp < 0);
       code = 12;
@@ -1039,7 +1039,7 @@ inline unsigned int boxBox2(const Vec3f &halfSide1, const Matrix3f &R1,
     s2 /= l;
     if (s2 * fudge_factor > s) {
       s = s2;
-      best_col_id = FCL_REAL(-1);
+      best_col_id = -1;
       normalC = n / l;
       invert_normal = (tmp < 0);
       code = 13;
@@ -1059,7 +1059,7 @@ inline unsigned int boxBox2(const Vec3f &halfSide1, const Matrix3f &R1,
     s2 /= l;
     if (s2 * fudge_factor > s) {
       s = s2;
-      best_col_id = FCL_REAL(-1);
+      best_col_id = -1;
       normalC = n / l;
       invert_normal = (tmp < 0);
       code = 14;
@@ -1079,7 +1079,7 @@ inline unsigned int boxBox2(const Vec3f &halfSide1, const Matrix3f &R1,
     s2 /= l;
     if (s2 * fudge_factor > s) {
       s = s2;
-      best_col_id = FCL_REAL(-1);
+      best_col_id = -1;
       normalC = n / l;
       invert_normal = (tmp < 0);
       code = 15;
@@ -1093,7 +1093,7 @@ inline unsigned int boxBox2(const Vec3f &halfSide1, const Matrix3f &R1,
 
   // if we get to this point, the boxes interpenetrate. compute the normal
   // in global coordinates.
-  if (best_col_id != FCL_REAL(-1))
+  if (best_col_id != -1)
     normal = normalR->col(best_col_id);
   else
     normal.noalias() = R1 * normalC;
@@ -1112,7 +1112,7 @@ inline unsigned int boxBox2(const Vec3f &halfSide1, const Matrix3f &R1,
     FCL_REAL sign;
 
     for (int j = 0; j < 3; ++j) {
-      sign = (R1.col(j).dot(normal) > 0) ? 1 : FCL_REAL(-1);
+      sign = (R1.col(j).dot(normal) > 0) ? 1 : -1;
       pa += R1.col(j) * (A[j] * sign);
     }
 
@@ -1120,7 +1120,7 @@ inline unsigned int boxBox2(const Vec3f &halfSide1, const Matrix3f &R1,
     Vec3f pb(T2);
 
     for (int j = 0; j < 3; ++j) {
-      sign = (R2.col(j).dot(normal) > 0) ? FCL_REAL(-1) : 1;
+      sign = (R2.col(j).dot(normal) > 0) ? -1 : 1;
       pb += R2.col(j) * (B[j] * sign);
     }
 
@@ -1453,15 +1453,15 @@ inline bool boxHalfspaceIntersect(const Box &s1, const Transform3f &tf1,
 
   if (std::abs(Q[0] - 1) < halfspaceIntersectTolerance<FCL_REAL>() ||
       std::abs(Q[0] + 1) < halfspaceIntersectTolerance<FCL_REAL>()) {
-    sign = (A[0] > 0) ? FCL_REAL(-1) : 1;
+    sign = (A[0] > 0) ? -1 : 1;
     p += R.col(0) * (s1.halfSide[0] * sign);
   } else if (std::abs(Q[1] - 1) < halfspaceIntersectTolerance<FCL_REAL>() ||
              std::abs(Q[1] + 1) < halfspaceIntersectTolerance<FCL_REAL>()) {
-    sign = (A[1] > 0) ? FCL_REAL(-1) : 1;
+    sign = (A[1] > 0) ? -1 : 1;
     p += R.col(1) * (s1.halfSide[1] * sign);
   } else if (std::abs(Q[2] - 1) < halfspaceIntersectTolerance<FCL_REAL>() ||
              std::abs(Q[2] + 1) < halfspaceIntersectTolerance<FCL_REAL>()) {
-    sign = (A[2] > 0) ? FCL_REAL(-1) : 1;
+    sign = (A[2] > 0) ? -1 : 1;
     p += R.col(2) * (s1.halfSide[2] * sign);
   } else {
     p.noalias() += R * (A.array() > 0).select(-s1.halfSide, s1.halfSide);
@@ -1501,7 +1501,7 @@ inline bool capsuleHalfspaceIntersect(const Capsule &s1, const Transform3f &tf1,
     p1 = p2 = T + new_s2.n * (-FCL_REAL(0.5) * distance - s1.radius);
     return true;
   } else {
-    int sign = (cosa > 0) ? FCL_REAL(-1) : 1;
+    int sign = (cosa > 0) ? -1 : 1;
     // closest capsule vertex to halfspace if no collision,
     // or deeper inside halspace if collision
     Vec3f p = T + dir_z * (s1.halfLength * sign);
@@ -1558,7 +1558,7 @@ inline bool cylinderHalfspaceIntersect(const Cylinder &s1,
       C *= s;
     }
 
-    int sign = (cosa > 0) ? FCL_REAL(-1) : 1;
+    int sign = (cosa > 0) ? -1 : 1;
     // deepest point
     Vec3f p = T + dir_z * (s1.halfLength * sign) + C;
     distance = new_s2.signedDistance(p);
@@ -1911,7 +1911,7 @@ inline bool boxPlaneIntersect(const Box &s1, const Transform3f &tf1,
     p1 = T;
     for (Vec3f::Index i = 0; i < 3; ++i) {
       // scalar product between box axis and plane normal
-      FCL_REAL alpha((positive ? 1 : FCL_REAL(-1)) * R.col(i).dot(new_s2.n));
+      FCL_REAL alpha((positive ? 1 : -1) * R.col(i).dot(new_s2.n));
       if (alpha > eps) {
         p1 -= R.col(i) * s1.halfSide[i];
       } else if (alpha < -eps) {
@@ -1929,7 +1929,7 @@ inline bool boxPlaneIntersect(const Box &s1, const Transform3f &tf1,
   // when center is on the positive side of the plane, use a, b, c
   // make (R^T n) (a v1 + b v2 + c v3) the minimum
   // otherwise, use a, b, c make (R^T n) (a v1 + b v2 + c v3) the maximum
-  int sign = (signed_dist > 0) ? 1 : FCL_REAL(-1);
+  int sign = (signed_dist > 0) ? 1 : -1;
 
   if (std::abs(Q[0] - 1) < planeIntersectTolerance<FCL_REAL>() ||
       std::abs(Q[0] + 1) < planeIntersectTolerance<FCL_REAL>()) {
@@ -1976,7 +1976,7 @@ inline bool boxSphereDistance(const Box &b, const Transform3f &tfb,
 
   bool outside = false;
   const Vec3f os_in_b_frame(Rb.transpose() * (os - ob));
-  int axis = FCL_REAL(-1);
+  int axis = -1;
   FCL_REAL min_d = (std::numeric_limits<FCL_REAL>::max)();
   for (int i = 0; i < 3; ++i) {
     FCL_REAL facedist;
@@ -2492,7 +2492,7 @@ inline bool planeIntersect(const Plane &s1, const Transform3f &tf1,
   FCL_REAL a = (new_s1.n).dot(new_s2.n);
   if (a == 1 && new_s1.d != new_s2.d)
     return false;
-  if (a == FCL_REAL(-1) && new_s1.d != -new_s2.d)
+  if (a == -1 && new_s1.d != -new_s2.d)
     return false;
 
   return true;

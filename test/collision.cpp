@@ -40,24 +40,24 @@
 #define BOOST_TEST_MODULE FCL_COLLISION
 #include <boost/test/included/unit_test.hpp>
 
-#include <fstream>
 #include <boost/assign/list_of.hpp>
+#include <fstream>
 
-#include <hpp/fcl/collision.h>
 #include <hpp/fcl/BV/BV.h>
-#include <hpp/fcl/shape/geometric_shapes.h>
-#include <hpp/fcl/narrowphase/narrowphase.h>
+#include <hpp/fcl/collision.h>
 #include <hpp/fcl/mesh_loader/assimp.h>
+#include <hpp/fcl/narrowphase/narrowphase.h>
+#include <hpp/fcl/shape/geometric_shapes.h>
 
-#include <hpp/fcl/internal/traversal_node_bvhs.h>
-#include <hpp/fcl/internal/traversal_node_setup.h>
 #include "../src/collision_node.h"
 #include <hpp/fcl/internal/BV_splitter.h>
+#include <hpp/fcl/internal/traversal_node_bvhs.h>
+#include <hpp/fcl/internal/traversal_node_setup.h>
 
 #include <hpp/fcl/timings.h>
 
-#include "utility.h"
 #include "fcl_resources/config.h"
+#include "utility.h"
 
 using namespace hpp::fcl;
 namespace utf = boost::unit_test::framework;
@@ -87,8 +87,8 @@ BOOST_AUTO_TEST_CASE(OBB_Box_test) {
 
   for (std::size_t i = 0; i < transforms.size(); ++i) {
     AABB aabb;
-    aabb.min_ = aabb1.min_ * 0.5;
-    aabb.max_ = aabb1.max_ * 0.5;
+    aabb.min_ = aabb1.min_ * FCL_REAL(0.5);
+    aabb.max_ = aabb1.max_ * FCL_REAL(0.5);
 
     OBB obb2;
     convertBV(aabb, transforms[i], obb2);
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE(OBB_shape_test) {
   generateRandomTransforms(extents, transforms, n);
 
   for (std::size_t i = 0; i < transforms.size(); ++i) {
-    FCL_REAL len = (aabb1.max_[0] - aabb1.min_[0]) * 0.5;
+    FCL_REAL len = (aabb1.max_[0] - aabb1.min_[0]) * FCL_REAL(0.5);
     OBB obb2;
     GJKSolver solver;
     FCL_REAL distance;
@@ -193,8 +193,8 @@ BOOST_AUTO_TEST_CASE(OBB_AABB_test) {
 
   for (std::size_t i = 0; i < transforms.size(); ++i) {
     AABB aabb;
-    aabb.min_ = aabb1.min_ * 0.5;
-    aabb.max_ = aabb1.max_ * 0.5;
+    aabb.min_ = aabb1.min_ * FCL_REAL(0.5);
+    aabb.max_ = aabb1.max_ * FCL_REAL(0.5);
 
     AABB aabb2 = translate(aabb, transforms[i].getTranslation());
 
@@ -217,23 +217,23 @@ BOOST_AUTO_TEST_CASE(OBB_AABB_test) {
   std::cout << std::endl;
 }
 
-std::ostream* bench_stream = NULL;
+std::ostream *bench_stream = NULL;
 bool bs_nl = true;
 bool bs_hp = false;
-#define BENCHMARK(stream)                           \
-  if (bench_stream != NULL) {                       \
-    *bench_stream << (bs_nl ? "" : ", ") << stream; \
-    bs_nl = false;                                  \
+#define BENCHMARK(stream)                                                      \
+  if (bench_stream != NULL) {                                                  \
+    *bench_stream << (bs_nl ? "" : ", ") << stream;                            \
+    bs_nl = false;                                                             \
   }
-#define BENCHMARK_HEADER(stream) \
-  if (!bs_hp) {                  \
-    BENCHMARK(stream)            \
+#define BENCHMARK_HEADER(stream)                                               \
+  if (!bs_hp) {                                                                \
+    BENCHMARK(stream)                                                          \
   }
-#define BENCHMARK_NEXT()                \
-  if (bench_stream != NULL && !bs_nl) { \
-    *bench_stream << '\n';              \
-    bs_nl = true;                       \
-    bs_hp = true;                       \
+#define BENCHMARK_NEXT()                                                       \
+  if (bench_stream != NULL && !bs_nl) {                                        \
+    *bench_stream << '\n';                                                     \
+    bs_nl = true;                                                              \
+    bs_hp = true;                                                              \
   }
 
 typedef std::vector<Contact> Contacts_t;
@@ -242,13 +242,9 @@ typedef boost::mpl::vector<OBB, RSS, KDOP<24>, KDOP<18>, KDOP<16>, kIOS, OBBRSS>
 std::vector<SplitMethodType> splitMethods = boost::assign::list_of(
     SPLIT_METHOD_MEAN)(SPLIT_METHOD_MEDIAN)(SPLIT_METHOD_BV_CENTER);
 
-#define BV_STR_SPECIALIZATION(bv) \
-  template <>                     \
-  const char* str<bv>() {         \
-    return #bv;                   \
-  }
-template <typename BV>
-const char* str();
+#define BV_STR_SPECIALIZATION(bv)                                              \
+  template <> const char *str<bv>() { return #bv; }
+template <typename BV> const char *str();
 BV_STR_SPECIALIZATION(AABB)
 BV_STR_SPECIALIZATION(OBB)
 BV_STR_SPECIALIZATION(RSS)
@@ -258,8 +254,7 @@ BV_STR_SPECIALIZATION(KDOP<16>)
 BV_STR_SPECIALIZATION(kIOS)
 BV_STR_SPECIALIZATION(OBBRSS)
 
-template <typename T>
-struct wrap {};
+template <typename T> struct wrap {};
 
 struct base_traits {
   enum { IS_IMPLEMENTED = true };
@@ -281,16 +276,12 @@ struct traits<KDOP<N>, Oriented, recursive> : base_traits {
 };
 
 struct mesh_mesh_run_test {
-  mesh_mesh_run_test(const std::vector<Transform3f>& _transforms,
+  mesh_mesh_run_test(const std::vector<Transform3f> &_transforms,
                      const CollisionRequest _request)
-      : transforms(_transforms),
-        request(_request),
-        enable_statistics(false),
-        benchmark(false),
-        isInit(false),
-        indent(0) {}
+      : transforms(_transforms), request(_request), enable_statistics(false),
+        benchmark(false), isInit(false), indent(0) {}
 
-  const std::vector<Transform3f>& transforms;
+  const std::vector<Transform3f> &transforms;
   const CollisionRequest request;
   bool enable_statistics, benchmark;
   std::vector<Contacts_t> contacts;
@@ -299,9 +290,9 @@ struct mesh_mesh_run_test {
 
   int indent;
 
-  const char* getindent() {
+  const char *getindent() {
     assert(indent < 9);
-    static const char* t[] = {"",
+    static const char *t[] = {"",
                               "\t",
                               "\t\t",
                               "\t\t\t",
@@ -314,9 +305,9 @@ struct mesh_mesh_run_test {
   }
 
   template <typename BV>
-  void query(const std::vector<Transform3f>& transforms,
+  void query(const std::vector<Transform3f> &transforms,
              SplitMethodType splitMethod, const CollisionRequest request,
-             std::vector<Contacts_t>& contacts) {
+             std::vector<Contacts_t> &contacts) {
     BENCHMARK_HEADER("BV");
     BENCHMARK_HEADER("oriented");
     BENCHMARK_HEADER("Split method");
@@ -352,7 +343,7 @@ struct mesh_mesh_run_test {
       ++indent;
 
       for (std::size_t i = 0; i < transforms.size(); ++i) {
-        const Transform3f& tf1 = transforms[i];
+        const Transform3f &tf1 = transforms[i];
         timer.start();
 
         CollisionResult local_result;
@@ -404,9 +395,9 @@ struct mesh_mesh_run_test {
             request);
         node.enable_statistics = enable_statistics;
 
-        BVH_t* model1_tmp = new BVH_t(*model1);
+        BVH_t *model1_tmp = new BVH_t(*model1);
         Transform3f tf1_tmp = tf1;
-        BVH_t* model2_tmp = new BVH_t(*model2);
+        BVH_t *model2_tmp = new BVH_t(*model2);
         Transform3f tf2_tmp = tf2;
 
         bool success = initialize(node, *model1_tmp, tf1_tmp, *model2_tmp,
@@ -497,12 +488,12 @@ struct mesh_mesh_run_test {
       if (!in_ref_but_not_in_i.empty()) {
         for (std::size_t j = 0; j < in_ref_but_not_in_i.size(); ++j) {
           if (warn) {
-            BOOST_WARN_MESSAGE(
-                false, "Missed contacts: " << in_ref_but_not_in_i[j].b1 << ", "
-                                           << in_ref_but_not_in_i[j].b2);
+            BOOST_WARN_MESSAGE(false, "Missed contacts: "
+                                          << in_ref_but_not_in_i[j].b1 << ", "
+                                          << in_ref_but_not_in_i[j].b2);
           } else {
-            BOOST_CHECK_MESSAGE(
-                false, "Missed contacts: " << in_ref_but_not_in_i[j].b1 << ", "
+            BOOST_CHECK_MESSAGE(false, "Missed contacts: "
+                                           << in_ref_but_not_in_i[j].b1 << ", "
                                            << in_ref_but_not_in_i[j].b2);
           }
         }
@@ -517,22 +508,22 @@ struct mesh_mesh_run_test {
       if (!in_i_but_not_in_ref.empty()) {
         for (std::size_t j = 0; j < in_i_but_not_in_ref.size(); ++j) {
           if (warn) {
-            BOOST_WARN_MESSAGE(
-                false, "False contacts: " << in_i_but_not_in_ref[j].b1 << ", "
+            BOOST_WARN_MESSAGE(false, "False contacts: "
+                                          << in_i_but_not_in_ref[j].b1 << ", "
                                           << in_i_but_not_in_ref[j].b2);
           } else {
-            BOOST_CHECK_MESSAGE(
-                false, "False contacts: " << in_i_but_not_in_ref[j].b1 << ", "
-                                          << in_i_but_not_in_ref[j].b2);
+            BOOST_CHECK_MESSAGE(false, "False contacts: "
+                                           << in_i_but_not_in_ref[j].b1 << ", "
+                                           << in_i_but_not_in_ref[j].b2);
           }
         }
       }
     }
   }
 
-  template <typename BV>
-  void check() {
-    if (benchmark) return;
+  template <typename BV> void check() {
+    if (benchmark)
+      return;
     const std::size_t N = transforms.size();
 
     BOOST_REQUIRE_EQUAL(contacts.size(), 3 * N);
@@ -559,14 +550,14 @@ struct mesh_mesh_run_test {
     }
   }
 
-  template <typename BV>
-  void operator()(wrap<BV>) {
+  template <typename BV> void operator()(wrap<BV>) {
     for (std::size_t i = 0; i < splitMethods.size(); ++i) {
       BOOST_TEST_MESSAGE(getindent() << "splitMethod: " << splitMethods[i]);
       ++indent;
       query<BV>(transforms, splitMethods[i], request,
                 (isInit ? contacts : contacts_ref));
-      if (isInit) check<BV>();
+      if (isInit)
+        check<BV>();
       isInit = true;
       --indent;
     }
@@ -592,7 +583,7 @@ struct mesh_mesh_run_test {
 BOOST_AUTO_TEST_CASE(mesh_mesh) {
   std::vector<Transform3f> transforms;
   FCL_REAL extents[] = {-3000, -3000, 0, 3000, 3000, 3000};
-#ifndef NDEBUG  // if debug mode
+#ifndef NDEBUG // if debug mode
   std::size_t n = 1;
 #else
   std::size_t n = 10;
@@ -612,7 +603,7 @@ BOOST_AUTO_TEST_CASE(mesh_mesh) {
   mesh_mesh_run_test runner(
       transforms, CollisionRequest(CONTACT, (size_t)num_max_contacts));
   runner.enable_statistics = true;
-  boost::mpl::for_each<BVs_t, wrap<boost::mpl::placeholders::_1> >(runner);
+  boost::mpl::for_each<BVs_t, wrap<boost::mpl::placeholders::_1>>(runner);
 }
 
 BOOST_AUTO_TEST_CASE(mesh_mesh_benchmark) {
@@ -646,14 +637,14 @@ BOOST_AUTO_TEST_CASE(mesh_mesh_benchmark) {
   mesh_mesh_run_test runner1(transforms, CollisionRequest());
   runner1.enable_statistics = false;
   runner1.benchmark = true;
-  boost::mpl::for_each<BVs_t, wrap<boost::mpl::placeholders::_1> >(runner1);
+  boost::mpl::for_each<BVs_t, wrap<boost::mpl::placeholders::_1>>(runner1);
 
   // with lower bound.
   mesh_mesh_run_test runner2(transforms,
                              CollisionRequest(DISTANCE_LOWER_BOUND, 1));
   runner2.enable_statistics = false;
   runner2.benchmark = true;
-  boost::mpl::for_each<BVs_t, wrap<boost::mpl::placeholders::_1> >(runner2);
+  boost::mpl::for_each<BVs_t, wrap<boost::mpl::placeholders::_1>>(runner2);
 
   bench_stream = NULL;
   ofs.close();

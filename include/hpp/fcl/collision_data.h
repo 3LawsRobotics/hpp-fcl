@@ -60,13 +60,13 @@ struct HPP_FCL_DLLAPI Contact {
 
   /// @brief contact primitive in object 1
   /// if object 1 is mesh or point cloud, it is the triangle or point id
-  /// if object 1 is geometry shape, it is NONE (FCL_REAL(-1)),
+  /// if object 1 is geometry shape, it is NONE (-1),
   /// if object 1 is octree, it is the id of the cell
   int b1;
 
   /// @brief contact primitive in object 2
   /// if object 2 is mesh or point cloud, it is the triangle or point id
-  /// if object 2 is geometry shape, it is NONE (FCL_REAL(-1)),
+  /// if object 2 is geometry shape, it is NONE (-1),
   /// if object 2 is octree, it is the id of the cell
   int b2;
 
@@ -80,7 +80,7 @@ struct HPP_FCL_DLLAPI Contact {
   FCL_REAL penetration_depth;
 
   /// @brief invalid contact primitive information
-  static const int NONE = FCL_REAL(-1);
+  static const int NONE = -1;
 
   /// @brief Default constructor
   Contact() : o1(NULL), o2(NULL), b1(NONE), b2(NONE) {}
@@ -198,8 +198,7 @@ struct HPP_FCL_DLLAPI QueryResult {
 
   QueryResult()
       : cached_gjk_guess(Vec3f::Zero()),
-        cached_support_func_guess(
-            support_func_guess_t::Constant(FCL_REAL(-1))) {}
+        cached_support_func_guess(support_func_guess_t::Constant(-1)) {}
 };
 
 inline void QueryRequest::updateGuess(const QueryResult &result) {
@@ -428,18 +427,18 @@ public:
 
   /// @brief information about the nearest point in object 1
   /// if object 1 is mesh or point cloud, it is the triangle or point id
-  /// if object 1 is geometry shape, it is NONE (FCL_REAL(-1)),
+  /// if object 1 is geometry shape, it is NONE (-1),
   /// if object 1 is octree, it is the id of the cell
   int b1;
 
   /// @brief information about the nearest point in object 2
   /// if object 2 is mesh or point cloud, it is the triangle or point id
-  /// if object 2 is geometry shape, it is NONE (FCL_REAL(-1)),
+  /// if object 2 is geometry shape, it is NONE (-1),
   /// if object 2 is octree, it is the id of the cell
   int b2;
 
   /// @brief invalid contact primitive information
-  static const int NONE = FCL_REAL(-1);
+  static const int NONE = -1;
 
   DistanceResult(
       FCL_REAL min_distance_ = (std::numeric_limits<FCL_REAL>::max)())

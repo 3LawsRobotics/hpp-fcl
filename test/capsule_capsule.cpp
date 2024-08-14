@@ -41,23 +41,22 @@
 #define CHECK_CLOSE_TO_0(x, eps) BOOST_CHECK_CLOSE((x + 1.0), (1.0), (eps))
 
 #include <cmath>
-#include <iostream>
-#include <hpp/fcl/distance.h>
-#include <hpp/fcl/collision.h>
-#include <hpp/fcl/math/transform.h>
 #include <hpp/fcl/collision.h>
 #include <hpp/fcl/collision_object.h>
+#include <hpp/fcl/distance.h>
+#include <hpp/fcl/math/transform.h>
 #include <hpp/fcl/shape/geometric_shapes.h>
+#include <iostream>
 
 #include "utility.h"
 
 using namespace hpp::fcl;
 
 BOOST_AUTO_TEST_CASE(collision_capsule_capsule_trivial) {
-  const double radius = 1.;
+  const FCL_REAL radius = 1.;
 
-  CollisionGeometryPtr_t c1(new Capsule(radius, 0.));
-  CollisionGeometryPtr_t c2(new Capsule(radius, 0.));
+  CollisionGeometryPtr_t c1(new Capsule(radius, FCL_REAL(0.)));
+  CollisionGeometryPtr_t c2(new Capsule(radius, FCL_REAL(0.)));
 
   CollisionGeometryPtr_t s1(new Sphere(radius));
   CollisionGeometryPtr_t s2(new Sphere(radius));
@@ -72,8 +71,8 @@ BOOST_AUTO_TEST_CASE(collision_capsule_capsule_trivial) {
   Transform3f tf2;
 
   for (int i = 0; i < num_tests; ++i) {
-    Eigen::Vector3d p1 = Eigen::Vector3d::Random() * (2. * radius);
-    Eigen::Vector3d p2 = Eigen::Vector3d::Random() * (2. * radius);
+    Eigen::Vector3d p1 = Eigen::Vector3d::Random() * (FCL_REAL(2.) * radius);
+    Eigen::Vector3d p2 = Eigen::Vector3d::Random() * (FCL_REAL(2.) * radius);
 
     Eigen::Matrix3d rot1 =
         Eigen::Quaterniond(Eigen::Vector4d::Random().normalized())
@@ -105,13 +104,14 @@ BOOST_AUTO_TEST_CASE(collision_capsule_capsule_trivial) {
     BOOST_CHECK_EQUAL(sphere_num_collisions, capsule_num_collisions);
     if (sphere_num_collisions == 0 && capsule_num_collisions == 0)
       BOOST_CHECK_CLOSE(sphere_collisionResult.distance_lower_bound,
-                        capsule_collisionResult.distance_lower_bound, 1e-6);
+                        capsule_collisionResult.distance_lower_bound,
+                        FCL_REAL(1e-6));
   }
 }
 
 BOOST_AUTO_TEST_CASE(collision_capsule_capsule_aligned) {
-  const double radius = 0.01;
-  const double length = 0.2;
+  const FCL_REAL radius = FCL_REAL(0.01);
+  const FCL_REAL length = FCL_REAL(0.2);
 
   CollisionGeometryPtr_t c1(new Capsule(radius, length));
   CollisionGeometryPtr_t c2(new Capsule(radius, length));
@@ -125,10 +125,10 @@ BOOST_AUTO_TEST_CASE(collision_capsule_capsule_aligned) {
   Transform3f tf2;
 
   Eigen::Vector3d p1 = Eigen::Vector3d::Zero();
-  Eigen::Vector3d p2_no_collision =
-      Eigen::Vector3d(0., 0.,
-                      2 * (length / 2. + radius) +
-                          1e-3);  // because capsule are along the Z axis
+  Eigen::Vector3d p2_no_collision = Eigen::Vector3d(
+      0., 0.,
+      2 * (length / 2. + radius) +
+          FCL_REAL(1e-3)); // because capsule are along the Z axis
 
   for (int i = 0; i < num_tests; ++i) {
     Eigen::Matrix3d rot =
@@ -153,8 +153,8 @@ BOOST_AUTO_TEST_CASE(collision_capsule_capsule_aligned) {
     BOOST_CHECK(capsule_num_collisions == 0);
   }
 
-  Eigen::Vector3d p2_with_collision =
-      Eigen::Vector3d(0., 0., std::min(length / 2., radius) * (1. - 1e-2));
+  Eigen::Vector3d p2_with_collision = Eigen::Vector3d(
+      0., 0., std::min(length / 2., radius) * (FCL_REAL(1.) - FCL_REAL(1e-2)));
   for (int i = 0; i < num_tests; ++i) {
     Eigen::Matrix3d rot =
         Eigen::Quaterniond(Eigen::Vector4d::Random().normalized())
@@ -178,7 +178,9 @@ BOOST_AUTO_TEST_CASE(collision_capsule_capsule_aligned) {
     BOOST_CHECK(capsule_num_collisions > 0);
   }
 
-  p2_no_collision = Eigen::Vector3d(0., 0., 2 * (length / 2. + radius) + 1e-3);
+  p2_no_collision =
+      Eigen::Vector3d(FCL_REAL(0.), FCL_REAL(0.),
+                      2 * (length / FCL_REAL(2.) + radius) + FCL_REAL(1e-3));
 
   Transform3f geom1_placement(Eigen::Matrix3d::Identity(),
                               Eigen::Vector3d::Zero());
@@ -209,7 +211,8 @@ BOOST_AUTO_TEST_CASE(collision_capsule_capsule_aligned) {
 
   //  p2_with_collision =
   //  Eigen::Vector3d(0.,0.,std::min(length/2.,radius)*(1.-1e-2));
-  p2_with_collision = Eigen::Vector3d(0., 0., 0.01);
+  p2_with_collision =
+      Eigen::Vector3d(FCL_REAL(0.), FCL_REAL(0.), FCL_REAL(0.01));
   geom2_placement.setTranslation(p2_with_collision);
 
   for (int i = 0; i < num_tests; ++i) {
@@ -241,7 +244,7 @@ BOOST_AUTO_TEST_CASE(distance_capsulecapsule_origin) {
   CollisionGeometryPtr_t s2(new Capsule(5, 10));
 
   Transform3f tf1;
-  Transform3f tf2(Vec3f(20.1, 0, 0));
+  Transform3f tf2(Vec3f(FCL_REAL(20.1), 0, 0));
 
   CollisionObject o1(s1, tf1);
   CollisionObject o2(s2, tf2);
@@ -259,7 +262,8 @@ BOOST_AUTO_TEST_CASE(distance_capsulecapsule_origin) {
             << ", p2 = " << distanceResult.nearest_points[1]
             << ", distance = " << distanceResult.min_distance << std::endl;
 
-  BOOST_CHECK_CLOSE(distanceResult.min_distance, 10.1, 1e-6);
+  BOOST_CHECK_CLOSE(distanceResult.min_distance, FCL_REAL(10.1),
+                    FCL_REAL(1e-6));
 }
 
 BOOST_AUTO_TEST_CASE(distance_capsulecapsule_transformXY) {
@@ -294,7 +298,7 @@ BOOST_AUTO_TEST_CASE(distance_capsulecapsule_transformZ) {
   CollisionGeometryPtr_t s2(new Capsule(5, 10));
 
   Transform3f tf1;
-  Transform3f tf2(Vec3f(0, 0, 20.1));
+  Transform3f tf2(Vec3f(0, 0, FCL_REAL(20.1)));
 
   CollisionObject o1(s1, tf1);
   CollisionObject o2(s2, tf2);
@@ -320,7 +324,8 @@ BOOST_AUTO_TEST_CASE(distance_capsulecapsule_transformZ2) {
   CollisionGeometryPtr_t s2(new Capsule(5, 10));
 
   Transform3f tf1;
-  Transform3f tf2(makeQuat(sqrt(2) / 2, 0, sqrt(2) / 2, 0), Vec3f(0, 0, 25.1));
+  Transform3f tf2(makeQuat(sqrt(2) / 2, 0, sqrt(2) / 2, 0),
+                  Vec3f(0, 0, FCL_REAL(25.1)));
 
   CollisionObject o1(s1, tf1);
   CollisionObject o2(s2, tf2);
@@ -343,14 +348,15 @@ BOOST_AUTO_TEST_CASE(distance_capsulecapsule_transformZ2) {
             << std::endl
             << "distance = " << distanceResult.min_distance << std::endl;
 
-  const Vec3f& p1 = distanceResult.nearest_points[0];
-  const Vec3f& p2 = distanceResult.nearest_points[1];
+  const Vec3f &p1 = distanceResult.nearest_points[0];
+  const Vec3f &p2 = distanceResult.nearest_points[1];
 
-  BOOST_CHECK_CLOSE(distanceResult.min_distance, 10.1, 1e-6);
-  CHECK_CLOSE_TO_0(p1[0], 1e-4);
-  CHECK_CLOSE_TO_0(p1[1], 1e-4);
-  BOOST_CHECK_CLOSE(p1[2], 10, 1e-4);
-  CHECK_CLOSE_TO_0(p2[0], 1e-4);
-  CHECK_CLOSE_TO_0(p2[1], 1e-4);
-  BOOST_CHECK_CLOSE(p2[2], 20.1, 1e-4);
+  BOOST_CHECK_CLOSE(distanceResult.min_distance, FCL_REAL(10.1),
+                    FCL_REAL(1e-6));
+  CHECK_CLOSE_TO_0(p1[0], FCL_REAL(1e-4));
+  CHECK_CLOSE_TO_0(p1[1], FCL_REAL(1e-4));
+  BOOST_CHECK_CLOSE(p1[2], 10, FCL_REAL(1e-4));
+  CHECK_CLOSE_TO_0(p2[0], FCL_REAL(1e-4));
+  CHECK_CLOSE_TO_0(p2[1], FCL_REAL(1e-4));
+  BOOST_CHECK_CLOSE(p2[2], FCL_REAL(20.1), FCL_REAL(1e-4));
 }

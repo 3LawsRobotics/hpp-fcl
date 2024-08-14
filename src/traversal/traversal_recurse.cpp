@@ -314,7 +314,7 @@ void propagateBVHFrontListCollisionRecurse(CollisionTraversalNodeBase *node,
                                            const CollisionRequest & /*request*/,
                                            CollisionResult &result,
                                            BVHFrontList *front_list) {
-  FCL_REAL sqrDistLowerBound = FCL_REAL(-1), sqrDistLowerBound1 = 0,
+  FCL_REAL sqrDistLowerBound = -1, sqrDistLowerBound1 = 0,
            sqrDistLowerBound2 = 0;
   BVHFrontList::iterator front_iter;
   BVHFrontList append;

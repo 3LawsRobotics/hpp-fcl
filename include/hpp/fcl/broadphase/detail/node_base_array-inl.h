@@ -49,7 +49,7 @@ namespace implementation_array {
 
 //==============================================================================
 template <typename BV> bool NodeBase<BV>::isLeaf() const {
-  return (children[1] == (size_t)(FCL_REAL(-1)));
+  return (children[1] == (size_t)(-1));
 }
 
 //==============================================================================

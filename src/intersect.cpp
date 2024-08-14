@@ -147,7 +147,7 @@ void TriangleDistance::segPoints(const Vec3f &P, const Vec3f &A, const Vec3f &Q,
       X = P + A * t;
       VEC = A.cross(B);
       if (VEC.dot(T) < 0) {
-        VEC = VEC * (FCL_REAL(-1));
+        VEC = VEC * (-1);
       }
     }
   }
@@ -261,7 +261,7 @@ FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f S[3], const Vec3f T[3],
     // If Sn is a separating direction,
     // find point with smallest projection
 
-    int point = FCL_REAL(-1);
+    int point = -1;
     if ((Tp[0] > 0) && (Tp[1] > 0) && (Tp[2] > 0)) {
       if (Tp[0] < Tp[1])
         point = 0;
@@ -324,7 +324,7 @@ FCL_REAL TriangleDistance::sqrTriDistance(const Vec3f S[3], const Vec3f T[3],
     V = T[0] - S[2];
     Sp[2] = V.dot(Tn);
 
-    int point = FCL_REAL(-1);
+    int point = -1;
     if ((Sp[0] > 0) && (Sp[1] > 0) && (Sp[2] > 0)) {
       if (Sp[0] < Sp[1])
         point = 0;
@@ -475,7 +475,7 @@ Project::ProjectResult Project::projectTriangle(const Vec3f &a, const Vec3f &b,
   const FCL_REAL l = n.squaredNorm();
 
   if (l > 0) {
-    FCL_REAL mindist = FCL_REAL(-1);
+    FCL_REAL mindist = -1;
     for (size_t i = 0; i < 3; ++i) {
       if ((*vt[i] - p).dot(dl[i].cross(n)) >
           0) // origin is to the outside part of the triangle edge, then the
@@ -531,7 +531,7 @@ Project::projectTetrahedra(const Vec3f &a, const Vec3f &b, const Vec3f &c,
                         // does not grow toward the origin (in fact origin is
                         // on the other side of the abc face)
   {
-    FCL_REAL mindist = FCL_REAL(-1);
+    FCL_REAL mindist = -1;
 
     for (size_t i = 0; i < 3; ++i) {
       size_t j = nexti[i];
@@ -610,7 +610,7 @@ Project::projectTriangleOrigin(const Vec3f &a, const Vec3f &b, const Vec3f &c) {
   const FCL_REAL l = n.squaredNorm();
 
   if (l > 0) {
-    FCL_REAL mindist = FCL_REAL(-1);
+    FCL_REAL mindist = -1;
     for (size_t i = 0; i < 3; ++i) {
       if (vt[i]->dot(dl[i].cross(n)) >
           0) // origin is to the outside part of the triangle edge, then the
@@ -667,7 +667,7 @@ Project::ProjectResult Project::projectTetrahedraOrigin(const Vec3f &a,
                         // does not grow toward the origin (in fact origin is
                         // on the other side of the abc face)
   {
-    FCL_REAL mindist = FCL_REAL(-1);
+    FCL_REAL mindist = -1;
 
     for (size_t i = 0; i < 3; ++i) {
       size_t j = nexti[i];

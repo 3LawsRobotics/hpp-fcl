@@ -93,7 +93,7 @@ public:
   ///       order of two leaves if the sibling of the `leaf` is also a leaf.
   ///       Or it could be more complicated if the sibling is an internal
   ///       node.
-  void update(Node *leaf, int lookahead_level = FCL_REAL(-1));
+  void update(Node *leaf, int lookahead_level = -1);
 
   /// @brief update the tree when the bounding volume of a given leaf has
   /// changed
@@ -230,8 +230,7 @@ private:
 
   /// @brief Delete all internal nodes and return all leaves nodes with given
   /// depth from root
-  void fetchLeaves(Node *root, std::vector<Node *> &leaves,
-                   int depth = FCL_REAL(-1));
+  void fetchLeaves(Node *root, std::vector<Node *> &leaves, int depth = -1);
 
   static size_t indexOf(Node *node);
 

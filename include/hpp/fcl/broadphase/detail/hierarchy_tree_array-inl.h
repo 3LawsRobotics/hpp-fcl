@@ -63,7 +63,7 @@ HierarchyTree<BV>::HierarchyTree(int bu_threshold_, int topdown_level_) {
   n_leaves = 0;
   freelist = 0;
   opath = 0;
-  max_lookahead_level = FCL_REAL(-1);
+  max_lookahead_level = -1;
   bu_threshold = bu_threshold_;
   topdown_level = topdown_level_;
 }
@@ -116,7 +116,7 @@ void HierarchyTree<BV>::init_0(Node *leaves, int n_leaves_) {
   delete[] ids;
 
   opath = 0;
-  max_lookahead_level = FCL_REAL(-1);
+  max_lookahead_level = -1;
 }
 
 //==============================================================================
@@ -158,7 +158,7 @@ void HierarchyTree<BV>::init_1(Node *leaves, int n_leaves_) {
   refit();
 
   opath = 0;
-  max_lookahead_level = FCL_REAL(-1);
+  max_lookahead_level = -1;
 }
 
 //==============================================================================
@@ -200,7 +200,7 @@ void HierarchyTree<BV>::init_2(Node *leaves, int n_leaves_) {
   refit();
 
   opath = 0;
-  max_lookahead_level = FCL_REAL(-1);
+  max_lookahead_level = -1;
 }
 
 //==============================================================================
@@ -241,7 +241,7 @@ void HierarchyTree<BV>::init_3(Node *leaves, int n_leaves_) {
   refit();
 
   opath = 0;
-  max_lookahead_level = FCL_REAL(-1);
+  max_lookahead_level = -1;
 }
 
 //==============================================================================
@@ -273,7 +273,7 @@ template <typename BV> void HierarchyTree<BV>::clear() {
   n_leaves = 0;
   freelist = 0;
   opath = 0;
-  max_lookahead_level = FCL_REAL(-1);
+  max_lookahead_level = -1;
 }
 
 //==============================================================================
@@ -581,7 +581,7 @@ size_t HierarchyTree<BV>::topdown_1(size_t *lbeg, size_t *lend) {
         vol += nodes[*i].bv;
       }
       split_p /= static_cast<FCL_REAL>(num_leaves);
-      int best_axis = FCL_REAL(-1);
+      int best_axis = -1;
       int bestmidp = (int)num_leaves;
       int splitcount[3][2] = {{0, 0}, {0, 0}, {0, 0}};
       for (size_t *i = lbeg; i < lend; ++i) {

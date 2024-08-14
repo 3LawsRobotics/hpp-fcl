@@ -64,8 +64,8 @@ struct HPP_FCL_DLLAPI HFNodeBase {
 
   /// @brief Default constructor
   HFNodeBase()
-      : first_child(0), x_id(FCL_REAL(-1)), x_size(0), y_id(FCL_REAL(-1)),
-        y_size(0), max_height(std::numeric_limits<FCL_REAL>::lowest()) {}
+      : first_child(0), x_id(-1), x_size(0), y_id(-1), y_size(0),
+        max_height(std::numeric_limits<FCL_REAL>::lowest()) {}
 
   /// @brief Comparison operator
   bool operator==(const HFNodeBase &other) const {

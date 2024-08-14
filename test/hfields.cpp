@@ -35,17 +35,17 @@
 /** \author Justin Carpentier */
 
 #define BOOST_TEST_MODULE FCL_HEIGHT_FIELDS
-#include <boost/test/included/unit_test.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 #include "fcl_resources/config.h"
 
 #include <hpp/fcl/collision.h>
 #include <hpp/fcl/hfield.h>
 #include <hpp/fcl/math/transform.h>
-#include <hpp/fcl/shape/geometric_shapes.h>
 #include <hpp/fcl/mesh_loader/assimp.h>
 #include <hpp/fcl/mesh_loader/loader.h>
+#include <hpp/fcl/shape/geometric_shapes.h>
 
 #include <hpp/fcl/collision.h>
 
@@ -67,11 +67,11 @@ void test_constant_hfields(const Eigen::DenseIndex nx,
   BOOST_CHECK(hfield.getXDim() == x_dim);
   BOOST_CHECK(hfield.getYDim() == y_dim);
 
-  const VecXf& x_grid = hfield.getXGrid();
+  const VecXf &x_grid = hfield.getXGrid();
   BOOST_CHECK(x_grid[0] == -x_dim / 2.);
   BOOST_CHECK(x_grid[nx - 1] == x_dim / 2.);
 
-  const VecXf& y_grid = hfield.getYGrid();
+  const VecXf &y_grid = hfield.getYGrid();
   BOOST_CHECK(y_grid[0] == y_dim / 2.);
   BOOST_CHECK(y_grid[ny - 1] == -y_dim / 2.);
 
@@ -87,7 +87,7 @@ void test_constant_hfields(const Eigen::DenseIndex nx,
 
   // Test clone
   {
-    HeightField<BV>* hfield_clone = hfield.clone();
+    HeightField<BV> *hfield_clone = hfield.clone();
     hfield_clone->computeLocalAABB();
     BOOST_CHECK(*hfield_clone == hfield);
 
@@ -142,7 +142,7 @@ void test_constant_hfields(const Eigen::DenseIndex nx,
     M_box.setTranslation(
         Vec3f(0., 0., max_altitude + box.halfSide[2] + eps_collision));
     CollisionRequest
-        request;  //(CONTACT | DISTANCE_LOWER_BOUND, (size_t)((nx-1)*(ny-1)));
+        request; //(CONTACT | DISTANCE_LOWER_BOUND, (size_t)((nx-1)*(ny-1)));
 
     CollisionResult result;
     collide(&hfield, IdTransform, &sphere, M_sphere, request, result);
@@ -164,7 +164,7 @@ void test_constant_hfields(const Eigen::DenseIndex nx,
 
   // Update height
   hfield.updateHeights(
-      MatrixXf::Constant(ny, nx, max_altitude / 2.));  // We change nothing
+      MatrixXf::Constant(ny, nx, max_altitude / 2.)); // We change nothing
 
   // No collision case
   {
@@ -201,7 +201,7 @@ void test_constant_hfields(const Eigen::DenseIndex nx,
     M_box.setTranslation(
         Vec3f(0., 0., max_altitude + box.halfSide[2] + eps_collision));
     CollisionRequest
-        request;  //(CONTACT | DISTANCE_LOWER_BOUND, (size_t)((nx-1)*(ny-1)));
+        request; //(CONTACT | DISTANCE_LOWER_BOUND, (size_t)((nx-1)*(ny-1)));
 
     CollisionResult result;
     collide(&hfield, IdTransform, &sphere, M_sphere, request, result);
@@ -223,7 +223,7 @@ void test_constant_hfields(const Eigen::DenseIndex nx,
 
   // Restore height
   hfield.updateHeights(
-      MatrixXf::Constant(ny, nx, max_altitude));  // We change nothing
+      MatrixXf::Constant(ny, nx, max_altitude)); // We change nothing
 
   // Collision case
   {
@@ -233,7 +233,7 @@ void test_constant_hfields(const Eigen::DenseIndex nx,
     M_box.setTranslation(
         Vec3f(0., 0., max_altitude + box.halfSide[2] + eps_collision));
     CollisionRequest
-        request;  //(CONTACT | DISTANCE_LOWER_BOUND, (size_t)((nx-1)*(ny-1)));
+        request; //(CONTACT | DISTANCE_LOWER_BOUND, (size_t)((nx-1)*(ny-1)));
 
     CollisionResult result;
     collide(&hfield, IdTransform, &sphere, M_sphere, request, result);
@@ -258,12 +258,12 @@ BOOST_AUTO_TEST_CASE(building_constant_hfields) {
   const FCL_REAL max_altitude = 1., min_altitude = 0.;
 
   test_constant_hfields<OBBRSS>(2, 2, min_altitude,
-                                max_altitude);  // Simple case
+                                max_altitude); // Simple case
   test_constant_hfields<OBBRSS>(20, 2, min_altitude, max_altitude);
   test_constant_hfields<OBBRSS>(100, 100, min_altitude, max_altitude);
   //  test_constant_hfields<OBBRSS>(1000,1000,min_altitude,max_altitude);
 
-  test_constant_hfields<AABB>(2, 2, min_altitude, max_altitude);  // Simple case
+  test_constant_hfields<AABB>(2, 2, min_altitude, max_altitude); // Simple case
   test_constant_hfields<AABB>(20, 2, min_altitude, max_altitude);
   test_constant_hfields<AABB>(100, 100, min_altitude, max_altitude);
 }
@@ -424,7 +424,7 @@ BOOST_AUTO_TEST_CASE(hfield_with_square_hole) {
       (X.array().abs() < dim_square) && (Y.array().abs() < dim_square);
 
   const MatrixXf heights =
-      MatrixXf::Ones(ny, nx) - hole.cast<double>().matrix();
+      MatrixXf::Ones(ny, nx) - hole.cast<FCL_REAL>().matrix();
 
   const HeightField<BV> hfield(2., 2., heights, -10.);
 
@@ -468,7 +468,7 @@ BOOST_AUTO_TEST_CASE(hfield_with_circular_hole) {
       (X.array().square() + Y.array().square() <= dim_hole);
 
   const MatrixXf heights =
-      MatrixXf::Ones(ny, nx) - hole.cast<double>().matrix();
+      MatrixXf::Ones(ny, nx) - hole.cast<FCL_REAL>().matrix();
 
   const HeightField<BV> hfield(2., 2., heights, -10.);
 

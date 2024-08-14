@@ -69,7 +69,7 @@ FCL_REAL ShapeShapeDistance<Sphere, Sphere>(
 
   result.o1 = o1;
   result.o2 = o2;
-  result.b1 = result.b2 = FCL_REAL(-1);
+  result.b1 = result.b2 = -1;
   Vec3f c1c2 = center2 - center1;
   FCL_REAL dist = c1c2.norm();
   Vec3f unit(0, 0, 0);
@@ -125,7 +125,7 @@ std::size_t ShapeShapeCollider<Sphere, Sphere>::run(
     // and segment [c1 c2].
     FCL_REAL abscissa = FCL_REAL(.5) * r1 + FCL_REAL(.5) * (dist - r2);
     Vec3f contactPoint = center1 + abscissa * unit;
-    Contact contact(o1, o2, FCL_REAL(-1), FCL_REAL(-1), contactPoint, unit,
+    Contact contact(o1, o2, -1, -1, contactPoint, unit,
                     -(distToCollision + margin));
     result.addContact(contact);
     return 1;

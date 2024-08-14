@@ -50,15 +50,14 @@ namespace fcl {
 /// @brief Compute the 8 vertices of a OBB
 inline void computeVertices(const OBB &b, Vec3f vertices[8]) {
   Matrix3f extAxes(b.axes * b.extent.asDiagonal());
-  vertices[0].noalias() =
-      b.To + extAxes * Vec3f(FCL_REAL(-1), FCL_REAL(-1), FCL_REAL(-1));
-  vertices[1].noalias() = b.To + extAxes * Vec3f(1, FCL_REAL(-1), FCL_REAL(-1));
-  vertices[2].noalias() = b.To + extAxes * Vec3f(1, 1, FCL_REAL(-1));
-  vertices[3].noalias() = b.To + extAxes * Vec3f(FCL_REAL(-1), 1, FCL_REAL(-1));
-  vertices[4].noalias() = b.To + extAxes * Vec3f(FCL_REAL(-1), FCL_REAL(-1), 1);
-  vertices[5].noalias() = b.To + extAxes * Vec3f(1, FCL_REAL(-1), 1);
+  vertices[0].noalias() = b.To + extAxes * Vec3f(-1, -1, -1);
+  vertices[1].noalias() = b.To + extAxes * Vec3f(1, -1, -1);
+  vertices[2].noalias() = b.To + extAxes * Vec3f(1, 1, -1);
+  vertices[3].noalias() = b.To + extAxes * Vec3f(-1, 1, -1);
+  vertices[4].noalias() = b.To + extAxes * Vec3f(-1, -1, 1);
+  vertices[5].noalias() = b.To + extAxes * Vec3f(1, -1, 1);
   vertices[6].noalias() = b.To + extAxes * Vec3f(1, 1, 1);
-  vertices[7].noalias() = b.To + extAxes * Vec3f(FCL_REAL(-1), 1, 1);
+  vertices[7].noalias() = b.To + extAxes * Vec3f(-1, 1, 1);
 }
 
 /// @brief OBB merge method when the centers of two smaller OBB are far away
@@ -119,7 +118,7 @@ inline OBB merge_smalldist(const OBB &b1, const OBB &b2) {
   b.To = (b1.To + b2.To) * FCL_REAL(0.5);
   Quaternion3f q0(b1.axes), q1(b2.axes);
   if (q0.dot(q1) < 0)
-    q1.coeffs() *= FCL_REAL(-1);
+    q1.coeffs() *= -1;
 
   Quaternion3f q((q0.coeffs() + q1.coeffs()).normalized());
   b.axes = q.toRotationMatrix();

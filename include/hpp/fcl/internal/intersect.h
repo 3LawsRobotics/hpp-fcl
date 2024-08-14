@@ -66,7 +66,7 @@ public:
     /// @brief the code of the projection type
     unsigned int encode;
 
-    ProjectResult() : sqr_distance(FCL_REAL(-1)), encode(0) {}
+    ProjectResult() : sqr_distance(-1), encode(0) {}
   };
 
   /// @brief Project point p onto line a-b

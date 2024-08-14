@@ -43,12 +43,12 @@
 #define CHECK_CLOSE_TO_0(x, eps) BOOST_CHECK_CLOSE((x + 1.0), (1.0), (eps))
 
 #include <cmath>
-#include <iostream>
-#include <hpp/fcl/distance.h>
-#include <hpp/fcl/math/transform.h>
 #include <hpp/fcl/collision.h>
 #include <hpp/fcl/collision_object.h>
+#include <hpp/fcl/distance.h>
+#include <hpp/fcl/math/transform.h>
 #include <hpp/fcl/shape/geometric_shapes.h>
+#include <iostream>
 
 #include "utility.h"
 
@@ -83,12 +83,12 @@ BOOST_AUTO_TEST_CASE(distance_box_box_1) {
   std::cerr << "Closest points: p1 = " << distanceResult.nearest_points[0]
             << ", p2 = " << distanceResult.nearest_points[1]
             << ", distance = " << distanceResult.min_distance << std::endl;
-  double dx = 25 - 3 - 1;
-  double dy = 20 - 5 - 1;
-  double dz = 5 - 1 - 1;
+  FCL_REAL dx = 25 - 3 - 1;
+  FCL_REAL dy = 20 - 5 - 1;
+  FCL_REAL dz = 5 - 1 - 1;
 
-  const Vec3f& p1 = distanceResult.nearest_points[0];
-  const Vec3f& p2 = distanceResult.nearest_points[1];
+  const Vec3f &p1 = distanceResult.nearest_points[0];
+  const Vec3f &p2 = distanceResult.nearest_points[1];
   BOOST_CHECK_CLOSE(distanceResult.min_distance,
                     sqrt(dx * dx + dy * dy + dz * dz), 1e-4);
 
@@ -103,12 +103,12 @@ BOOST_AUTO_TEST_CASE(distance_box_box_1) {
 BOOST_AUTO_TEST_CASE(distance_box_box_2) {
   CollisionGeometryPtr_t s1(new hpp::fcl::Box(6, 10, 2));
   CollisionGeometryPtr_t s2(new hpp::fcl::Box(2, 2, 2));
-  static double pi = M_PI;
+  static FCL_REAL pi = M_PI;
   Transform3f tf1;
-  Transform3f tf2(
-      hpp::fcl::makeQuat(cos(pi / 8), sin(pi / 8) / sqrt(3),
-                         sin(pi / 8) / sqrt(3), sin(pi / 8) / sqrt(3)),
-      Vec3f(0, 0, 10));
+  Transform3f tf2(hpp::fcl::makeQuat(cos(pi / 8), sin(pi / 8) / sqrt(3),
+                                     sin(pi / 8) / sqrt(3),
+                                     sin(pi / 8) / sqrt(3)),
+                  Vec3f(0, 0, 10));
 
   CollisionObject o1(s1, tf1);
   CollisionObject o2(s2, tf2);
@@ -128,9 +128,9 @@ BOOST_AUTO_TEST_CASE(distance_box_box_2) {
             << ", p2 = " << distanceResult.nearest_points[1]
             << ", distance = " << distanceResult.min_distance << std::endl;
 
-  const Vec3f& p1 = distanceResult.nearest_points[0];
-  const Vec3f& p2 = distanceResult.nearest_points[1];
-  double distance = -1.62123444 + 10 - 1;
+  const Vec3f &p1 = distanceResult.nearest_points[0];
+  const Vec3f &p2 = distanceResult.nearest_points[1];
+  FCL_REAL distance = -1.62123444 + 10 - 1;
   BOOST_CHECK_CLOSE(distanceResult.min_distance, distance, 1e-4);
 
   BOOST_CHECK_CLOSE(p1[0], 0.60947571, 1e-4);
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(distance_box_box_2) {
 BOOST_AUTO_TEST_CASE(distance_box_box_3) {
   CollisionGeometryPtr_t s1(new hpp::fcl::Box(1, 1, 1));
   CollisionGeometryPtr_t s2(new hpp::fcl::Box(1, 1, 1));
-  static double pi = M_PI;
+  static FCL_REAL pi = M_PI;
   Transform3f tf1(hpp::fcl::makeQuat(cos(pi / 8), 0, 0, sin(pi / 8)),
                   Vec3f(-2, 1, .5));
   Transform3f tf2(hpp::fcl::makeQuat(cos(pi / 8), 0, sin(pi / 8), 0),
@@ -168,9 +168,9 @@ BOOST_AUTO_TEST_CASE(distance_box_box_3) {
             << ", p2 = " << distanceResult.nearest_points[1]
             << ", distance = " << distanceResult.min_distance << std::endl;
 
-  const Vec3f& p1 = distanceResult.nearest_points[0];
-  const Vec3f& p2 = distanceResult.nearest_points[1];
-  double distance = 4 - sqrt(2);
+  const Vec3f &p1 = distanceResult.nearest_points[0];
+  const Vec3f &p2 = distanceResult.nearest_points[1];
+  FCL_REAL distance = 4 - sqrt(2);
   BOOST_CHECK_CLOSE(distanceResult.min_distance, distance, 1e-4);
 
   const Vec3f p1Ref(sqrt(2) / 2 - 2, 1, .5);
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(distance_box_box_4) {
   // Enable computation of nearest points
   DistanceRequest distanceRequest(true, 0, 0);
   DistanceResult distanceResult;
-  double distance;
+  FCL_REAL distance;
 
   Transform3f tf1(Vec3f(2, 0, 0));
   Transform3f tf2;

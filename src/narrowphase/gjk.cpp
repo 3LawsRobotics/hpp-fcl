@@ -65,7 +65,8 @@ void getShapeSupport(const TriangleP *triangle, const Vec3f &dir,
 
 inline void getShapeSupport(const Box *box, const Vec3f &dir, Vec3f &support,
                             int &, MinkowskiDiff::ShapeData *) {
-  const FCL_REAL inflate = (dir.array() == 0).any() ? 1.00000001 : 1.;
+  const FCL_REAL inflate =
+      (dir.array() == 0).any() ? FCL_REAL(1.00000001) : FCL_REAL(1.);
   support.noalias() =
       (dir.array() > 0)
           .select(inflate * box->halfSide, -inflate * box->halfSide);
@@ -101,7 +102,7 @@ inline void getShapeSupport(const Capsule *capsule, const Vec3f &dir,
 void getShapeSupport(const Cone *cone, const Vec3f &dir, Vec3f &support, int &,
                      MinkowskiDiff::ShapeData *) {
   // The cone radius is, for -h < z < h, (h - z) * r / (2*h)
-  static const FCL_REAL inflate = 1.00001;
+  static const FCL_REAL inflate = FCL_REAL(1.00001);
   FCL_REAL h = cone->halfLength;
   FCL_REAL r = cone->radius;
 
@@ -141,7 +142,7 @@ void getShapeSupport(const Cylinder *cylinder, const Vec3f &dir, Vec3f &support,
   // The inflation makes the object look strictly convex to GJK and EPA. This
   // helps solving particular cases (e.g. a cylinder with itself at the same
   // position...)
-  static const FCL_REAL inflate = 1.00001;
+  static const FCL_REAL inflate = FCL_REAL(1.00001);
   FCL_REAL half_h = cylinder->halfLength;
   FCL_REAL r = cylinder->radius;
 
@@ -604,9 +605,9 @@ void inflate(const MinkowskiDiff &shape, Vec3f &w0, Vec3f &w1) {
   // TODO should be use a threshold (Eigen::NumTraits<FCL_REAL>::epsilon()) ?
   if (n2 == FCL_REAL(0.)) {
     if (inflate[0])
-      w0[0] += I[0] * (Separated ? FCL_REAL(-1) : 1);
+      w0[0] += I[0] * (Separated ? -1 : 1);
     if (inflate[1])
-      w1[0] += I[1] * (Separated ? 1 : FCL_REAL(-1));
+      w1[0] += I[1] * (Separated ? 1 : -1);
     return;
   }
 
@@ -656,7 +657,7 @@ GJK::Status GJK::evaluate(const MinkowskiDiff &shape_, const Vec3f &guess,
 
   FCL_REAL rl = guess.norm();
   if (rl < tolerance) {
-    ray = Vec3f(FCL_REAL(-1), 0, 0);
+    ray = Vec3f(-1, 0, 0);
     rl = 1;
   } else
     ray = guess;
@@ -892,7 +893,7 @@ bool GJK::encloseOrigin() {
       if (encloseOrigin())
         return true;
       removeVertex(*simplex);
-      axis[i] = FCL_REAL(-1);
+      axis[i] = -1;
       appendVertex(*simplex, -axis, true, hint);
       if (encloseOrigin())
         return true;

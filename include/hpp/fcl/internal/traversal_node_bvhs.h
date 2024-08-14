@@ -274,7 +274,7 @@ template <> struct DistanceTraversalBVDistanceLowerBound_impl<OBB> {
     // request.break_distance = ?
     if (b1.overlap(b2, request, sqrDistLowerBound)) {
       // TODO A penetration upper bound should be computed.
-      return FCL_REAL(-1);
+      return -1;
     }
     return sqrt(sqrDistLowerBound);
   }
@@ -285,7 +285,7 @@ template <> struct DistanceTraversalBVDistanceLowerBound_impl<OBB> {
     // request.break_distance = ?
     if (overlap(R, T, b1.bv, b2.bv, request, sqrDistLowerBound)) {
       // TODO A penetration upper bound should be computed.
-      return FCL_REAL(-1);
+      return -1;
     }
     return sqrt(sqrDistLowerBound);
   }
@@ -298,7 +298,7 @@ template <> struct DistanceTraversalBVDistanceLowerBound_impl<AABB> {
     // request.break_distance = ?
     if (b1.overlap(b2, request, sqrDistLowerBound)) {
       // TODO A penetration upper bound should be computed.
-      return FCL_REAL(-1);
+      return -1;
     }
     return sqrt(sqrDistLowerBound);
   }
@@ -309,7 +309,7 @@ template <> struct DistanceTraversalBVDistanceLowerBound_impl<AABB> {
     // request.break_distance = ?
     if (overlap(R, T, b1.bv, b2.bv, request, sqrDistLowerBound)) {
       // TODO A penetration upper bound should be computed.
-      return FCL_REAL(-1);
+      return -1;
     }
     return sqrt(sqrDistLowerBound);
   }
