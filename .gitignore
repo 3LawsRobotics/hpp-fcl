@@ -2,4 +2,6 @@ build*
 Xcode/*
 *~
 *.pyc
-
+.cache/
+.vscode/
+log/
