@@ -42,6 +42,7 @@ set(PROJECT_COMPATIBILITY_VERSION AnyNewerVersion)
 
 set(PROJECT_USE_KEYWORD_LINK_LIBRARIES TRUE)
 set(DOXYGEN_USE_TEMPLATE_CSS TRUE)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # ----------------------------------------------------
 # --- OPTIONS  ---------------------------------------
